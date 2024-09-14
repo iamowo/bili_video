@@ -1,0 +1,112 @@
+.setting-view {
+  margin-top: 10px;
+  width: 100%;
+  height: fit-content;
+  box-sizing: border-box;
+  padding: 15px 20px 40px;
+  border-radius: 2px;
+  background-color: #fff;
+  box-shadow: 0 0 0 1px #eee;
+  margin-bottom: 40px;
+}
+
+.setting-title {
+  width: 100%;
+  height: 33px;
+  margin-bottom: 20px;
+  line-height: 33px;
+  font-size: 20px;
+  color: #18191C;
+  font-weight: 550;
+}
+
+.setting-conetnte1 {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 0 20px;
+  border-bottom: 1px solid #e4e5e7;
+  margin-bottom: 30px;
+  display: flex;
+  .sc-box1 {
+    width: 200px;
+    margin-right: 100px;
+    .one-setting-line {
+      width: 100%;
+      height: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .textspan {
+        font-size: 14px;
+        color: #222;
+      }
+      .right-div-sp {
+        label {
+          display: flex;
+          align-items: center;
+          position: relative;
+          #ckbox {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            opacity: 0;
+          }
+          .one-checkdiv {
+            width: 32px;
+            height: 20px;
+            border-radius: 10px;
+            background-color: #ccd0d7;
+            position: relative;
+            cursor: pointer;
+            .active-round {
+              position: absolute;
+              width: 16px;
+              height: 16px;
+              border-radius: 9px;
+              background-color: #fff;
+              top: 50%;
+              translate: 2px -50%;
+              left: 0;
+              transition: left 0.3s ease;
+            }
+          }
+          .box-active {
+            background-color: #32aeec;
+            .active-round {
+              left: 12px;
+            }
+          }
+          .text2 {
+            margin-left: 5px;
+            font-size: 12px;
+            user-select: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+.changesortbox1 {
+  width: 208px;
+  height: fit-content;
+  border: 1px solid #e3e5e3;
+  border-radius: 6px;
+  .one-sort-box {
+    box-sizing: border-box;
+    padding: 0 20px;
+    width: 100%;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e3e5e3;
+    cursor: move;
+    user-select: none;
+  }
+  .nobottom {
+    border-bottom: none;
+  }
+}

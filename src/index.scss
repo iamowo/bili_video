@@ -1,0 +1,28 @@
+@import url('./static//css//global.css');
+@import url('./static//css//loading.css');
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f1f2f3;
+  overflow-x: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif !important;
+
+  // overflow-y: auto;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+// 出现滚动条时出现屏幕抖动， ⭐, 
+// 解决把那发， 在左边也加上一个滚动条
+body {
+  // padding-left: calc(100vw - 100%);
+  // margin-left: calc(100vw - 100%);
+}

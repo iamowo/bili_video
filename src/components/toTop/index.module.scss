@@ -1,0 +1,29 @@
+.totop {
+  width: 40px;
+  height: 104px;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+}
+
+.onebox {
+  width: 40px;
+  height: 42px;
+  background-color: #fff;
+  margin-top: 10px;
+  box-sizing: border-box;
+  border: 1px solid #E3E5E7;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #18191C;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  &:hover {
+    background-color: #6a6c6d;
+    color: #fff;
+  }
+}

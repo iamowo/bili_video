@@ -1,0 +1,242 @@
+.searchout-view {
+  width: 2560px;
+  height: fit-content;
+  box-sizing: border-box;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+@media(min-width: 2261px) {
+  .search-main {
+    // !!!!
+    max-width: 2560px;
+    .search-mid {
+      padding: 0 96px;
+      width: 2260px;
+    }
+  }
+}
+@media((max-width: 2260px) and (min-width: 1601px)) {
+  .search-main {
+    width: 100vw;
+    .search-mid {
+      width: 100%;
+      padding: 0 96px;
+    }
+  }
+}
+
+@media (max-width: 1600px) {
+  .search-main {
+    width: 100vw;
+    .search-mid {
+      padding: 0 64px;
+      width: 100vw;
+    }
+  }
+}
+.search-main {
+  margin: 0 auto;
+  width: 100vw;
+  height: fit-content;
+  box-sizing: border-box;
+  padding-top: 64px;
+}
+
+.search-mid {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 0 64px 40px;
+  margin: 0 auto;
+  .search-mid-input {
+    width: 100%;
+    height: 54px;
+    .search-outbox {
+      margin: 30px auto 0;
+      width: 638px;
+      height: 52px;
+      box-sizing: border-box;
+      padding: 5px;
+      border: 1px solid #F1F2F3;
+      background-color: #F6F7F8;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      &:hover {
+        background-color: #fff;
+        border-color: #32AEEC;
+        .input2-se {
+          background-color: #fff;
+        }
+      }
+      .leftsearch-icon {
+        margin-left: 10px;
+        scale: 1.8;
+        color: #32AEEC;
+      }
+      .input2-se {
+        margin-left: 10px;
+        flex: 1;
+        height: 80%;
+        border: 0;
+        outline: none;
+        background-color: #F6F7F8;
+        font-size: 18px;
+      }
+      .close-span {
+        margin-left: 10px;
+        user-select: none;
+        cursor: pointer;
+        color: #7a7979e0;
+        &:hover {
+          color: #555353e0;
+        }
+      }
+      .search-rightbtn {
+        margin-left: 20px;
+        width: 100px;
+        height: 40px;
+        border-radius: 4px;
+        color: #fff;
+        background-color: #00AEEC;
+        text-align: center;
+        line-height: 40px;
+        font-size: 15px;
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          background-color: #32b6e6;
+        }
+      }
+    }
+  }
+  .search-type {
+    margin-top: 20px;
+    width: 100%;
+    height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
+    .one-saerch-type {
+      // width: 50px;
+      height: 44px;
+      line-height: 44px;
+      position: relative;
+      margin-right: 40px;
+      a {
+        font-size: 16px;
+        color: #61666D;
+        text-decoration: none;
+      }
+      span {
+        font-size: 16px;
+        color: #61666D;
+        cursor: pointer;
+        user-select: none;
+      }
+      .fon-nums {
+        font-size: 13px;
+        width: 19px;
+        height: 17px;
+        line-height: 17px;
+        display: inline-block;
+        background-color: #F1F2F3;
+        border-radius: 4px;
+        text-align: center;
+        margin-left: 5px;
+        color: #61666D;
+      }
+      .se-active {
+        position: absolute;
+        left: 50%;
+        translate: -50% 0;
+        bottom: 3px;
+        width: 80%;
+        height: 4px;
+        border-radius: 4px;
+        background-color: #00AEEC;
+      }
+    }
+  }
+
+  // ============排序=====================
+  // 所有的排序都在 search.scss里面
+  
+  .res-sort {
+    width: 100%;
+    height: 42px;
+    margin: 30px 0 30px;
+    overflow: hidden;
+    transition: height 0.5s ease;
+    .sort-line {
+      width: 100%;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .srot-part {
+      display: flex;
+    }
+    .sort1 {
+      height: 32px;
+      padding: 0 10px;
+      font-size: 14px;
+      color: #61666D;
+      line-height: 32px;
+      background-color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      margin-right: 10px;
+    }
+    .sort13 {
+      height: 32px;
+      padding: 0 15px;
+      font-size: 14px;
+      color: #61666D;
+      line-height: 32px;
+      background-color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      margin-right: 10px;
+    }
+    .sort-active {
+      color: #00AEEC;
+      background-color: #DFF6FD;
+    }
+    .more-sort {
+      width: 95px;
+      height: 34px;
+      text-align: center;
+      line-height: 34px;
+      color: #18191C;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+      background-color: #fff;
+      border: 1px solid #E3E5E7;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .icon {
+        margin-left: 5px;
+        font-size: 14px;
+        transition: rotate 0.4s linear;
+      }
+      &:hover {
+        background-color: #E3E5E7;
+      }
+    }
+  }
+  .search-content-all {
+    width: 100%;
+    height: fit-content;
+    box-sizing: border-box;
+    // padding: 30px 0;
+  }
+}

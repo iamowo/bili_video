@@ -1,0 +1,367 @@
+
+
+.audit-view {
+  width: 100vw;
+  height: 100vh;
+  background-color: #e3e5e7;
+  .aud-top-out {
+    position: relative;
+    width: 100%;
+    height: 70px;
+    // background-color: red;
+    .aud-top {
+      width: 100%;
+      height: 50px;
+      background-color: #fff;
+      box-sizing: border-box;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      .at-left {
+        .audlit-top-div {
+          height: 50px;
+          line-height: 50px;
+          text-align: center;
+          padding: 0 10px;
+          .icon {
+            cursor: pointer;
+            user-select: none;
+            &:hover {
+              color: #32aeec;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+.work-content {
+  width: 100%;
+  margin-top: 20px;
+  height: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .left-content {
+    border-radius: 0 6px 6px 0;
+    width: 320px;
+    height: 750px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 10px 15px;
+    .lc-title {
+      width: 100%;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      font-size: 14px;
+      color: #18191C;
+      position: relative;
+      .sp-icon-audit {
+        top: 50%;
+        translate: 5px -50%;
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #32aeec;
+        color: #fff;
+        font-size: 13px;
+        text-align: center;
+        line-height: 18px;
+      }
+    }
+    .lc-content-box {
+      margin-top: 10px;
+      width: 100%;
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      .one-audit-video {
+        width: 100%;
+        height: 90px;
+        box-sizing: border-box;
+        padding: 5px 0;
+        display: flex;
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          background-color: #e3e5e7;
+        }
+        .oav-left-avatar {
+          width: 100px;
+          height: 100%;
+          border-radius: 4px;
+        }
+        .oav-right-info {
+          height: 80px;
+          flex: 1;
+          margin-left: 10px;
+          .toptitle-oav {
+            width: 100%;
+            height: 50px;
+            line-height: 23px;
+            font-size: 13px;
+          }
+          .bottomname {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #9499A0;
+            .btm-box1 {
+              width: 85px;
+              height: 20px;
+              text-align: left;
+              line-height: 20px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.mid-content {
+  width: 1100px;
+  height: 700px;
+  background-color: #000;
+  border-radius: 6px;
+  box-sizing: border-box;
+  padding-top: 10px;
+  box-sizing: border-box;
+  .video-player {
+    width: 100%;
+    height: 630px;
+    background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    .mask-video-ip {
+      position: absolute;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+    }
+    .vidres {
+      width: 100%;
+      max-height: 100%;
+    }
+  }
+  .control-box {
+    width: 100%;
+    height: 60px;
+    background-color: rgba(51, 49, 49, 0.658);
+    border-radius: 0 0 6px 6px;
+  }
+}
+
+.right-sp-line-a {
+  width: 400px;
+  height: 100%;
+  box-sizing: border-box;
+  padding-right: 40px;
+  .right-userinfo-topa {
+    width: 100%;
+    height: 100px;
+    border-radius: 6px;
+    margin-top: 20px;
+    background-color: #fff;
+    box-sizing: border-box;
+    padding: 10px 15px;
+    display: flex;
+    .left-userinfos-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+    }
+    .right-user-otherins {
+      flex: 1;
+      height: 80px;
+      margin-left: 15px;
+      .rus-top-name {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        font-size: 18px;
+        color: #18191C;
+      }
+      .botm-user-lv {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        font-size: 14px;
+        color: #18191C;
+        span {
+          margin-right: 15px;
+        }
+      }
+    }
+  }
+  .right-content {
+    margin-top: 20px;
+    width: 100%;
+    height: fit-content;
+    background-color: #fff;
+    border-radius: 6px;
+    box-sizing: border-box;
+    padding: 10px 15px;
+    .uplin-tit {
+      width: 100%;
+      height: 30px;
+      font-size: 19px;
+      color: #18191C;
+      font-weight: 550;
+    }
+    .uplin1 {
+      height: fit-content;
+      display: flex;
+      margin: 5px 0;
+      .sp-line2-leftspan {
+        width: 60px;
+        height: 20px;
+        line-height: 20px;
+        color: #222;
+        font-size: 14px;
+        text-align: right;
+      }
+      .sp-rig-asd {
+        margin-left: 10px;
+        height: fit-content;
+        line-height: 20px;
+        flex: 1;
+        font-size: 14px;
+        color: #9499A0;
+      }
+    }
+  }
+  .right-content2-upl {
+    margin-top: 20px;
+    width: 100%;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 6px;
+    box-sizing: border-box;
+    padding: 10px 15px;
+    transition: height 0.3s ease;
+
+    overflow: hidden;
+    .sned-up-line {
+      width: 100%;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      .passbtn {
+        width: 90px;
+        height: 40px;
+        border-radius: 5px;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+        user-select: none;
+        margin-right: 20px;
+        font-size: 14px;
+        color: #fff;
+        background-color: #32aeec;
+      }
+      .nopassbtn {
+        width: 90px;
+        height: 40px;
+        border-radius: 5px;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 14px;
+        color: #9499A0;
+        background-color: #dce1e4;
+      }
+    }
+    .nopass-message {
+      margin-top: 15px;
+      width: 100%;
+      height: 170px;
+      border-radius: 12px;
+      border-radius: 4px;
+      outline: none;
+      resize: none;
+      border: none;
+      background-color: #dce1e4;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 14px;
+      color: #222;
+    }
+    .nopass-message-line {
+      margin-top: 5px;
+      width: 100%;
+      height: 30px;
+      display: flex;
+      justify-content: end;
+      .nml-btn1 {
+        width: 60px;
+        height: 30px;
+        border-radius: 5px;
+        text-align: center;
+        line-height: 30px;
+        cursor: pointer;
+        user-select: none;
+        margin-right: 20px;
+        font-size: 14px;
+        color: #9499A0;
+        background-color: #dce1e4;
+      }
+      .nml-btn2 {
+        width: 60px;
+        height: 30px;
+        border-radius: 5px;
+        text-align: center;
+        line-height: 30px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 14px;
+        color: #fff;
+        background-color: #32aeec;
+      }
+    }
+  }
+  .right-content2-upl-active {
+    height: 300px;
+  }
+}
+
+
+// 放在下面 否则不生效
+@media (max-width: 1600px) {
+  .work-content {
+    width: 100%;
+    margin-top: 20px;
+    height: 600px;
+    .left-content {
+      width: 320px;
+      height: 550px;
+    }
+    .mid-content {
+      width: 600px;
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      .video-player {
+        height: 450px;
+      }
+    }
+    
+    .right-content {
+      width: 100%;
+      height: fit-content;
+      margin-right: 20px;
+    }
+  }
+
+}

@@ -1,0 +1,261 @@
+.user-out-bigbox {
+  width: 100vw;
+  height: fit-content;
+  position: relative;
+}
+.userspace {
+  position: relative;
+  margin: 0 auto;
+  // left: 50%;
+  // translate: -50% 0;
+  box-sizing: border-box;
+  padding-top: 64px;
+  width: 1283px;
+  min-height: 100vh;
+  // margin: 0 auto;
+}
+.usertopinfos {
+  width: 100%;
+  height: 258px;
+  box-shadow: 0 0 0 1px #eee;
+  .topinfos {
+    width: 100%;
+    height: 192px;
+    display: flex;
+    // background-color: pink;
+    flex-direction: column;
+    justify-content: end;
+    .detail-userinfos {
+      width: 100%;
+      height: 76px;
+      box-sizing: border-box;
+      padding: 0 20px 16px;
+      display: flex;
+      position: relative;
+      .right-three-box {
+        position: absolute;
+        right: 20px;
+        bottom: 16px;
+        height: 30xp;
+        display: flex;
+        div {
+          height: 30px;
+          width: 76px;
+          text-align: center;
+          line-height: 30px;
+          background-color: #00000073;
+          color: #fff;
+          font-size: 14px;
+          border-radius: 4px;
+          margin-right: 20px;
+        }
+      }
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        background-color: red;
+      }
+      .user-tighy-infos {
+        margin-left: 20px;
+        width: 760px;
+        height: 60px;
+        .uti-username {
+          width: 100%;
+          height: 20px;
+          line-height: 20px;
+          margin-left: 5px;
+          .namespan {
+            font-size: 18px;
+            font-weight: 570;
+            color: #fff;
+          }
+        }
+        .showintro {
+          width: 100%;
+          margin-top: 10px;
+          height: 26px;
+          box-sizing: border-box;
+          padding: 5px;
+          font-size: 13px;
+          color: hsla(0, 0%, 100%, .8);
+        }
+        .uti-changintro {
+          width: 100%;
+          margin-top: 10px;
+          height: 26px;
+          border-radius: 6px;
+          background-color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
+          padding: 5px;
+          .changintroinput {
+            width: 100%;
+            height: 80%;
+            border: 0;
+            outline: none;
+            border: 6px;
+            background-color: transparent;
+          }
+          input::-webkit-input-placeholder{
+            font-size: 13px;
+            color: hsla(0, 0%, 100%, .8);
+          }
+          &:hover {
+            background: hsla(0, 0%, 100%, .2);
+            box-shadow: 0 0 0 1px hsla(0, 0%, 100%, .5);
+          }
+        }
+      }
+    }
+  }
+  .bottomuserinfos {
+    width: 100%;
+    height: 66px;
+    border-radius: 0 0 4px 4px;
+    background-color: #fff;
+    box-sizing: border-box;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    .top-left-opadiv {
+      display: flex;
+      position: relative;
+      .btn-slider {
+        position: absolute;
+        z-index: 1;
+        left: 5px;
+        width: 36px;
+        height: 5px;
+        background-color: #32AEEC;
+        border-radius: 2px;
+        bottom: 0;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1.05);
+      }
+      .btn-slider2 {
+        position: absolute;
+        left: 5px;
+        width: 36px;
+        height: 5px;
+        background-color: #9acee7;
+        border-radius: 2px;
+        bottom: 0;
+        transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1.05);
+      }
+      a {
+        text-decoration: none;
+        font-size: 13px;
+        color: #222;
+      }
+      .onebotinfos {
+        height: 66px;
+        padding-right: 31px;
+        position: relative;
+        text-align: center;
+        line-height: 66px;
+        cursor: pointer;
+        .icon {
+          margin-right: 5px;
+          font-size: 18px;
+        }
+        .bottomflag {
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          translate: -50% 0;
+          height: 4px;
+          width: 90%;
+          border: 1px;
+        }
+      }
+      .onebot-active {
+        color: #32AEEC;
+      }
+      .search-topbox {
+        width: 134px;
+        height: 100%;
+        .out-2inputbox {
+          margin-top: 20px;
+          width: 134px;
+          height: 30px;
+          position: relative;
+          .search-inspace {
+            width: 134px;
+            height: 28px;
+            outline: none;
+            border: 1px solid #99A2AA;
+            box-sizing: border-box;
+            font-size: 13px;
+            border-radius: 15px;
+            padding: 0 20px 0 10px; 
+          }
+          .icon {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            translate: -5px -55%;
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+          }
+          input:focus {
+            border-color: #32AEEC;
+          }
+          input::placeholder {
+            font-size: 13px;
+          }
+        }
+      }
+    }
+    .top-right-opadiv {
+      display: flex;
+      .tro-div {
+        width: 36px;
+        height: 46px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        a {
+          height: 46px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: space-around;
+          &:hover {
+            .sp1 {
+              color: #32aeec;
+            }
+            .sp2 {
+              color: #32aeec;
+            }
+          }
+        }
+        .sp1 {
+          font-size: 12px;
+          color: #99A2AA;
+        }
+        .sp2 {
+          font-size: 12px;
+          color: #222;
+        }
+      }
+      .tro-div-active {
+        .sp1, .sp2 {
+          color: #32AEEC;
+
+        }
+      }
+    }
+  }
+}
+
+// 二级路由外部
+.suerspace22 {
+  width: 100%;
+  height: fit-content;
+  box-sizing: border-box;
+}

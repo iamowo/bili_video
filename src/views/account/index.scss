@@ -1,0 +1,89 @@
+.account-out-box {
+  width: 100vw;
+  height: 100vh;
+}
+
+.aob-main {
+  width: 100%;
+  height: fit-content;
+  box-sizing: border-box;
+  padding: 64px 0 40px 0;
+}
+.imgtopbox {
+  width: 100%;
+  height: 106px;
+  display: flex;
+  .img-l {
+    flex: 1;
+    height: 86px;
+    background-color: #17a1d6;
+  }
+  .img-innerbox {
+    width: 980px;
+    height: 106px;
+    margin: 0 auto;
+  }
+}
+
+.account-main-box { 
+  width: 980px;
+  height: 903px;
+  margin: 10px auto 20px;
+  border: 1px solid #e1e2e5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .14);
+  display: flex;
+  font-family: 'MicrosoftYaHei';
+}
+
+.amb-left {
+  width: 150px;
+  height: 100%;
+  background-color: #fafafa;
+  .acc-top-title {
+    width: 100%;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    color: #99A2AA;
+    font-size: 16px;
+    border-bottom: 1px solid #e1e2e5;
+  }
+  .acc-one-box {
+    color: #717171;
+    line-height: 48px;
+    text-align: center;
+    font-size: 14px;
+    height: 48px;
+    cursor: pointer;
+    &:hover {
+      background-color: #E1E4EA;
+    }
+  }
+  .acc-active {
+    background-color: #00A1D7;
+    color: #fff;
+    &:hover {
+      background-color: #00A1D7;
+    }
+  }
+  .acc-box2 {
+    width: 100%;
+    height: 48px;
+    cursor: pointer;
+    border-top: 1px solid #e1e2e5;
+    border-bottom: 1px solid #e1e2e5;
+    line-height: 48px;
+    text-align: center;
+    color: #222;
+    font-size: 16px;
+    &:hover {
+      background-color: #E1E4EA;
+    }
+  }
+}
+
+.amb-right {
+  height: 100%;
+  border-left: 1px solid #e1e2e5;
+  width: 829px;
+}

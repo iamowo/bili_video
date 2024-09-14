@@ -1,0 +1,12 @@
+:root {
+  --Ga1_s: #F1F2F3;
+  --Wh0: #FFFFFF;
+}
+
+:root {
+  --bg1: var(--Wh0);
+}
+
+:root {
+  --graph_bg_regular: var(--Ga1_s);
+}

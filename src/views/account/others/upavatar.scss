@@ -1,0 +1,142 @@
+.upavatar-part1 {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  .top-cahnge-tiele {
+    box-sizing: border-box;
+    width: 100%;
+    height: 51px;
+    line-height: 50px;
+    color: #222;
+    font-size: 15px;
+    border-bottom: 1px solid #e1e2e5;
+    padding-left: 30px;
+    display: flex;
+    align-items: center;
+    a {
+      color: #6D757A;
+      margin-right: 5px;
+      &:hover {
+        color: #32AEEC;
+      }
+    }
+    .icon {
+      margin-right: 5px;
+    }
+  }
+  .chang-avatar-box {
+    width: 361px;
+    height: 182px;
+    padding: 80px 20px 56px;
+    display: flex;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    .avatar-left-out {
+      width: 98px;
+      height: 98px;
+      position: relative;
+      .lna-sp {
+        position: absolute;
+        left: 50%;
+        translate: -50% 0;
+        bottom: -30px;
+        color: #9499A0;
+        font-size: 12px;
+      }
+    }
+    .let-now-avatrar {
+      width: 98px;
+      height: 98px;
+      border-radius: 50%;
+    }
+    .sp-line-sp1 {
+      height: 120px;
+      width: 1px;
+      background-color: #e3e5e7;
+    }
+    .avat-tbox {
+      width: 190px;
+      height: fit-content;
+      position: relative;
+      .ps-title-s {
+        position: absolute;
+        left: 50%;
+        translate: -50% 0;
+        bottom: -30px;
+        color: #9499A0;
+        font-size: 12px;
+        cursor: pointer;
+        user-select: none;
+        .changeava {
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          left: 0;
+          top: 0;
+          opacity: 0;
+        }
+        input[type='file']{
+          cursor: pointer;
+          font-size: 0;
+        }
+      }
+    }
+    .chang-text-box {
+      width: 190px;
+      height: 86px;
+      border-radius: 4px;
+      background-color: #F1F2F5;
+      color: #717171;
+      text-align: center;
+      line-height: 86px;
+      user-select: none;
+      cursor: pointer;
+      position: relative;
+      .changeava {
+        top: 0;
+        left: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+      } 
+      input[type='file']{
+        cursor: pointer;
+        font-size: 0;
+      }
+    }
+    .out-11-box {
+      width: 182px;
+      height: fit-content;
+      position: relative;
+    }
+    .chang-sp-box1 {
+      width: 182px;
+      height: 182px;
+      background-color: #000;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      .chap {
+        width: 100%;
+        height: 112px;
+        background-color: red;
+      }
+    }
+  }
+  .update-queding-btn {
+    width: 140px;
+    height: 40px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #00AED6;
+    line-height: 40px;
+    text-align: center;
+    margin: 30px auto 0;
+    cursor: pointer;
+    user-select: none;
+  }
+}

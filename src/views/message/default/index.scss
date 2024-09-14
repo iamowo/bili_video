@@ -1,0 +1,322 @@
+.totalpage {
+  width: 100%;
+  height: 100%;
+}
+.toptitle {
+  width: 100%;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  font-size: 15px;
+  color: #666666;
+  background-color: #fff;
+  box-shadow: 0 2px 4px 0 rgba(121, 146, 185, 0.54);
+  border-radius: 4px;
+  line-height: 42px;
+}
+
+// whisper
+.message-containt {
+  font-family: "Microsoft YaHei", "Microsoft Sans Serif", "Microsoft SanSerf", 微软雅黑;
+  margin-top: 10px;
+  width: 100%;
+  flex: 1;
+  background-color: #fff;
+  box-shadow: 0 2px 4px 0 rgba(121, 146, 185, 0.54);
+  border-radius: 4px;
+  display: flex;
+  overflow: hidden;
+  .msgleft {
+    width: 239px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e9eaec;
+    .replay-title {
+      width: 100%;
+      height: 36px;
+      padding-left: 24px;
+      font-size: 12px;
+      color: #666666;
+      line-height: 36px;
+      border-bottom: 1px solid #e9eaec;
+    }
+    .message-list {
+      width: 100%;
+      flex: 1;
+      overflow-y: auto;
+      box-sizing: border-box;
+      .one-message {
+        width: 100%;
+        height: 78px;
+        box-sizing: border-box;
+        padding: 19px 0 19px 24px;
+        display: flex;
+        cursor: pointer;
+        &:hover {
+          background-color: #e4e5e6;
+        }
+        .user-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 20px;
+          cursor: pointer;
+          margin-right: 8px;
+        }
+        .user-infos {
+          height: 40px;
+          flex: 1;
+          .user-username {
+            width: 100%;
+            height: 12px;
+            line-height: 12px;
+            font-size: 14px;
+            color: #333333;
+          }
+          .last-message {
+            width: 100%;
+            height: 12px;
+            padding: 8px 0;
+            font-size: 12px;
+            line-height: 12px;
+            color: #999999;
+          }
+        }
+      }
+      .active {
+        background-color: #e4e5e6;
+      }
+    }
+    .message-list::-webkit-scrollbar {
+      // position: absolute;
+      // z-index: 1;
+      // right: 2px;
+      width: 5px;
+      background-color: transparent;
+    }
+    .message-list::-webkit-scrollbar-track {
+      // 轨道背景颜色
+      background-color: transparent;
+    }
+    .message-list::-webkit-scrollbar-thumb {
+      // 滑块
+      background-color: #AAAAAA;
+      border-radius: 3px;
+    }
+    .message-list::-webkit-scrollbar-track:hover{
+      // background-color: #e4e2e2;
+      background-color: #ffffff00;
+    }
+    .message-list::-webkit-scrollbar-thumb:hover {
+      // 鼠标悬停时
+      background-color: #999999;
+    }
+
+  }
+
+  .msgright {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    .right-title {
+      width: 100%;
+      height: 36px;
+      border-bottom: 1px solid #e9eaec;
+      text-align: center;
+      line-height: 36px;
+      span {
+        font-size: 14px;
+        color: #333;
+      }
+    }
+    .sned-content {
+      width: 100%;
+      height: 162px;
+      border-top: 1px solid #d8d8d8;
+      background-color: #f4f5f7;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      padding: 0 16px;
+      .send-top {
+        width: 100%;
+        height: 48px;
+        display: flex;
+        div {
+          width: 48px;
+          height: 48px;
+          line-height: 48px;
+          position: relative;
+          .icon {
+            cursor: pointer;
+            font-size: 22px;
+            user-select: none;
+          }
+          .inputfile {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            top: 50%;
+            translate: -90% -50%;
+            opacity: 0;
+            z-index: 1;
+            background-color: red;
+            cursor: pointer;
+          }
+        }
+      }
+      .bottom-snedbox {
+        width: 100%;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: end;
+        box-sizing: border-box;
+        padding-bottom: 10px;
+        .numspan {
+          font-size: 12px;
+          color: #c0c0c0;
+        }
+        .rightsendbox {
+          margin-left: 15px;
+          width: 88px;
+          height: 30px;
+          box-sizing: border-box;
+          border-radius: 4px;
+          font-size: 13px;
+          color: #000;
+          text-align: center;
+          line-height: 30px;
+          cursor: pointer;
+          user-select: none;
+          border: 1px solid #e7e7e7;
+          background-color: #fff;
+        }
+      }
+      .mid-sendbox {
+        width: 100%;
+        flex: 1;
+        .sendtaxt {
+          width: 100%;
+          height: 100%;
+          border: 0;
+          background-color: transparent;
+          outline: none;
+          resize: none;
+          font-size: 14px;
+          color: #222;
+          line-height: normal;
+          letter-spacing: 1px;
+          font-family: "Microsoft YaHei", "Microsoft Sans Serif", "Microsoft SanSerf", 微软雅黑;
+        }
+      }
+    }
+    // 对话内容
+    .right-content {
+      width: 100%;
+      flex: 1;
+      background-color: #f4f5f7;
+      overflow-y: auto;
+      .toptopline {
+        width: 100%;
+        height: 38px;
+        text-align: center;
+        line-height: 38px;
+        font-size: 12px;
+        color: #999;
+      }
+      .one-cum {
+        float: left;
+        width: 100%;
+        height: fit-content;
+        // min-height: 100px;
+        box-sizing: border-box;
+        padding: 0 16px 16px;
+        position: relative;
+        .one-avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 15px;
+          float: left;
+          margin: 0 10px 0 0;
+          .oneuseravatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+          }
+        }
+        .one-texttt {
+          position: relative;
+          max-width: 480px;
+          // height: fit-content;
+          float: left;
+          box-sizing: border-box;
+          padding: 8px 16px;
+          line-height: 1.5;
+          font-size: 14px;
+          min-height: 37px;
+          word-wrap: break-word;
+          word-break: break-word;
+          border-radius: 0 16px 16px 16px;
+          overflow: hidden;
+          background-color: #fff;
+          color: #333;
+        }
+        .imgoutbox {
+          position: relative;
+          // float: left;
+          box-sizing: border-box;
+          border-radius: 16px 0 16px 16px;
+          .oneimg {
+            display: block;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 16px 0 16px 16px;
+          }
+        }
+      }
+      .cum-append {
+        .one-avatar {
+          float: right;
+          margin: 0 0 0 10px;
+        }
+        .one-texttt {
+          float: right;
+          background-color: #80B9F2;
+          border-radius: 16px 0 16px 16px;
+          color: #fff;
+        }
+        .imgoutbox {
+          border-radius: 16px 0 16px 16px;
+          float: right;
+          .oneimg {
+            border-radius: 16px 0 16px 16px;          
+          }
+        }
+      }
+      .connectright {
+        width: 100%;
+        height: fit-content;
+        box-sizing: border-box;
+        padding: 0 16px 16px;
+        background-color: green;
+      }
+    }
+    .right-content::-webkit-scrollbar {
+      // position: absolute;
+      // z-index: 1;
+      // right: 2px;
+      width: 5px;
+    }
+    .right-content::-webkit-scrollbar-track {
+      // 轨道背景颜色
+      background-color: #f4f5f7;
+    }
+    .right-content::-webkit-scrollbar-thumb {
+      // 滑块
+      background-color: #AAAAAA;
+      border-radius: 3px;
+    }
+  }
+}

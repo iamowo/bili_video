@@ -455,11 +455,12 @@
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
+  position: relative;
   .videoimg {
     width: 100%;
     height: 180px;
     position: relative;
-    background-color: #000;
+    background-color: #000000;
     border-radius: 8px;
     .addlaterwatch {
       position: absolute;
@@ -501,22 +502,27 @@
       }
     }
     .hangtoplay {
+      top: 0;
       width: 100%;
       height: 100%;
       border-radius: 8px;
       cursor: pointer;
+      position: absolute;
+      background-color: #000;
     }
     .vidimg {
       width: 100%;
       height: 100%;
       border-radius: 8px;
       object-fit: cover;
-      background-color: red;
+      background-color: pink;
       display: block;
       cursor: pointer;
+      position: absolute;
     }
     .infos {
       position: absolute;
+      z-index: 1;
       width: 100%;
       height: 25px;
       bottom: 0;

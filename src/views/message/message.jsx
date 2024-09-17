@@ -3,6 +3,7 @@ import Topnav from '../../components/Topnav/Topnav'
 import { Link, Outlet } from 'react-router-dom'
 import { useLocation } from "react-router-dom"
 import { useEffect, useState } from 'react'
+import { baseurl } from '../../api'
 
 function Message () {
   const userinfo = JSON.parse(localStorage.getItem('userinfo'))
@@ -45,7 +46,7 @@ function Message () {
 
   useEffect(() => {
     document.title= '消息中心'
-    document.body.style.background = "url(http://127.0.0.1:8082/sys/whisper_bg.jpg) top / cover no-repeat fixed"
+    document.body.style.background = `url(${baseurl}/sys/whisper_bg.jpg) top / cover no-repeat fixed`
   }, [])
   return (
     <div className="message-view-all">

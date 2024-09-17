@@ -1,68 +1,131 @@
 import { useEffect, useRef, useState } from 'react'
 import './index.scss'
-import { useNavigate } from 'react-router-dom'
-import { getWhisperList, sendImg, sendMessage } from '../../../api/message'
+import { useNavigate, useParams } from 'react-router-dom'
+import { getWhisperList, sendImg, sendMessage, getWhisperConent } from '../../../api/message'
 import { type } from '@testing-library/user-event/dist/type'
+import { getByUid } from '../../../api/user'
 
 function Whisper () {
   const navigate = useNavigate()
   const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = userinfo.uid
-
+  const uid = userinfo.uid                  // myuid
+  const params = useParams()
+  const hisuid = parseInt(params.hisuid != null ? params.hisuid : -1)  // 聊天人的uid, hisuid != -1 的话，新建聊天，先查看表中有无,没有的话要新建
+  
   const contentref = useRef()
-  const [allcontent, setAllcontent] = useState([])
   const [contentlist, setContentlist] = useState([])  // 当前的对话内容
-  const [nowUser, setNowuser] = useState({})
-  const [nowindex, setNowindex] = useState(0)
-  const [whisperlist, setWhisperlist] = useState([])
-  const [contenttext, setText] = useState()
-  const [textlength, setLength] = useState(0)
-
+  const [nowUser, setNowuser] = useState({})          // 当前对话用户
+  const [nowindex, setNowindex] = useState(0)         // 左侧 index
+  const [whisperlist, setWhisperlist] = useState([])  // 左侧聊天列表
+  const [contenttext, setText] = useState("")         // 输入聊天
+ 
   useEffect(() => {
     const getData = async () => {
       const res = await getWhisperList(uid)
-      // console.log(res.whisperlist);
-      // console.log('res: ', res.contentlist);
-      setAllcontent(res.contentlist)
-      setWhisperlist(res.whisperlist)
-      setNowuser(res.whisperlist[0])
-      setContentlist(res.contentlist[0])
+      console.log(res);
+      
+      setWhisperlist(res)     // 左侧聊天列表
+      if (hisuid !== -1) {
+        let exitFlag = -1        
+        for (let i = 0; i < res.length; i++) {
+          console.log(hisuid,  res[i].uid2);
+          if (res[i].uid2 === hisuid) {
+            exitFlag = i
+            break
+          }
+        }
+        console.log('exit flag', exitFlag);
+        
+        if (exitFlag === -1) {
+          // 不存在这个聊天
+          const userinfo = await getByUid(hisuid)
+          const data = {
+            uid2: userinfo.uid,
+            avatar: userinfo.avatar,
+            name: userinfo.name,
+            lastContent: ''
+          }
+          setWhisperlist([
+            ...res.slice(0, 0),
+            data,
+            ...res.slice(0)
+          ])
+          setNowuser(data)    // 新添加的
+          setContentlist([])
+        } else {
+          // 存在这个聊天
+          setNowuser(res[exitFlag])
+          const res3 = await getWhisperConent(uid, res[exitFlag].uid2)
+          setContentlist(res3)
+          setNowuser(res[exitFlag])
+        }        
+      } else {
+        // 选择第一个聊天
+        const huid = parseInt(res.length > 0 ? res[0].uid2 : -1)
+        if (huid !== -1) {
+          // 聊天列表不为空
+          const res2 = await getWhisperConent(uid, huid)
+          setNowuser(res[0])
+          setContentlist(res2)
+        }
+      }
+      console.log('222');
+      
     }
     getData()
-    console.log(contentref.current.offsetHeight);
 
-    contentref.current.scrollTop = '700px'
+    setTimeout(() => {
+      console.log('111');
+      
+    }, 100)
   }, [])
-  const tothiswhsper = (e) => {
+
+  useEffect(() => {
+    // 监听内容列表，内容列表发生改变，就拉到最新的
+    contentref.current.scrollTo(0, contentref.current.scrollHeight);
+  }, [contentlist])
+
+  // 切换对话
+  const tothiswhsper = async (e) => {    
     const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
     const uid2 = e.target.dataset.uid2 || e.target.parentNode.dataset.uid2
-    navigate(`/${uid}/whisper/${uid2}`)
-    // console.log(allcontent[index]);
+    console.log('xx', index, uid2);
 
+    navigate(`/${uid}/whisper/${uid2}`)
+    
     setNowindex(index)
     setNowuser(whisperlist[index])
-    setContentlist(allcontent[index])
-    // 清空输入框
+    const res = await getWhisperConent(uid, uid2)
+    setContentlist(res)
     setText('')
-    setLength(0)
   }
 
-
-  const inputtext = (e) => {
-    
-    setText(e.target.value)
-    setLength(e.target.value.length)
-  }
-
+  // 发送信息
   const tosend = async () => {
-    const data = {
-      uid1: uid,
-      uid2: nowUser.uid2,
-      content: contenttext,
-      type: 0
+    if (contenttext.length > 0) {
+      const data = {
+        uid1: uid,
+        uid2: nowUser.uid2,
+        content: contenttext,
+        type: 0
+      }
+      const res = await sendMessage(data)
+      if (res) {
+        const res2 = await getWhisperConent(uid, nowUser.uid2)
+        setContentlist(res2)
+        setText("")
+        // 聊天列表重新排序
+        setNowuser(whisperlist[nowindex])
+        setNowindex(0)
+        whisperlist[nowindex].lastContent = contenttext    // 更新lastContent
+        const temp = whisperlist[nowindex]
+        whisperlist[nowindex] = whisperlist[0]
+        whisperlist[0] = temp
+        setWhisperlist(whisperlist)
+      }
+    } else {
+      alert('输入为空')
     }
-    const res = await sendMessage(data)
-    
     // 本地更新
     // if (res === 200) {
     //   setText('')
@@ -93,13 +156,19 @@ function Whisper () {
       // contentref.current.scroll(0, contentref.current.scrollHeight)      
       // contentref.current.scrollTop = contentref.current.scrollHeight
     // }
-    console.log('success');
-
   }
 
+  // 回车发送消息
+  const entertosend = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      tosend()
+    }
+  }
+
+  // 发送图片
   const inputimg = async(e) => {
     const file = e.target.files[0]
-
     const data = new FormData()
     data.append('uid1', uid)
     data.append('uid2', nowUser.uid2)
@@ -107,6 +176,19 @@ function Whisper () {
     data.append('img', file)
     data.append('filetype', file.type.split('/')[1])
     const res = await sendImg(data)
+    if (res) {
+      const res2 = await getWhisperConent(uid, nowUser.uid2)
+      setContentlist(res2)
+      // 重新排序
+      setNowuser(whisperlist[nowindex])
+      setNowindex(0)
+      whisperlist[nowindex].lastContent = '图片'    // 更新lastContent
+      const temp = whisperlist[nowindex]
+      whisperlist[nowindex] = whisperlist[0]
+      whisperlist[0] = temp
+      setWhisperlist(whisperlist)
+      setText("")
+    }
     // const temp = {
     //   uid1: uid,
     //   uid2: nowUser.uid2,
@@ -148,7 +230,8 @@ function Whisper () {
           <div className="right-title">
             <span>{nowUser.name}</span>
           </div>
-          <div className="right-content" ref={contentref}>
+          <div className="right-content"
+            ref={contentref}>
             <div className="toptopline">没有更多消息了～</div>
             {
               contentlist.map(item =>
@@ -184,11 +267,14 @@ function Whisper () {
               <div><span className="icon iconfont">&#xe667;</span></div>
             </div>
             <div className="mid-sendbox">
-              <textarea name="" id="" className="sendtaxt" value={contenttext} onChange={inputtext}></textarea>
+              <textarea name="" id="" className="sendtaxt" value={contenttext}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={entertosend}  
+              ></textarea>
             </div>
             <div className="bottom-snedbox">
-              <span className="numspan">{textlength}/500</span>
-              <div className="rightsendbox" onClick={tosend}>发送</div>
+              <span className="numspan">{contenttext.length}/500</span>
+              <div className={contenttext.length > 0 ? "rightsendbox send-able-btn" : "rightsendbox"} onClick={tosend}>发送</div>
             </div>
           </div>
         </div>

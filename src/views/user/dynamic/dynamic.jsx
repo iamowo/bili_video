@@ -3,19 +3,25 @@ import DynamicCom from "../../../components/dynamic/dynamicCom"
 import { useEffect, useState } from 'react'
 import { getDyanmciList } from '../../../api/dynamic'
 import { tovideo, touserspace } from '../../../util/fnc'
+import { useParams } from 'react-router-dom'
+import { getByUid } from '../../../api/user'
 
 function Dynamic () {
-  const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = userinfo.uid
+  const params = useParams()
+  const [userinfo, setUserinfo] = useState()
+  const hisuid = parseInt(params.uid)
+  const myinfo = JSON.parse(localStorage.getItem('userinfo'))
+  const myuid = myinfo != null ? parseInt(myinfo.uid) : parseInt(-1)
+  const isme = hisuid === myuid
 
   const [dynamiclist, setDylist] = useState([])
-
   useEffect(() => {
     const getData = async() => {
-      const res = await getDyanmciList(uid, 0);
-      console.log(res);
-      
+      const res = await getDyanmciList(hisuid, 0);
       setDylist(res)
+
+      const res2 = await getByUid(hisuid)
+      setUserinfo(res2)
     }
 
     getData()
@@ -87,9 +93,10 @@ function Dynamic () {
         <div className="rightuserinfo">
           <div className="introtitle">
             <span>个人资料</span>
-            {true &&
+            {
+              isme &&
               <div className="editorinfs"
-              onClick={() => window.open(`/${uid}/account/home`, '_blank')}>
+              onClick={() => window.open(`/${hisuid}/account/home`, '_blank')}>
                 编辑资料
               </div>
             }
@@ -97,11 +104,11 @@ function Dynamic () {
           <div className="btinfosshow">
             <div className='oneinfo'>
               <span>UID</span>
-              <span>{userinfo.uid}</span>
+              <span>{userinfo != null ? userinfo.hiduid : null}</span>
             </div>
             <div className='oneinfo'>
               <span>生日</span>
-              <span>{userinfo.birthday}</span>
+              <span>{userinfo != null ? userinfo.birthday : null}</span>
             </div>
           </div>
         </div>

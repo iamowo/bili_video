@@ -3,6 +3,7 @@ import Topnav from "../../components/Topnav/Topnav"
 import { useParams } from "react-router-dom"
 import { getDynamic } from "../../api/dynamic"
 import { useEffect, useState } from "react"
+import { baseurl } from "../../api"
 
 function Dydetail () {
   const params = useParams()
@@ -12,7 +13,7 @@ function Dydetail () {
   const [imgs, setImgs] = useState([])
 
   useEffect(() => {
-    document.body.style.background = "url(http://127.0.0.1:8082/sys/bg.png) top / cover no-repeat fixed"
+    document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
     const getData = async () => {
       const res = await getDynamic(did)
       console.log(res);
@@ -42,7 +43,7 @@ function Dydetail () {
                 <div className="title-bba-dy1">{dynamicinfo!=null ? dynamicinfo.name : null}</div>
                 <div className="title-bba-dy2">{dynamicinfo!=null ? dynamicinfo.time.slice(0, 10) : null}</div>
               </div>
-              <img src={"http://127.0.0.1:8082/sys/topimg.webp"} alt="" className="right-topimg" />
+              <img src={ baseurl + "/sys/topimg.webp"} alt="" className="right-topimg" />
               <div className="more-div">
                 <span className="icon iconfont">&#xe653;</span>
               </div>

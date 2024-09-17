@@ -190,7 +190,7 @@ const router = createBrowserRouter([
     element: <Message />,
     children: [
       {
-        path: 'whisper/:uid2?',
+        path: 'whisper/:hisuid?',
         element: <Whisper />
       },
       {

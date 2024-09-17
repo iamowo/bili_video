@@ -6,13 +6,14 @@ import { getDyanmciList, sendDynamic, sendDyimgs } from '../../api/dynamic'
 import Totop from '../../components/toTop/totop'
 import { tovideo, touserspace } from '../../util/fnc'
 import { todynamic } from '../../util/fnc'
+import { baseurl } from '../../api'
 
 function DynamicM () {
   const userinfo = JSON.parse(localStorage.getItem('userinfo'))
   const uid = userinfo.uid
 
   document.title = "动态首页"
-  document.body.style.background = "url(http://127.0.0.1:8082/sys/bg.png) top / cover no-repeat fixed"
+  document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
 
   const [dylist, setDylist] = useState([])
   const [textcontent, setText] = useState('')

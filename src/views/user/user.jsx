@@ -3,24 +3,25 @@ import Topnav from '../../components/Topnav/Topnav'
 import { useEffect, useRef, useState } from 'react'
 import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
 import { setuserinfo } from '../../store/modules/userStore'
-import { getByUid } from '../../api/user'
+import { getByUid, getByUidFollowed, toFollow, toUnfollow } from '../../api/user'
 import { getFavlist } from '../../api/favlist'
 import { getDyanmciListWidthImg } from '../../api/dynamic'
 import { getVideoByUid } from "../../api/video"
 import { getUserVideoList } from "../../api/videolist"
+import { baseurl } from '../../api'
 
 function User() {
   const localinfo = JSON.parse(localStorage.getItem('userinfo'))
   const uid = parseInt(localinfo != null ? localinfo.uid : -1)      // myuid
   const params = useParams()
-  const hisuid = parseInt(params.uid)
+  const hisuid = parseInt(params.uid)                               // 空间主的uid
   const isme = hisuid === uid
   
-  const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)
+  const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)   // 空间作者的信息
 
   const [famouswork, setFamouw] = useState([])
   const location = useLocation()
-  console.log(location.pathname);
+  // console.log(location.pathname);
   
   // 顶部导航，主页  动态 。。。。
   const [topindex, setTopindex] = useState(() => {
@@ -60,7 +61,8 @@ function User() {
     choiseone2(topindex)   // 底部蓝条跳转
     document.body.style.overflowY = 'scroll'   // 防治页面抖动
     const getData = async () => {
-      const res = await getByUid(hisuid, uid)
+      // const res = await getByUid(hisuid, uid)
+      const res = await getByUidFollowed(hisuid, uid)
       document.title = `${res.name}的个人空间`
       setUserinfo(res);
     }
@@ -73,10 +75,10 @@ function User() {
 
   useEffect(() => {
     const getData = async () => {
-      const nres = await Promise.all([getFavlist(uid, -1), getDyanmciListWidthImg(uid), getVideoByUid(uid, 0), getUserVideoList(uid)])
+      const nres = await Promise.all([getFavlist(hisuid, -1), getDyanmciListWidthImg(hisuid), getVideoByUid(hisuid, 0), getUserVideoList(hisuid)])
       setUpnums(nres[1].length + nres[2].length)
       setFavnums(nres[0].length)
-      setVlist(nres[3].length)
+      setVlist(nres[3].length)      
     }
     getData()
   },[])
@@ -137,13 +139,38 @@ function User() {
     slider2.current.style.width = slider.current.clientWidth + 'px'
     slider2.current.style.left = slider.current.offsetLeft + 'px'
   }
+
+  // 加关注
+  const toaddfollow = async () => {
+    console.log('xxx222asdas asdua dasdas');
+
+    const res = await toFollow(hisuid, uid)    
+    if (res === 200) {
+      setUserinfo({
+        ...userinfo,
+        followed: true
+      })
+    }
+  }
+
+  // 取消关注
+  const tounfollowhim = async () => {
+    const res = await toUnfollow(hisuid, uid)
+    if (res === 200) {
+      setUserinfo({
+        ...userinfo,
+        followed: false
+      })
+    }
+  }
+
   return (
     <div className='user-out-bigbox'>
       <Topnav />
       <div className="userspace">
         <div className="usertopinfos">
-          <div className="topinfos" style={{background: 'url(http://127.0.0.1:8082/sys/user_space1.jpg)'}}>
-            <div className="detail-userinfos" style={{background: 'url(http://127.0.0.1:8082/sys/userpsace_b2.jpg)'}}>
+          <div className="topinfos" style={{background: `url(${baseurl}/sys/user_space1.jpg)`}}>
+            <div className="detail-userinfos" style={{background: `url(${baseurl}/sys/userpsace_b2.jpg)`}}>
               <img src={userinfo != null ? userinfo.avatar : null} alt="" className="user-avatar" />
               <div className="user-tighy-infos">
                 <div className="uti-username">
@@ -167,9 +194,16 @@ function User() {
               {
                 !isme &&
                 <div className="right-three-box">
-                  <div>已关注</div>
-                  <div>发消息</div>
-                  <span>...</span>
+                  {
+                    (userinfo != null ? userinfo.followed : false) ?
+                    <div className='d1-box-rigtb' onClick={tounfollowhim}>已关注</div>
+                    :
+                    <div className='d2-box-rigtb' onClick={toaddfollow}>加关注</div>
+                  }
+                  <div className='d1-box-rigtb' onClick={() => window.open(`${uid}/whisper/${hisuid}`, "target")}>发消息</div>
+                  <div className="more-right-div">
+                    <span className='icon iconfont'>&#xe653;</span>
+                  </div>
                 </div>
               }
             </div>

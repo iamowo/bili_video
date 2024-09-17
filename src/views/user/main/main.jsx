@@ -7,47 +7,48 @@ import { getFavlist } from '../../../api/favlist'
 
 function Mainhome () {
   const localinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = localinfo.uid
+  const uid = parseInt(localinfo.uid)
   const params = useParams()
-  const isme = parseInt(params.uid) === parseInt(uid)
-  const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)
+  const hisuid = parseInt(params.uid)
+  const isme = hisuid === uid
 
+  const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)
   const [gg, setGg] = useState('')  // 公告
   const [ggflag, setGgflag] = useState(false)
 
   const [addvideoflag, setAddvideoflag] = useState(false)   // 指定视频flag
   const [selectflag, setSelectflag] = useState(false)
-  const [selectstyle, setSelectstyle] = useState(0)        // 时间  播放量
+  const [selectstyle, setSelectstyle] = useState(0)         // 时间  播放量
   const [videoList, setVideolist] = useState([])
-  const [famouslist, setFamouslist] = useState([])
-  const [unfamouslist, setUnfamouslist] = useState([])
-  const [famousvids, setFamousvids] = useState([])  // 最多三个
-  const [vidselected, setVidseleted] = useState([])
+  const [famouslist, setFamouslist] = useState([])          // 代表作
+  const [unfamouslist, setUnfamouslist] = useState([])      // 飞代表作
+  const [famousvids, setFamousvids] = useState([])          // 最多三个，代表作
+  const [vidselected, setVidseleted] = useState([])         // 已选择的视频
 
-  const [homefavlist, setHomefavlist] = useState([])
+  const [homefavlist, setHomefavlist] = useState([])        // 收藏夹
 
   useEffect(() => {    
     let senduid = isme ? uid : params.uid
     const getData = async () => {
-      const res = await getVideoByUid(senduid, 8)
+      const res = await getVideoByUid(hisuid, 8)
       console.log(res);
       setVideolist(res)
 
-      const res2 = await getFamous(uid)
+      const res2 = await getFamous(hisuid)
       console.log('res2:', res2);
       setFamouslist(res2)
       
-      const res3 = await getUnfamous(uid, 0) // 默认事件排序
+      const res3 = await getUnfamous(hisuid, 0) // 默认事件排序
       setUnfamouslist(res3)
       setVidseleted(new Array(res3.length).fill(false))
 
-      const res4 = await getFavlist(uid, -1);
+      const res4 = await getFavlist(hisuid, -1);
       console.log(res4);
       
       setHomefavlist(res4)
 
       if (!isme) {
-        const res2 = await getByUid(params.uid)
+        const res2 = await getByUid(hisuid)
         setUserinfo(res2)
       }
     }

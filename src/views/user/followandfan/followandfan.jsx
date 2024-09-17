@@ -1,20 +1,31 @@
 import { useEffect, useState } from "react"
 import "./index.scss"
-import { Outlet, Link, useParams } from "react-router-dom"
+import { Outlet, Link, useParams, useLocation } from "react-router-dom"
 import { getFollow, getFans } from "../../../api/user"
 
 
 function FollowAndFan () {
   const params = useParams()
   const uid = params.uid  
+  const location = useLocation()
+  console.log(location.pathname.includes("/fans/follow"));
   
-  const [leftindexf, setLeftindexf] = useState(0)
-  const [fans, setFans] = useState(0)
-  const [follows, settFollows] = useState(0)
+  const [leftindexf, setLeftindexf] = useState(() => {
+    if (location.pathname.includes("/fans/follow")) {
+      console.log('0000');
+      
+      return 0
+    } else if (location.pathname.includes("/fans/fan")) {
+      console.log('11111');
+      
+      return 1
+    }
+  })
+  const [fans, setFans] = useState(0)             // 粉丝数
+  const [follows, settFollows] = useState(0)      // 关注数
+  const [userlist, setUserlist] = useState([])    // 粉丝 or 关注 的用户列表
 
-  const [userlist, setUserlist] = useState([])
-
-  useEffect(() => {
+  useEffect(() => {    
     const getData = async () => {
       const res = await getFollow(uid)
       settFollows(res.length)
@@ -24,6 +35,21 @@ function FollowAndFan () {
     }
     getData()
   },[])
+
+  // 这样才能被监听到
+  useEffect(() => {
+    setLeftindexf(() => {
+      if (location.pathname.includes("/fans/follow")) {
+        console.log('0000');
+        
+        return 0
+      } else if (location.pathname.includes("/fans/fan")) {
+        console.log('11111');
+        
+        return 1
+      }
+    })
+  },[location.pathname])
   return (
     <div className="faf-view">
       <div className="fan-left">

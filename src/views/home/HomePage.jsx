@@ -6,16 +6,17 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { touserspace, tovideo } from '../../util/fnc.js';
 import { SassColor } from 'sass';
+import { baseurl } from '../../api/index.js';
 
 function Bnaaer () {
   const [nindex, setNindex] = useState(0)
   const [movex, setMovex] = useState(0)
   const [bannerlist, setBanner] = useState([
-    {id: 1, scr: 'http://127.0.0.1:8082/sys/b1.jpg'},
-    {id: 2, scr: 'http://127.0.0.1:8082/sys/b2.jpg'},
-    {id: 3, scr: 'http://127.0.0.1:8082/sys/b3.jpg'},
-    {id: 4, scr: 'http://127.0.0.1:8082/sys/b4.jpg'},
-    {id: 5, scr: 'http://127.0.0.1:8082/sys/b5.jpg'},
+    {id: 1, src: baseurl + '/sys/b1.jpg'},
+    {id: 2, src: baseurl + '/sys/b2.jpg'},
+    {id: 3, src: baseurl + '/sys/b3.jpg'},
+    {id: 4, src: baseurl + '/sys/b4.jpg'},
+    {id: 5, src: baseurl + '/sys/b5.jpg'},
   ])
   
   let timer = null
@@ -58,6 +59,7 @@ function Bnaaer () {
     setMovex(now)
   }
 
+  //
   const menter = () => {
     console.log('enter');    
     clearTimeout(timer)
@@ -81,7 +83,7 @@ function Bnaaer () {
             style={{translate: -100 * movex + '% 0px'}}>
             {
               bannerlist.map((item, index) =>
-                <img key={index}  src={item.scr} alt="" className="thisbannerimg" />
+                <img key={index}  src={item.src} alt="" className="thisbannerimg" />
               )
             }
             </div>
@@ -192,23 +194,34 @@ function Video (props) {
   // 用户uid
   const uid = 1
   const data = props.data
-  const [playflag, setPlay] = useState(false)
-  let timer = null
+  const [playflag, setPlay] = useState(false)       // 进入
   const videoref = useRef()
-  const [nowtime ,setNowTime] = useState('00:00')
+  const [nowtime ,setNowTime] = useState('00:00')   // 视频进度时间
   
-  const [videoindex, setVideoindex] = useState(0)  // 悬浮播放index
-  // 悬浮播放
-  const hangtoplayvideo = (e) => {        
-    // const respath = e.target.dataset.path   
-    const index= (e.target.dataset.index || e.target.parentNode.dataset.index)
-    console.log('xxx', index);
-    
-    // timer = setTimeout(() => {
-    //   setPlay(true)
-    //   videoref.current.currentTime = 0
-    //   videoref.current.play()
-    // },300)
+  const [videoindex, setVideoindex] = useState(0)   // 悬浮播放index
+
+  let timer = null
+  // 悬浮鼠标，播放视频
+  const hangtoplayvideo = (e) => {
+      timer = setTimeout(() => {
+        setPlay(true)    
+        const thisvideo = e.target.parentNode.querySelector(".hangtoplay")
+        console.log('enter==', thisvideo);
+        const src = thisvideo.dataset.src != null ? thisvideo.dataset.src : null             // 播放地址   
+        console.log(".....src:", src);
+        thisvideo.src = src
+        thisvideo.addEventListener("loadedmetadata", canlplayfnc(thisvideo))
+      },300)
+  }
+
+  // 视频可以播放
+  const canlplayfnc = (thisvideo) => {
+    setTimeout(() => {
+      if (playflag === false || playflag === 0) {        
+        console.log('thisvideo:', thisvideo);
+          thisvideo.play()
+      }
+    }, 200)
   }
 
   const playing  = () => {
@@ -224,23 +237,26 @@ function Video (props) {
     }
   }
 
-  // 离开停止
-  const leavetostop = () => {
-    // console.log(videoref.current.paused);
-    // setPlay(false)
-    // if (videoref.current.paused) {
-    //   clearTimeout(timer)
-    //   return
-    // } else {
-    //   videoref.current.pause()
-    // }
+  // 离开视频，停止播放
+  const leavetostop = (e) => {
+    console.log('leave==');
+    if (timer != null) {
+      clearTimeout(timer)
+      timer = null
+      return
+    }
+    const thisvideo = e.target.parentNode.querySelector(".hangtoplay")
+    thisvideo.src = null
+    thisvideo.removeEventListener("loadedmetadata", canlplayfnc(thisvideo))
+    setPlay(false)
   }
 
+  // 添加到稍后再看
   const addlaterwatch = (e) => {
     const vid = e.target.dataset.vid
     console.log('233');
-    
   }
+
   return (
     <div className="onevideo" style={{marginTop: props.style1 === 'yes' ? '40px' : '0'}}>
       <div className="videoimg"
@@ -258,18 +274,20 @@ function Video (props) {
             <div className="moreleft">添加至稍后再看</div>
           </div>
         }
-        {/* 需要先加载出来，否则ref找不到 */}
-        <video src="" data-scr={data.path} preload="auto" muted="muted" className="hangtoplay" 
-          ref={videoref} style={{display: playflag ? 'block' : 'none'}}
-          data-vid={data.vid} onClick={tovideo}
+        <video
+          src="" data-src={data.path} preload="auto" muted  className="hangtoplay" 
+          ref={videoref}
+          style={{zIndex: playflag ? '1' : '0'}}
+          data-vid={data.vid}
           onTimeUpdate={playing}
+          onClick={tovideo}
         ></video>
         <img src={data.cover} alt="" data-vid={data.vid} className="vidimg"
+          style={{zIndex: playflag ? '0' : '1'}}
           onClick={tovideo}
-          style={{display: playflag ? 'none' : 'block'}}
         />
         <div className="infos" data-vid={data.vid}
-          style={{background: playflag ? 'none' : 'linear-gradient(to top, rgba(32, 32, 32, 0.829), rgba(35, 35, 36, 0.581) ,#ffffff00)', justifyContent: playflag ? 'end' : 'space-between'}}
+          style={{justifyContent: playflag ? 'end' : 'space-between'}}
         >
           <div className="left"  style={{display: playflag ? 'none' : 'flex'}}>
             <div className="leftdiv">

@@ -2,6 +2,13 @@ import axios from 'axios'
 import { useNavigate } from "react-router-dom"
 
 const baseUrl = 'http://127.0.0.1:8082'
+const baseUrl2 = 'http://127.0.0.1:3000'
+
+// const baseUrl = 'http://49.235.146.19:8082'
+// const baseUrl2 = 'http://49.235.146.19:3000'
+
+export const baseurl=baseUrl
+export const baseurl2=baseUrl2
 
 const http = axios.create({
   baseURL: baseUrl,
@@ -42,8 +49,6 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   response => {    
     let code = response.data.code
-    console.log('rsponse code', code);
-
     if (code === 200) {
       return response.data.data
     } else if (code === 401){

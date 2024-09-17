@@ -38,7 +38,7 @@
         bottom: 16px;
         height: 30xp;
         display: flex;
-        div {
+        .d1-box-rigtb {
           height: 30px;
           width: 76px;
           text-align: center;
@@ -48,6 +48,39 @@
           font-size: 14px;
           border-radius: 4px;
           margin-right: 20px;
+          cursor: pointer;
+          user-select: none;
+          box-sizing: border-box;
+          box-shadow: 0 0 0 2px hsla(0, 0%, 100%, .3);
+        }
+        .d2-box-rigtb {
+          height: 30px;
+          width: 76px;
+          text-align: center;
+          line-height: 30px;
+          background-color: #F25D8E;
+          color: #fff;
+          font-size: 14px;
+          border-radius: 4px;
+          margin-right: 20px;
+          cursor: pointer;
+          user-select: none;
+          box-sizing: border-box;
+          box-shadow: 0 0 0 2px hsla(0, 0%, 100%, .7);
+          &:hover {
+            background-color: #FF85AD;
+          }
+        }
+        .more-right-div {
+          height: 30px;
+          width: 30px;
+          text-align: center;
+          line-height: 30px;
+          .icon {
+            cursor: pointer;
+            user-select: none;
+            color: #fff;
+          }
         }
       }
       .user-avatar {

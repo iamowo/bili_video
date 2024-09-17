@@ -11,6 +11,7 @@ import { getByUid, login } from '../../api/user'
 import { getHistory, getHomeHistory, searchKw, getHomeDynamic } from '../../api/video'
 import { tovideo } from '../../util/fnc'
 import { getFavlist, getOneList } from '../../api/favlist'
+import { baseurl } from '../../api'
 
 // 类形式的组件
 // class Topnav extends Component {
@@ -32,24 +33,24 @@ const Topnav = (props) => {
   }
   
   const bgimg = [
-    'http://127.0.0.1:8082/sys/a1.webp',
-    'http://127.0.0.1:8082/sys/a2.webp',
-    'http://127.0.0.1:8082/sys/a3.webp',
-    'http://127.0.0.1:8082/sys/a4.webp',
-    'http://127.0.0.1:8082/sys/a5.webp',
-    'http://127.0.0.1:8082/sys/a6.webp',
-    'http://127.0.0.1:8082/sys/a7.webp',
-    'http://127.0.0.1:8082/sys/a8.webp',
-    'http://127.0.0.1:8082/sys/a9.webp',
-    'http://127.0.0.1:8082/sys/a10.webp',
-    'http://127.0.0.1:8082/sys/a11.webp',
-    'http://127.0.0.1:8082/sys/a12.webp',
-    'http://127.0.0.1:8082/sys/a13.webp',
-    'http://127.0.0.1:8082/sys/a14.webp',
-    'http://127.0.0.1:8082/sys/a15.webp',
-    'http://127.0.0.1:8082/sys/a16.webp',
-    'http://127.0.0.1:8082/sys/a17.webp',
-    'http://127.0.0.1:8082/sys/a18.webp'
+    baseurl + '/sys/a1.webp',
+    baseurl + '/sys/a2.webp',
+    baseurl + '/sys/a3.webp',
+    baseurl + '/sys/a4.webp',
+    baseurl + '/sys/a5.webp',
+    baseurl + '/sys/a6.webp',
+    baseurl + '/sys/a7.webp',
+    baseurl + '/sys/a8.webp',
+    baseurl + '/sys/a9.webp',
+    baseurl + '/sys/a10.webp',
+    baseurl + '/sys/a11.webp',
+    baseurl + '/sys/a12.webp',
+    baseurl + '/sys/a13.webp',
+    baseurl + '/sys/a14.webp',
+    baseurl + '/sys/a15.webp',
+    baseurl + '/sys/a16.webp',
+    baseurl + '/sys/a17.webp',
+    baseurl + '/sys/a18.webp'
   ]
   const [loginfla, setLoginflag] = useState(false)  // 登录flag
   const navigate = useNavigate()
@@ -84,16 +85,14 @@ const Topnav = (props) => {
     // 本地有数据
     const getData = async () => {      
       const res = await getByUid(uid)
-      console.log('???', uid);
-      
-      console.log('xxx', res);
+      // console.log('user', res);
       // const res = await login(userinfo.accouht, userinfo.password)
       // localStorage.setItem('userinfo', JSON.stringify(res))
       // setUserinfos(res)
       // 动态
       const res4 = await getHomeDynamic(uid)
       setDynamicList(res4)
-      console.log('动态: ', res4);
+      // console.log('动态: ', res4);
       
       // 观看历史
       const res3 = await getHomeHistory(uid, 0, 20, 20);
@@ -101,7 +100,7 @@ const Topnav = (props) => {
       // 收藏夹
 
       const res2 = await getFavlist(uid, -1)
-      console.log('收藏夹列表,', res2);
+      // console.log('收藏夹列表,', res2);
       
       const res22 = await getOneList(res2[0].fid)
       setFavlist(res2)
@@ -345,9 +344,6 @@ const Topnav = (props) => {
     setFocusflag(true)
   }
 
-  // const inpblur = () => {
-  //   setFocusflag(false)
-  // }
 
   // 关闭登录页面
   const colseLogin = () => {    
@@ -366,6 +362,7 @@ const Topnav = (props) => {
     // },100)
   }
 
+  // 清除搜索历史
   const clearallkeyword = () => {
     localStorage.setItem('keywords', JSON.stringify([]))
     setOldkeywords([])
@@ -798,7 +795,7 @@ const Topnav = (props) => {
               }
             </div>
             <div className='spanlogo'>
-              <img src={"http://127.0.0.1:8082/sys/bpbg.png"} alt="" className="logo-img" />
+              <img src={baseurl + "/sys/bpbg.png"} alt="" className="logo-img" />
             </div>
           </div>
         }

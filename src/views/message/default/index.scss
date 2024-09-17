@@ -188,10 +188,16 @@
           color: #000;
           text-align: center;
           line-height: 30px;
-          cursor: pointer;
-          user-select: none;
           border: 1px solid #e7e7e7;
           background-color: #fff;
+          cursor: pointer;
+          user-select: none;
+        }
+        .send-able-btn {
+          background-color: #32aeec;
+          color: #fff;
+          cursor: pointer;
+          user-select: none;
         }
       }
       .mid-sendbox {

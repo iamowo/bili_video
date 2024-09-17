@@ -16,6 +16,13 @@ export function register (data) {
   })
 }
 
+export function findAccount (account) {
+  return http({
+    method: 'GET',
+    url: `/user/findAccount/${account}`
+  })
+}
+
 export function getByUid (uid) {
   return http({
     method: 'GET',

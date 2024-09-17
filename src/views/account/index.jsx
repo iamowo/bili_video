@@ -3,6 +3,7 @@ import Topnav from '../../components/Topnav/Topnav'
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
+import { baseurl } from '../../api'
 
 function Account () {
   const userinfo = JSON.parse(localStorage.getItem('userinfo'))
@@ -32,7 +33,7 @@ function Account () {
         <div className="imgtopbox">
           <div className="img-l"></div>
           <div className="img-innerbox"
-            style={{background: 'url(http://127.0.0.1:8082/sys/rl_top.png) repeat-x'}}
+            style={{background: `url(${baseurl}/sys/rl_top.png) repeat-x`}}
           ></div>
           <div className="img-l"></div>
         </div>

@@ -11,6 +11,7 @@ import { useLocation } from 'react-router-dom'
 import Notice from '../../components/notice/notice'
 import { getByUid, getByUidFollowed, toFollow, toUnfollow } from '../../api/user'
 import { tofollow, canclefollow, tovideo, touserspace } from '../../util/fnc'
+import { baseurl, baseurl2 } from '../../api'
 
 function VideoPart (props) {
   const vid = props.vid
@@ -125,28 +126,51 @@ function VideoPart (props) {
 
   // canplay
   const videoloaded = () => {
-    // console.log('canplay');
+    console.log('canplay');
     setLoadflag(true)
+  }
+
+  const videoprogressfnc = () => {
+    console.log('progressing');
+
+    const duration = videoref.current.duration
+    if (duration > 0) {
+      for (let i = 0; i <videoref.current.buffered.length; i++) {
+        if (videoref.current.buffered.start(videoref.current.buffered.length - 1 - i) < videoref.current.currentTime) {
+            const loadpro = (videoref.current.buffered.end(videoref.current.buffered.length - 1 - i) * 100) / duration
+            setLoadprogress(loadpro)
+          }
+      }
+    }
+    
   }
 
   // playing 	当音频/视频在因缓冲而暂停或停止后已就绪时触发。
   const videoplating = () => {
-    // console.log('playing');
+    console.log('playing');
     
+  }
+
+  const videoseeking = () => {
+    console.log('开始跳跃');
+  }
+
+  const videoseeked = () => {
+    console.log('end跳跃');
   }
 
   // play 播放时触发
   const videoplay = () => {
     setPlayflag(true)
-    
   }
   // pause  手动暂停  跳转时加载暂停
   const videopause = () => {
     // console.log('pause');  
   }
 
+  // 视频加载等待。当视频由于需要缓冲下一帧而停止，等待时触发
   const videowating = () => {
-    // console.log('wating');
+    console.log('wating, 加载中');
   }
   
   const videoerror = () => {
@@ -157,26 +181,24 @@ function VideoPart (props) {
   // progress 当浏览器正在下载音频/视频时触发。
 
   // opupdate 当目前的播放位置已更改时触发。
-  const playing  = () => {    
-    // console.log('progress');
-    
-    const duration = Math.floor(videoref.current.duration)
-    const now = Math.floor(videoref.current.currentTime)
+  const videotimeupdate  = () => {    
+    const duration = videoref.current.duration
+    const now = videoref.current.currentTime
     setTimeprogress(now)
     // console.log('now: ', now);
     
     setLswnum(now)
-    // setProgress((now / duration).toFixed(2) * 100)
     setProgress(now / duration * 100)
 
     let mm = Math.floor(now / 60) > 10 ? '' + Math.floor(now / 60) : '0' + Math.floor(now / 60)
-    let ss = now % 60 > 10 ? '' + Math.floor(now % 60) : '0' + now % 60
+    let ss = now % 60 > 10 ? '' + Math.floor(now % 60) : '0' + Math.floor(now % 60)
     if (now >= 3600) {
       let hh = Math.floor(now / 3600) > 10 ? '' + Math.floor(now / 3600) : '0' + Math.floor(now/ 3600)
       setNowTime(hh + ":" + mm + ":" + ss)
     } else {
       setNowTime(+ mm + ":" + ss)
     }
+
     // if (duration > 0) {
     //   for (let i = 0; i < videoref.current.buffered.length; i++) {
     //     // 寻找当前时间之后最近的点
@@ -198,7 +220,7 @@ function VideoPart (props) {
   }
 
   const [clicked, setcliceked] = useState(false)  // 播放了视频
-  const clicktimer = null         // 双击时不触发单击 1. 定时器  2. 记录点击次数
+  const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
   const clickvideo = async () => {
     if (clicktimer != null) {
       clearTimeout(clicktimer)
@@ -207,29 +229,31 @@ function VideoPart (props) {
     }
     if (loadflag === true) {
       if (videoref.current.paused) {
-        videoref.current.play()
-        setPlayflag(true)
-        setcliceked(true)
-        if (thisvid.lastweatched === 0) {
-          const data = {
-            uid: userinfo.uid,
-            vid: vid,
-            type: 0,
-            lastwatched: 1,
-            done: 0
+        setTimeout(async () => {
+          videoref.current.play()
+          setPlayflag(true)
+          setcliceked(true)
+          if (thisvid.lastweatched === 0) {
+            const data = {
+              uid: userinfo.uid,
+              vid: vid,
+              type: 0,
+              lastwatched: 1,
+              done: 0
+            }
+            const res = await updateinfo(data)
+            console.log('res: ', res);
+            
+            if (res === 0) {
+              console.log('xxxx0000xxx');
+              setThisvid({
+                ...thisvid,
+                plays: thisvid.plays + 1,
+                lastwatched: 1
+              })
+            }
           }
-          const res = await updateinfo(data)
-          console.log('res: ', res);
-          
-          if (res === 0) {
-            console.log('xxxx0000xxx');
-            setThisvid({
-              ...thisvid,
-              plays: thisvid.plays + 1,
-              lastwatched: 1
-            })
-          }
-        }
+        }, 150)
       } else if (videoref.current.play) {
         videoref.current.pause()
         setPlayflag(false)
@@ -239,7 +263,6 @@ function VideoPart (props) {
 
   // 双击
   const handledoubleclick = () => {
-    
     fullscreenfnc()
   }
 
@@ -297,14 +320,20 @@ function VideoPart (props) {
     }
   }
 
+  const progressref = useRef()
+  // 点击进度条,跳转
   const tothitime = (e) => {
-    // 里面有各种位置信息  
-    let bounds = e.target.getBoundingClientRect();
-    const targetWidth = bounds.width // 宽度
-    const postion = e.clientX - bounds.left
-    let pro = (postion / targetWidth)
-    videoref.current.currentTime =  Math.floor(videoref.current.duration * pro)
-    // console.log('weizhi: ',pro);
+    // 里面有各种位置信息 
+    const proLength = progressref.current.clientWidth     // 进度条条宽度
+    const clickX = e.clientX                              // 点击位置距离屏幕左侧距离
+    const progressrefLeft = progressref.current.getBoundingClientRect().left
+    const clickPositon = clickX - progressrefLeft         // 点击位置，距离左侧的距离
+    let pro = (clickPositon / proLength)                  // 进度
+    const duration = videoref.current.duration
+    videoref.current.currentTime = Math.floor(duration * pro)
+    if (videoref.current.pause) {
+      videoref.current.play()
+    }
   }
 
   // 点赞 投币 收藏 转发
@@ -378,7 +407,8 @@ function VideoPart (props) {
         else if (res === 4){
           // 分享
           // http://localhost:3000/video/84
-          let content = 'http://localhost:3000' + location.pathname
+          // let content = 'http://localhost:3000' + location.pathname
+          let content =  baseurl2 + location.pathname
 
           var aux = document.createElement("input"); 
           aux.setAttribute("value", content); 
@@ -728,14 +758,17 @@ function VideoPart (props) {
             onMouseMove={debounce(mousemovefnc, 10)}
             // onMouseLeave={leavevideopart}
             >
-            <video src={thisvid != null ? thisvid.path : null} preload='true'
+            <video src={thisvid != null ? thisvid.path : null}
               onCanPlay={videoloaded}
-              onTimeUpdate={playing}
+              onProgress={videoprogressfnc}
+              onTimeUpdate={videotimeupdate}
               onPlaying={videoplating}
+              onSeeking={videoseeking}
+              onSeeked={videoseeked}
+              onWaiting={videowating}
               onEnded={playend}
               onPlay={videoplay}
               onPause={videopause}
-              onWaiting={videowating}
               onError={videoerror}
               ref={videoref}
               className='videosrc'>
@@ -766,14 +799,14 @@ function VideoPart (props) {
             onMouseEnter={entervop}
             onMouseLeave={leaveop}
             >
-            <div className="progressbox" onClick={tothitime}>
-              <div className="loadprogress" style={{width: loadprogress}}></div>
-              <div className="done-box" style={{width: videoprogress + '%'}}></div>
+            <div className="progressbox" ref={progressref}  onClick={tothitime}>
+              <div className="loadprogress" onClick={tothitime} style={{width: loadprogress + "%"}}></div>
+              <div className="done-box" onClick={tothitime} style={{width: videoprogress + '%'}}></div>
             </div>
             <div className="videoopationbox">
               <div className="vidconleft">
                 {
-                  true &&
+                  false &&
                   <div className="out111">
                     <div className="leftinnerspan icon iconfont" style={{rotate: '-180deg'}}>&#xe609;</div>
                   </div>
@@ -784,7 +817,7 @@ function VideoPart (props) {
                   :
                   <span className="icon iconfont" onClick={clickvideo}>&#xe60f;</span>
                 }
-                {true && <div className="icon iconfont">&#xe609;</div>}
+                {false && <div className="icon iconfont">&#xe609;</div>}
                 <span className="timerspan">
                   {nowtime} / {thisvid.vidlong}
                 </span>
@@ -976,22 +1009,22 @@ function VideoPart (props) {
             </div>
             <div className="icon-content">
               <div className={icons === 1 ? "one-content left-icon-one icon-active" : "one-content left-icon-one"}
-                style={{background: 'url(http://127.0.0.1:8082/sys/icon1-static.png)', backgroundSize: '120px',
+                style={{background: `url(${baseurl}/sys/icon1-static.png)`, backgroundSize: '120px',
                   backgroundPosition: '20px 20px', backgroundRepeat: 'no-repeat'}}
                 onClick={() => setIcons(1)}>
                   <span className="iconnum-span" style={{color: icons === 1 ? '#32AEEC' : '#9499A0'}}>1硬币</span>
                   <div className="inner-box-img">
-                    <img src={'http://127.0.0.1:8082/sys/icon1.png'} alt="" className="activeimh"
+                    <img src={`${baseurl}/sys/icon1.png`} alt="" className="activeimh"
                       style={{opacity: icons === 1 ? '1' : '0'}}/>
                   </div>
               </div>
               <div className={icons === 2 ? "one-content icon-active" : "one-content"}
-                style={{background: 'url(http://127.0.0.1:8082/sys/icon2-static.png)', backgroundSize: '120px',
+                style={{background: `url(${baseurl}/sys/icon2-static.png)`, backgroundSize: '120px',
                   backgroundPosition: '20px 20px', backgroundRepeat: 'no-repeat'}}
                 onClick={() => setIcons(2)}>
                   <span className="iconnum-span" style={{color: icons === 2 ? '#32AEEC' : '#9499A0'}}>2硬币</span>
                   <div className="inner-box-img">
-                    <img src={'http://127.0.0.1:8082/sys/icon2.png'} alt="" className="activeimh"
+                    <img src={`${baseurl}/sys/icon2.png`} alt="" className="activeimh"
                       style={{opacity: icons === 2 ? '1' : '0'}}/>
                   </div>
               </div>
@@ -1535,7 +1568,7 @@ function CommentPart (props) {
 function RightPart (props) {
   const vid = props.vid
   const userinfo = props.userinfo
-  const uid = parseInt(userinfo != null ? userinfo.uid : -1)
+  const uid = parseInt(userinfo != null ? userinfo.uid : -1)    // myuid
   
   const [thisvid, setThisvid] = useState({})
   const [videouser, setVideouser] = useState()
@@ -1577,7 +1610,7 @@ function RightPart (props) {
       const res = await Promise.all([getByVid(vid, uid), getVideoLikely(vid), getDm(vid)])
       console.log(res);
       
-      const upuid = res[0].uid
+      const upuid = res[0].uid     // 作者的uid
       
       const res2 = await getByUidFollowed(upuid, uid)
       console.log('作者信息:', res2);
@@ -1701,7 +1734,7 @@ function RightPart (props) {
     </div>
     {
       // 视频列表
-      false &&
+      true &&
         <div className="playlist">
           <div className="playlist-title">
             <div>

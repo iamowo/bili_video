@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './login.scss'
-import { login, register } from '../../api/user';
+import { login, register, findAccount } from '../../api/user';
 import { useDispatch } from 'react-redux';
 import { setuserinfo } from '../../store/modules/userStore'  // redux方法
 
@@ -22,6 +22,8 @@ function Login (props) {
   const [inp33, setInp33] = useState('')
   const [useravatar, setUseravatar] = useState()   // 头像文件
   const [uavatar, setUavatar] = useState('')   // 头像url
+
+  // 登录
   const tologin = async() => {
     const loginData = {
       account: inp11,
@@ -30,8 +32,11 @@ function Login (props) {
     // 有了响应拦截器之后就不用写.data.data 了
     const res = await login(loginData)
     console.log('登录成功:', JSON.stringify(res));
-    
-    if (res) {
+    if (res === 0) {
+      alert('没有此账号')
+    } else if (res === 1) {
+      alert('密码错误')
+    } else {
       // login success
       // dispatch(setuserinfo(res))
       localStorage.setItem('userinfo', JSON.stringify(res))
@@ -41,20 +46,18 @@ function Login (props) {
       // window.location.reload()
         document.location.reload()
       }, 300)
-    } else {
-      // login failure
-      console.log('failure');
-    }
-        
+    }   
   }
 
+  // 回车登录 login
   const kendonwtologin = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       tologin()
     }
-    
   }
+
+  // 注册
   const loginandregister = async () => {
     if (inp22 !== inp23) {
       alert('密码不一致')
@@ -64,8 +67,16 @@ function Login (props) {
       alert('请输入完整内容')
       return
     }
+    const res = await findAccount(inp21)
+    console.log('res======', res);
+    
+    if (res === 201) {
+      alert('此账号已存在')
+      return
+    }
     setFlag1(2)
   }
+
   // 不填写个人信息
   const registerbtn1 = async () => {
     const data = new FormData()
@@ -73,6 +84,7 @@ function Login (props) {
     data.append('password', inp22)
     data.append('type', 0)
     const res = await register(data)
+    
     if (res === 100) {
       console.log("registe success");
       const loginData = {
@@ -97,6 +109,7 @@ function Login (props) {
     }
   }
 
+  // 注册时添加头像
   const addavatar = (e) => {
     const file = e.target.files[0]
     const filetype = file.type
@@ -126,6 +139,7 @@ function Login (props) {
     data.append('type', 1)
     data.append('filetype', useravatar.type.split("/")[1])
     const res = await register(data)
+
     if (res === 100) {
       console.log("registe success");
       const loginData = {

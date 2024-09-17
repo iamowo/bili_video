@@ -14,7 +14,7 @@ function Upcenter () {
   const type = params.type
 
   let filedata = null
-  const [upprogress, setProgress] = useState('infos') //' ready uploading infos done
+  const [upprogress, setProgress] = useState('ready') //' ready uploading infos done
   const [videofile, setVideoFile] = useState(null)
   const [vidcover, setCover] = useState(null)
   const [coverhw, setCoverHw] = useState(true)    // true 宽 >= 高    flase 高 > 宽
@@ -40,6 +40,9 @@ function Upcenter () {
   const [maintaglist, setMaintaglist] = useState([
     '日常', '游戏', '音乐', '动漫', '电影', '搞笑', '电视剧', 'VLOG'
   ])
+
+  const canvasref = useRef()
+
   useEffect(() => {
          
       window.addEventListener('click', (e) => {
@@ -95,8 +98,6 @@ function Upcenter () {
     newimg.src = newurl    
 
     newimg.onload = function () {
-      var ctx = canvasref.current.getContext("2d")
-      ctx.drawImage(newimg, 0, 0, 300, 300)
       
       const h = parseInt(newimg.height)
       const w = parseInt(newimg.width)
@@ -127,7 +128,12 @@ function Upcenter () {
       // const w = mainbox.current.clientWidth + 'px'
       // const h = mainbox.current.clientHeight + 'px'
       // img2.current.style.clip = `rect(0, ${w}, ${h} ,0)`
+
+      console.log(canvasref.current);
+      const ctx = canvasref.current.getContext('2d')
+      ctx.drawImage(newimg)
     }, 100)
+    
   }
 
   const dragoveronbox = (e) => {
@@ -362,7 +368,6 @@ function Upcenter () {
   const [oldx, setX] = useState()  // 鼠标原来x的位置
   const [oldy, setY] = useState() 
 
-  const canvasref = useRef()
 
   const mianboxdown = (e) => {    
     e.preventDefault()  // 阻止拖拽
@@ -566,7 +571,7 @@ function Upcenter () {
                                       <div className="rs-tilte">封面预览</div>
                                       <div className="yuanlanbox">
                                         <canvas className='canvasref' ref={canvasref}></canvas>
-                                        <img src="" alt="" className="inner-yulan" />
+                                        {/* <img src="" alt="" className="inner-yulan" /> */}
                                       </div>
                                     </div>
                                   </div>

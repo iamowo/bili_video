@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { getDyanmciListWidthImg } from "../../../api/dynamic"
 import { useParams } from "react-router-dom"
+import { baseurl } from "../../../api/index"
 
 function Artical () {
   const params = useParams()
@@ -65,80 +66,95 @@ function Artical () {
   return (
     <div>
       <div className="video-right-title-sss">
-        <span className="vrt-sp1">图文</span>
-      </div>
-      <div className="picturecontent" ref={containspart}>
-        <div className="one-colume-box">
-        {
-          imgslist.map( (item, index) => {
-            if ((index + 1) % 5 === 1)
-              return (
-                <div className="one-item-imgs" key={item.id} ref={imgrefs}>
-                  <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
-                  <div className="div-bottom-img-tite">{item.content}</div>
-                </div>
-              )
-            }
-          )
-        }
-        </div>
-        <div className="one-colume-box">
-        {
-          imgslist.map( (item, index) => {
-            if ((index + 1) % 5 === 2)
-              return (
-                <div className="one-item-imgs" key={item.id} ref={imgrefs}>
-                  <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
-                  <div className="div-bottom-img-tite">{item.content}</div>
-                </div>
-              )
-            }
-          )
-        }
-        </div>
-        <div className="one-colume-box">
-        {
-          imgslist.map( (item, index) => {
-            if ((index + 1) % 5 === 3)
-              return (
-                <div className="one-item-imgs" key={item.id} ref={imgrefs}>
-                  <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
-                  <div className="div-bottom-img-tite">{item.content}</div>
-                </div>
-              )
-            }
-          )
-        }
-        </div>
-        <div className="one-colume-box">
-        {
-          imgslist.map( (item, index) => {
-            if ((index + 1) % 5 === 4)
-              return (
-                <div className="one-item-imgs" key={item.id} ref={imgrefs}>
-                  <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
-                  <div className="div-bottom-img-tite">{item.content}</div>
-                </div>
-              )
-            }
-          )
-        }
-        </div>
-        <div className="one-colume-box">
-        {
-          imgslist.map( (item, index) => {
-            if ((index + 1) % 5 === 0)
-              return (
-                <div className="one-item-imgs" key={item.id} ref={imgrefs}>
-                  <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
-                  <div className="div-bottom-img-tite">{item.content}</div>
-                </div>
-              )
-            }
-          )
-        }
+        <div>
+          <span className="vrt-sp1">图文</span>
         </div>
       </div>
+      {
+        imgslist.length > 0 ?
+        <div>
+          <div className="picturecontent" ref={containspart}>
+              <div className="one-colume-box">
+              {
+                imgslist.map( (item, index) => {
+                  if ((index + 1) % 5 === 1)
+                    return (
+                      <div className="one-item-imgs" key={item.id} ref={imgrefs}>
+                        <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
+                        <div className="div-bottom-img-tite">{item.content}</div>
+                      </div>
+                    )
+                  }
+                )
+              }
+              </div>
+              <div className="one-colume-box">
+              {
+                imgslist.map( (item, index) => {
+                  if ((index + 1) % 5 === 2)
+                    return (
+                      <div className="one-item-imgs" key={item.id} ref={imgrefs}>
+                        <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
+                        <div className="div-bottom-img-tite">{item.content}</div>
+                      </div>
+                    )
+                  }
+                )
+              }
+              </div>
+              <div className="one-colume-box">
+              {
+                imgslist.map( (item, index) => {
+                  if ((index + 1) % 5 === 3)
+                    return (
+                      <div className="one-item-imgs" key={item.id} ref={imgrefs}>
+                        <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
+                        <div className="div-bottom-img-tite">{item.content}</div>
+                      </div>
+                    )
+                  }
+                )
+              }
+              </div>
+              <div className="one-colume-box">
+              {
+                imgslist.map( (item, index) => {
+                  if ((index + 1) % 5 === 4)
+                    return (
+                      <div className="one-item-imgs" key={item.id} ref={imgrefs}>
+                        <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
+                        <div className="div-bottom-img-tite">{item.content}</div>
+                      </div>
+                    )
+                  }
+                )
+              }
+              </div>
+              <div className="one-colume-box">
+              {
+                imgslist.map( (item, index) => {
+                  if ((index + 1) % 5 === 0)
+                    return (
+                      <div className="one-item-imgs" key={item.id} ref={imgrefs}>
+                        <img src={item.imgs[0]} alt="" className="imgs-oneimg" />
+                        <div className="div-bottom-img-tite">{item.content}</div>
+                      </div>
+                    )
+                  }
+                )
+              }
+              </div>
+            </div>
+        </div>
+        :
+        <div className="sls-out2">
+          <div className="noresult-img"
+            style={{background: `url(${baseurl}/sys/nodata02.png)`,
+                                backgroundPosition: 'center 50px',
+                                backgroundRepeat: 'no-repeat'}}>
+          </div>
+        </div>
+      }
     </div>
   )
 }

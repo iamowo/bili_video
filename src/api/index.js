@@ -1,18 +1,21 @@
 import axios from 'axios'
-import { useNavigate } from "react-router-dom"
+
 
 const baseUrl = 'http://127.0.0.1:8082'
 const baseUrl2 = 'http://127.0.0.1:3000'
+const mgUrl = "http://127.0.0.1:3001"
 
 // const baseUrl = 'http://49.235.146.19:8082'
 // const baseUrl2 = 'http://49.235.146.19:3000'
+// const mgUrl = "http://49.235.146.19:3001"
 
-export const baseurl=baseUrl
-export const baseurl2=baseUrl2
+export const baseurl = baseUrl
+export const baseurl2 = baseUrl2
+export const mgurl = mgUrl
 
 const http = axios.create({
   baseURL: baseUrl,
-  timeout: 5000,
+  timeout: 15000,
   headers: {}
 })
 
@@ -51,25 +54,19 @@ http.interceptors.response.use(
     let code = response.data.code
     if (code === 200) {
       return response.data.data
-    } else if (code === 401){
-      console.log('token失效');
-      // token 失效， 需要重新登录
-
-    } else {
+    }else {
       return response.data
     }
   },
   error => {
-    console.log('error...' + error.code);
-    if (error.code === 'ERR_BAD_REQUEST') {
-      // token 失效
-      // 清除原来数据 和 token
-      console.log("response error");
-      
-      // localStorage.removeItem('userinfo')
-      // localStorage.removeItem('token')
-      
-      // window.location.href = "/"
+    if (error.response.status === 401) {
+      console.log('=token失效=');
+      localStorage.removeItem('userinfo')
+      localStorage.removeItem('token')
+      window.open(baseUrl2 + "/")
+      document.location.reload()
+    } else {
+      console.log('其他错误');
     }
     return Promise.reject(error)
   }

@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import './main.scss'
 import { Link, useParams } from 'react-router-dom'
 import { getVideoByUid, getFamous, getUnfamous, changeFamous } from '../../../api/video'
-import { getByUid } from '../../../api/user'
+import { getByUid, updateUserinfo } from '../../../api/user'
 import { getFavlist } from '../../../api/favlist'
+import { touserspace, tovideo } from '../../../util/fnc'
 
 function Mainhome () {
   const localinfo = JSON.parse(localStorage.getItem('userinfo'))
@@ -55,14 +56,18 @@ function Mainhome () {
     getData()
   }, [])
 
-  const blurfnc = () => {
+  const blurfnc = async () => {
     setGgflag(false)
     console.log(gg);
-    
-  }
-
-  const changtextgg = (e) => {
-    setGg(e.target.value)
+    const data = new FormData()
+    data.append('uid', uid)
+    data.append('gonggao', gg)
+    const res = await updateUserinfo(data)
+    if (res) {
+      userinfo.gonggao = gg
+      localStorage.setItem('userinfo', JSON.stringify(userinfo))
+      setUserinfo(userinfo)
+    }
   }
 
   const closeAddflag = () => {
@@ -126,9 +131,7 @@ function Mainhome () {
     const index = parseInt(e.target.dataset.index)
     setSelectstyle(index)
 
-    const res = await getUnfamous(uid, index)
-    console.log('热水：', res);
-    
+    const res = await getUnfamous(uid, index)    
     setUnfamouslist(res)
 
     setSelectflag(false)  // 关闭窗口
@@ -211,10 +214,18 @@ function Mainhome () {
             famouslist.map(item =>
               <div className="onefamouswork">
                 <div className="coveroutbox">
-                  <img src={item.cover} alt="" className="workcover" />
+                  <img src={item.cover}
+                    alt=""
+                    className="workcover"
+                    data-vid={item.vid}
+                    onClick={tovideo} 
+                  />
                   <div className="time-span">{item.vidlong}</div>
                 </div>
-                <div className="worktitle">{item.title}</div>
+                <div className="worktitle"
+                  data-vid={item.vid}
+                  onClick={tovideo} 
+                >{item.title}</div>
                 <div className="workinfos">
                   <div className='onebox'>
                     <div className='winner'>
@@ -252,10 +263,18 @@ function Mainhome () {
             videoList.map(item =>
               <div className="onehisvideo">
                 <div className="coveroutbox">
-                  <img src={item.cover} alt="" className="workcover" />
+                  <img src={item.cover}
+                    alt=""
+                    className="workcover"
+                    data-vid={item.vid}
+                    onClick={tovideo}                   
+                  />
                   <span className="time-span2">{item.vidlong}</span>
                 </div>
-                <div className="worktitle">{item.title}</div>
+                <div className="worktitle"
+                  data-vid={item.vid}
+                  onClick={tovideo}                 
+                >{item.title}</div>
                 <div className="workinfos">
                   <div>
                     <span className="icon iconfont">&#xe6b8;</span>
@@ -280,7 +299,9 @@ function Mainhome () {
             homefavlist.map(item =>
               <div className="one-favlist">
                 <div className="fav-img">
-                  <img src={item.cover} alt="" className="this-cover" />
+                  <Link to={`/${uid}/favlist/${item.fid}`}>
+                    <img src={item.cover} alt="" className="this-cover"/>
+                  </Link>
                   <div className="imgs-span">{item.nums}</div>
                 </div>
                 <div className="fav-infos">
@@ -329,11 +350,13 @@ function Mainhome () {
             onMouseEnter={() => setGgflag(true)}
             onMouseLeave={() => setGgflag(false)}
           >
-            <textarea name="" id="" className="mytextarea"
+            <textarea 
+              className="mytextarea"
               onFocus={() => setGgflag(true)}
               onBlur={blurfnc}
               placeholder={gg.length > 0? gg : (userinfo != null ? userinfo.gonggao : '编辑空间公告')}
-              onChange={changtextgg}
+              onChange={(e) => setGg(e.target.value)}
+              value={gg}
             ></textarea>
             {
               ggflag &&

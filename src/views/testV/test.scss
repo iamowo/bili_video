@@ -1,0 +1,58 @@
+.v1box {
+  width: 180px;
+  height: 370px;
+}
+.load-box {
+  width: 180px;
+  height: 240px;
+  background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+}
+
+.load-box2, 
+.load-box3 {
+  margin-top: 5px;
+  width: 150px;
+  height: 15px;
+  background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+}
+@keyframes skeleton-loading {
+  0% {
+      background-position: 100% 50%;
+  }
+  100% {
+      background-position: 0 50%;
+  }
+}
+
+.fatherbox {
+  width: 400px;
+  height: 400px;
+  box-sizing: border-box;
+  padding: 50px 20px 50px;
+  background-color: #00000080;
+  .titlebox {
+    width: 100%;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    font-size: 22px;
+    font-weight: 500;
+    background-color: #fff;
+  }
+  .son1box {
+    height: 50px;
+    width: 100%;
+    background-color: pink;
+    .son1bnt1 {
+      width: 50px;
+      height: 50px;
+      background-color: red;
+      user-select: none;
+      cursor: pointer;
+    }
+  }
+}

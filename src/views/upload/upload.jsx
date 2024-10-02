@@ -15,17 +15,19 @@ function Upload () {
   return (
     <div className="upload-allpage">
       <div className="ap-top-nav">
-        <div className="contnetnbox">
-          <span className="up-icon">创作中心</span>
+        <div className="contnetnboxtop">
+          <span className="up-icon" style={{marginRight: '20px'}}>创作中心</span>
           <Link to="/">
             <span className="icon iconfont">&#xe62f; 首页</span>
           </Link>
         </div>
-        <div className="contnetnbox">
-          <img src={userinfo.avatar} alt="" className="up-avatar" />
+        <div className="contnetnboxtop">
+          <Link to={`/${userinfo.uid}`} style={{cursor: "pointer"}}>
+            <img src={userinfo.avatar} alt="" className="up-avatar" />          
+          </Link>
           <div className="br-span-line"></div>
           <Link to={`/${uid}/whisper`}>
-            <span className="icon iconfont">信件</span>          
+            <span className="icon iconfont">消息</span>          
           </Link>
         </div>
       </div>
@@ -44,6 +46,11 @@ function Upload () {
               </div>
             </Link>
           }
+          <Link to={`/${uid}/platform/uploadmg`}  onClick={() => setLeftindex(0)}>
+            <div className="upload-btn">
+              <span className="icon iconfont">漫画</span>
+            </div>
+          </Link>
           <Link to={`/${uid}/platform/home`} onClick={() => setLeftindex(1)}>
             <div className="one-opation-u">
               <div className="ll-a">
@@ -61,7 +68,9 @@ function Upload () {
             <Link to={`/${uid}/platform/manager/video`} onClick={() => setLeftindex(2)}>
               <div className={ leftindex === 2 ? "moere-up-box moere-up-box-active" :"moere-up-box"}>视频稿件</div>
             </Link>
-            <div className="moere-up-box">漫画稿件</div>
+            <Link to={`/${uid}/platform/manager/mg`} onClick={() => setLeftindex(2)}>
+              <div className={ leftindex === 2 ? "moere-up-box moere-up-box-active" :"moere-up-box"}>漫画稿件</div>
+            </Link>
           </div>
         </div>
         <div className="ua-rightcontent">

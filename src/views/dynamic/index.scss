@@ -262,6 +262,10 @@
             height: 100%;
             opacity: 0;
           }
+          .inputimgs input[type=file],
+          .inputimgs input[type=file]::-webkit-file-upload-button{
+            cursor:pointer;
+          }
         }
       }
       .btn-d2 {
@@ -924,6 +928,14 @@
           }
         }
       }
+    }
+  }
+  .noresult-videw {
+    width: 100%;
+    height: fit-content;
+    .noresult-img {
+      width: 100%;
+      height: 300px;
     }
   }
 }

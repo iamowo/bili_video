@@ -1,9 +1,9 @@
 import './user.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, Link, useParams, useLocation } from 'react-router-dom'
+import { Outlet, Link, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { setuserinfo } from '../../store/modules/userStore'
-import { getByUid, getByUidFollowed, toFollow, toUnfollow } from '../../api/user'
+import { getByUid, getByUidFollowed, toFollow, toUnfollow, updateUserinfo, getSetting } from '../../api/user'
 import { getFavlist } from '../../api/favlist'
 import { getDyanmciListWidthImg } from '../../api/dynamic'
 import { getVideoByUid } from "../../api/video"
@@ -16,10 +16,21 @@ function User() {
   const params = useParams()
   const hisuid = parseInt(params.uid)                               // 空间主的uid
   const isme = hisuid === uid
-  
   const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)   // 空间作者的信息
-
   const [famouswork, setFamouw] = useState([])
+  const [newintro, setNewintro] = useState("")
+  const [newGonggao, setNewgonggao] = useState("")
+  const [keyword, setKeyword] = useState()         // 搜索视频，动态
+  const [usersetting, setUsersetting] = useState()
+
+  const link0 = useRef(),
+        link1 = useRef(),
+        link2 = useRef(),
+        link3 = useRef(),
+        link4 = useRef(),
+        link5 = useRef(),
+        link6 = useRef()
+
   const location = useLocation()
   // console.log(location.pathname);
   
@@ -31,11 +42,11 @@ function User() {
       return 2
     } else if(location.pathname.includes('/favlist')) {      
       return 3
-    } else if(location.pathname.includes('/anima')) {
+    } else if(location.pathname.includes('/channel')) {
       return 4
-    } else if(location.pathname.includes('/setting')) {
+    } else if(location.pathname.includes('/anima')) {
       return 5
-    } else if(location.pathname.includes('/sum')) {
+    } else if(location.pathname.includes('/setting')) {
       return 6
     } else {
       return 0
@@ -70,44 +81,78 @@ function User() {
       getData()
     } else {
       document.title = `${userinfo.name}的个人空间`
+      setNewintro(userinfo.intro)
+      setNewgonggao(userinfo.gonggao)
     }
   },[])
 
   useEffect(() => {
     const getData = async () => {
-      const nres = await Promise.all([getFavlist(hisuid, -1), getDyanmciListWidthImg(hisuid), getVideoByUid(hisuid, 0), getUserVideoList(hisuid)])
+      const nres = await Promise.all([getFavlist(hisuid, -1), getDyanmciListWidthImg(hisuid), getVideoByUid(hisuid, 0), getUserVideoList(hisuid), getSetting(uid)])
       setUpnums(nres[1].length + nres[2].length)
       setFavnums(nres[0].length)
-      setVlist(nres[3].length)      
+      setVlist(nres[3].length)
+      setUsersetting(nres[4])
     }
     getData()
   },[])
 
-  const fouce1 = () => {
-    setIntroflag(true)
-  }
-
   const blur1 = async () => {
+    const data = new FormData()
+    data.append('uid', uid)
+    data.append('intro', newintro)
+    const res = await updateUserinfo(data)
+    if (res) {
+      userinfo.intro = newintro
+      localStorage.setItem('userinfo', JSON.stringify(userinfo))
+      setUserinfo(userinfo)
+    }
     setIntroflag(false)
   }
 
   const slider = useRef()
   const slider2 = useRef()
-  const choicethisone = (e) => {
-    const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
-    setTopindex(index)
-    setTopindex2(0)   // 关注 粉丝 index
+  // 上方标记移动
+  useEffect(() => {
     let tar = null
-    if (e.target.className === 'onebotinfos') {
-      tar = e.target
-      
+    console.log('tar is===========:', topindex);
+    if (topindex === 0) {
+      tar = link0.current
+    } else if (topindex === 1) {
+      tar = link1.current
+    } else if (topindex === 2) {
+      tar = link2.current
+    } else if (topindex === 3) {
+      tar = link3.current
+    } else if (topindex === 4) {
+      tar = link4.current
+    } else if (topindex === 5) {
+      tar = link5.current
+    } else if (topindex === 6) {
+      tar = link6.current
     } else {
-      tar = e.target.parentNode
+      return
     }
-    // console.log(tar);
+    
     slider.current.style.width = tar.clientWidth * 0.5 + 'px'
     slider.current.style.left = tar.offsetLeft + tar.clientWidth * 0.1 + 'px'
-  }
+    setTopindex2(0)
+  }, [topindex])
+
+  // const choicethisone = (e) => {
+  //   const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
+  //   setTopindex(index)
+  //   setTopindex2(0)   // 关注 粉丝 index
+  //   let tar = null
+  //   if (e.target.className === 'onebotinfos') {
+  //     tar = e.target
+  //   } else {
+  //     tar = e.target.parentNode
+  //   }
+  //   // console.log(tar);
+  //   slider.current.style.width = tar.clientWidth * 0.5 + 'px'
+  //   slider.current.style.left = tar.offsetLeft + tar.clientWidth * 0.1 + 'px'
+  // }
 
   const choiseone2 = (ind) => {
     const index = parseInt(ind)
@@ -120,7 +165,6 @@ function User() {
       let tar = null
       if (e.target.className === 'onebotinfos') {
         tar = e.target
-        
       } else {
         tar = e.target.parentNode
       }
@@ -164,6 +208,18 @@ function User() {
     }
   }
 
+  // 搜索视频动态
+  const navigate = useNavigate()
+  const tosearch = () => {
+    navigate(`/${uid}/search/video/${keyword}`)
+  }
+  
+  const entertosearch = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      tosearch()
+    }
+  }
   return (
     <div className='user-out-bigbox'>
       <Topnav />
@@ -179,13 +235,16 @@ function User() {
                 {
                   isme ?
                   <div className="uti-changintro"
-                    style={{backgroundColor: introfalg ? '#FFF' : 'transparent',
+                    style={{backgroundColor: introfalg ? '#32aeec' : 'transparent',
                       boxShadow: introfalg ? 'inset 0 2px 3px -1px #949994a6' : 'none'
                     }}>
-                    <input type="text" className="changintroinput"
-                      onFocus={fouce1}
+                    <input type="text"
+                      className="changintroinput"
+                      value={newintro}
+                      onChange={(e) => setNewintro(e.target.value)}
+                      onFocus={() => setIntroflag(true)}
                       onBlur={blur1}
-                      placeholder={userinfo != null ? userinfo.intro : null}/>
+                      placeholder={newintro}/>
                   </div>
                   :
                   <div className="showintro">{userinfo != null ? userinfo.intro : null}</div>
@@ -212,7 +271,10 @@ function User() {
             <div className='top-left-opadiv'>
               <div className="btn-slider" ref={slider}></div>
               <div className="btn-slider2" ref={slider2}></div>
-              <Link to={`/${hisuid}`} onClick={choicethisone} data-index={0}
+              <Link to={`/${hisuid}`}
+                ref={link0}
+                onClick={() => setTopindex(0)}
+                data-index={0}
                 onMouseEnter={ment}
                 onMouseLeave={mleav}
               >
@@ -224,9 +286,12 @@ function User() {
                   <div className="bottomflag"></div>
                 </div>
               </Link>
-              <Link to={`/${hisuid}/dynamic`} onClick={choicethisone} data-index={1}
-               onMouseEnter={ment}
-               onMouseLeave={mleav}
+              <Link to={`/${hisuid}/dynamic`}
+                ref={link1}
+                onClick={() => setTopindex(1)}
+                data-index={1}
+                onMouseEnter={ment}
+                onMouseLeave={mleav}
               >
                 <div className={topindex === 1 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={1}>
                   <span className="icon iconfont"
@@ -236,9 +301,12 @@ function User() {
                   <div className="bottomflag"></div>
                 </div>
               </Link>
-              <Link to={`/${hisuid}/videos`} onClick={choicethisone} data-index={2}
-               onMouseEnter={ment}
-               onMouseLeave={mleav}
+              <Link to={`/${hisuid}/videos`}
+                ref={link2}
+                onClick={() => setTopindex(2)}
+                data-index={2}
+                onMouseEnter={ment}
+                onMouseLeave={mleav}
               >
                 <div className={topindex === 2 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={2}>
                   <span className="icon iconfont"
@@ -249,9 +317,12 @@ function User() {
                   <div className="bottomflag"></div>
                 </div>
               </Link>
-              <Link to={`/${hisuid}/favlist`} onClick={choicethisone} data-index={3}
-               onMouseEnter={ment}
-               onMouseLeave={mleav}
+              <Link to={`/${hisuid}/favlist`}
+                ref={link3}
+                onClick={() => setTopindex(3)}
+                data-index={3}
+                onMouseEnter={ment}
+                onMouseLeave={mleav}
               >
                 <div className={topindex === 3 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={3}>
                   <span className="icon iconfont"
@@ -262,11 +333,14 @@ function User() {
                   <div className="bottomflag"></div>
                 </div>
               </Link>
-              <Link to={`/${hisuid}/channel`} onClick={choicethisone} data-index={3}
-               onMouseEnter={ment}
-               onMouseLeave={mleav}
+              <Link to={`/${hisuid}/channel`}
+                ref={link4}
+                onClick={() => setTopindex(4)}
+                data-index={4}
+                onMouseEnter={ment}
+                onMouseLeave={mleav}
               >
-                <div className={topindex === 6 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={6}>
+                <div className={topindex === 4 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={6}>
                   <span className="icon iconfont"
                     style={{color: '#32aeec'}}
                   >&#xe63a;</span>
@@ -275,11 +349,14 @@ function User() {
                   <div className="bottomflag"></div>
                 </div>
               </Link>
-              <Link to={`/${hisuid}/anima`} onClick={choicethisone} data-index={4}
-               onMouseEnter={ment}
-               onMouseLeave={mleav}
+              <Link to={`/${hisuid}/anima`}
+                ref={link5}
+                onClick={() => setTopindex(5)}
+                data-index={5}
+                onMouseEnter={ment}
+                onMouseLeave={mleav}
               >
-                <div className={topindex === 4 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={4}>
+                <div className={topindex === 5 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={4}>
                   <span className="icon iconfont"
                     style={{color: '#fd5c4c'}}
                   >&#xe63b;</span>
@@ -289,11 +366,14 @@ function User() {
               </Link>
               {
                 isme &&
-                <Link to={`/${hisuid}/setting`} onClick={choicethisone} data-index={5}
-                onMouseEnter={ment}
-                onMouseLeave={mleav}
+                <Link to={`/${hisuid}/setting`}
+                  ref={link6}
+                  onClick={() => setTopindex(6)}
+                  data-index={6}
+                  onMouseEnter={ment}
+                  onMouseLeave={mleav}
                 >
-                  <div className={topindex === 5 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={5}>
+                  <div className={topindex === 6 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={5}>
                     <span className="icon iconfont"
                       style={{color: '#2fcaeb'}}
                     >&#xe631;</span>
@@ -304,8 +384,15 @@ function User() {
               }
               <div className="search-topbox">
                 <div className="out-2inputbox">
-                  <input type="text" className="search-inspace" placeholder='搜索视频、动态'/>
-                  <span className="icon iconfont">&#xe6a8;</span>
+                  <input type="text"
+                    className="search-inspace"
+                    placeholder='搜索视频、动态'
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                    onKeyDown={entertosearch}
+                  />
+                  <span className="icon iconfont"
+                    onClick={tosearch}>&#xe6a8;</span>
                 </div>
               </div>
             </div>
@@ -335,7 +422,8 @@ function User() {
         </div>
         <div className="suerspace22">
             <Outlet 
-              context={isme}
+              context={{"isme": isme, "usersetting": usersetting}}
+              // 也可以传递数组
             />
         </div>
       </div>

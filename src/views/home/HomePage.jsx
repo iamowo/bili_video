@@ -91,7 +91,7 @@ function Bnaaer () {
           <div className="btinfo">
             <div className="infosline">
               <div className="lp">
-                <div className="tp">test1{movex}</div>
+                <div className="tp">一个视频{movex}</div>
               </div>
             </div>
           </div>
@@ -194,34 +194,31 @@ function Video (props) {
   // 用户uid
   const uid = 1
   const data = props.data
-  const [playflag, setPlay] = useState(false)       // 进入
   const videoref = useRef()
-  const [nowtime ,setNowTime] = useState('00:00')   // 视频进度时间
-  
-  const [videoindex, setVideoindex] = useState(0)   // 悬浮播放index
+  const [nowtime ,setNowTime] = useState('00:00')   // 视频进度时间  
+  const [videoindex, setVideoindex] = useState(-1)   // 悬浮播放index
 
-  let timer = null
   // 悬浮鼠标，播放视频
-  const hangtoplayvideo = (e) => {
-      timer = setTimeout(() => {
-        setPlay(true)    
-        const thisvideo = e.target.parentNode.querySelector(".hangtoplay")
-        console.log('enter==', thisvideo);
-        const src = thisvideo.dataset.src != null ? thisvideo.dataset.src : null             // 播放地址   
-        console.log(".....src:", src);
-        thisvideo.src = src
-        thisvideo.addEventListener("loadedmetadata", canlplayfnc(thisvideo))
-      },300)
+  let timer = null
+  const hangtoplayvideo = (path, e) => {
+    const index = +(e.target.dataset.index || e.target.parentNode.dataset.index)
+    const thisvideo = e.target.parentNode.querySelector(".hangtoplay") || e.target.querySelector(".hangtoplay")
+    delayDeal(index, path, thisvideo)
   }
 
-  // 视频可以播放
+  const delayDeal = (index, path, video) => {
+    // 闭包环境
+    timer = setTimeout(() => {      
+      setVideoindex(index)
+      video.src = path
+    },1500)
+  }
+
+  // 视频可以播放, 总是出错  ⭐ 用 autoplay就没问题了
   const canlplayfnc = (thisvideo) => {
-    setTimeout(() => {
-      if (playflag === false || playflag === 0) {        
-        console.log('thisvideo:', thisvideo);
-          thisvideo.play()
-      }
-    }, 200)
+    timer = setTimeout(() => {
+      // thisvideo.play()
+    }, 1500);
   }
 
   const playing  = () => {
@@ -239,34 +236,34 @@ function Video (props) {
 
   // 离开视频，停止播放
   const leavetostop = (e) => {
-    console.log('leave==');
-    if (timer != null) {
-      clearTimeout(timer)
-      timer = null
-      return
+    clearTimeout(timer)
+    timer = null
+    setVideoindex(-1)
+    const thisvideo = e.target.parentNode.querySelector(".hangtoplay") || e.target.querySelector(".hangtoplay")
+    if (thisvideo !== undefined && thisvideo !== null) {
+      thisvideo.src = ""
     }
-    const thisvideo = e.target.parentNode.querySelector(".hangtoplay")
-    thisvideo.src = null
-    thisvideo.removeEventListener("loadedmetadata", canlplayfnc(thisvideo))
-    setPlay(false)
   }
 
   // 添加到稍后再看
   const addlaterwatch = (e) => {
     const vid = e.target.dataset.vid
-    console.log('233');
   }
 
+  const imgloaded = () => {
+    // console.log('图片加载完成');
+  }
   return (
     <div className="onevideo" style={{marginTop: props.style1 === 'yes' ? '40px' : '0'}}>
       <div className="videoimg"
         data-path={data.path}
         data-index={props.index}
-        onMouseEnter={hangtoplayvideo}
+        onMouseEnter={(e) => hangtoplayvideo(data.path, e)}
         onMouseLeave={leavetostop}
-        data-vid={data.vid} onClick={tovideo}>
+        data-vid={data.vid}
+        onClick={tovideo}>
         {
-          playflag &&
+          videoindex === props.index &&
           <div className="addlaterwatch"
             data-vid = {data.vid}
             onClick={addlaterwatch}>
@@ -275,21 +272,27 @@ function Video (props) {
           </div>
         }
         <video
-          src="" data-src={data.path} preload="auto" muted  className="hangtoplay" 
+          src=""
+          autoplay="autoplay"
+          data-src={data.path}
+          preload="auto"
+          muted
+          className="hangtoplay" 
           ref={videoref}
-          style={{zIndex: playflag ? '1' : '0'}}
+          style={{zIndex: videoindex === props.index ? '1' : '0'}}
           data-vid={data.vid}
           onTimeUpdate={playing}
           onClick={tovideo}
         ></video>
-        <img src={data.cover} alt="" data-vid={data.vid} className="vidimg"
-          style={{zIndex: playflag ? '0' : '1'}}
+        <img src={data.cover} alt="" data-vid={data.vid} className="vidimg load1"
+          style={{zIndex: videoindex === props.index ? '0' : '1'}}
           onClick={tovideo}
+          onLoad={imgloaded}
         />
         <div className="infos" data-vid={data.vid}
-          style={{justifyContent: playflag ? 'end' : 'space-between'}}
+          style={{justifyContent: videoindex === props.index ? 'end' : 'space-between'}}
         >
-          <div className="left"  style={{display: playflag ? 'none' : 'flex'}}>
+          <div className="left"  style={{display: videoindex === props.index ? 'none' : 'flex'}}>
             <div className="leftdiv">
               <span className="icon iconfont" style={{marginTop: '2px'}}>&#xe6b8;</span>
               <span className="lefttext">{data.plays}</span>
@@ -300,7 +303,7 @@ function Video (props) {
             </div>
           </div>
           <div className="right">
-            <span className="protime" style={{display: playflag ? 'inline-block' : 'none'}}>{nowtime} /</span>
+            <span className="protime" style={{display: videoindex === props.index ? 'inline-block' : 'none'}}>{nowtime} /</span>
             <span> {data.vidlong}</span>
           </div>
         </div>

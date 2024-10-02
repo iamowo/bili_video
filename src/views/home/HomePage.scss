@@ -374,9 +374,9 @@
       height: 35%;
       position: absolute;
       z-index: 2;
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      background: linear-gradient(to top, #111111d8 40%, #aca9a96c 70%, #fdfdfd00 100%);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(2px);
+      background: linear-gradient(to top, #111111d8 40%, #aca9a96c 90%, transparent 100%);
       // -webkit-mask-image: linear-gradient(0, #2f3238 11%, transparent 20%);
 
       // background-color: pink;
@@ -510,6 +510,31 @@
       position: absolute;
       background-color: #000;
     }
+    .load1 {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
+      background-size: 400% 100%;
+      animation: skeleton-loading 1.2s ease-in-out infinite;
+    }
+    
+    .load2, 
+    .load3 {
+      margin-top: 5px;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
+      background-size: 400% 100%;
+      animation: skeleton-loading 1.2s ease-in-out infinite;
+    }
+    @keyframes skeleton-loading {
+      0% {
+          background-position: 100% 50%;
+      }
+      100% {
+          background-position: 0 50%;
+      }
+    }
     .vidimg {
       width: 100%;
       height: 100%;
@@ -566,10 +591,10 @@
     }
   }
   .title {
-    margin-top: 10px;
     width: 90%;
     height: 40px;
     // 多行文字省略===================
+    font-weight: 550;
     overflow: hidden;
     text-overflow: ellipsis;
     -webkit-line-clamp: 2;
@@ -581,6 +606,7 @@
     color: #18191C;
     cursor: pointer;
     user-select: none;
+    font-family: "Micosoft";
     &:hover {
       color: #00AECC;
     }

@@ -11,7 +11,7 @@ import { getByUid, login } from '../../api/user'
 import { getHistory, getHomeHistory, searchKw, getHomeDynamic } from '../../api/video'
 import { tovideo } from '../../util/fnc'
 import { getFavlist, getOneList } from '../../api/favlist'
-import { baseurl } from '../../api'
+import { baseurl, mgurl } from '../../api'
 
 // 类形式的组件
 // class Topnav extends Component {
@@ -102,7 +102,7 @@ const Topnav = (props) => {
       const res2 = await getFavlist(uid, -1)
       // console.log('收藏夹列表,', res2);
       
-      const res22 = await getOneList(res2[0].fid)
+      const res22 = await getOneList(res2[0].fid, 0, null)
       setFavlist(res2)
       setFavonesum(res22)
       
@@ -120,23 +120,20 @@ const Topnav = (props) => {
       console.log('已经登录');
       getData()
     }
-    //
-    window.addEventListener('click', (e) => {
-        const tar = e.target.className
-        // searchboxref 刚加载出来， contains会报错
-        // if (!searchboxref.current.contains(e.target)) {
-        //   setFocusflag(false)
-        // }
-        if (tar != 'out-midbox' && tar != "om-line1" && tar != "inp-out" &&
-            tar != "search" && tar != "icon1" && tar != "rightbox" && tar != "icon2" &&
-            tar != "mid-append" && tar != "append-mid-innerbox"
-        ) {
-          setFocusflag(false)
-        }
-    })
-
   },[])
 
+  // 关闭search-append
+  const closeMidAppend = (e) => {
+    // searchboxref 刚加载出来直接使用会报错
+    setTimeout(() => {
+      const tar = e.target
+      if (!searchboxref.current.contains(tar)) {
+        setFocusflag(false)
+      }
+    },100)
+  }
+
+  //
   const scrfnc = () => {
     const sheight = document.body.scrollTop || document.documentElement.scrollTop
     if (sheight > 64) {
@@ -148,34 +145,19 @@ const Topnav = (props) => {
   if (location.pathname === '/') {     // 获得当前路由
     window.addEventListener('scroll', debounce(scrfnc, 100))
   }
-  
-  // // 屏幕宽度
-  // const [cwidth, setCwidth] = useState(document.body.clientWidth)
-  // // resize 事件
-  // window.addEventListener('resize', throttle(resizefunc, 300))
-  // function resizefunc () {
-  //   const nowWidth = document.body.clientWidth
-  //   if (nowWidth < 2560 && nowWidth > 1500) {
-  //     setCwidth(document.body.clientWidth)
-  //   } else if (nowWidth >= 2560) {
-  //     setCwidth(2560)
-  //   } else {
-  //     setCwidth(1500)
-  //   }
-  // }
 
   const [keyword, setKeyword] = useState('')
   const changinput1 = async (e) => {
     const newValue = e.target.value
     setKeyword(newValue)
-    
     if (newValue !== '') {
+      // 搜索结果
       const res = await searchKw(newValue)
-      console.log(res);
       setKyresult(res)
     }
   }
 
+  // 清除搜索揭露
   const clearWord = () => {
     setKeyword('')
   }
@@ -186,9 +168,12 @@ const Topnav = (props) => {
       alert('请先登录')
       return
     }
+    if (keyword.length <= 0) {
+      alert("请输入搜索内容")
+      return
+    }
     if (localStorage.getItem('keywords') != null) {
       const words = JSON.parse(localStorage.getItem('keywords'))
-      console.log(words);
       words.push(keyword)
       localStorage.setItem('keywords', JSON.stringify(words))
     } else {
@@ -201,6 +186,7 @@ const Topnav = (props) => {
     window.open(url, "_blank")
   }
 
+  // 回车搜索
   const entertosearch = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -340,10 +326,18 @@ const Topnav = (props) => {
     // 关键词记录
     const oldkeywords = JSON.parse(localStorage.getItem('keywords'))
     setOldkeywords(oldkeywords)
-
     setFocusflag(true)
   }
 
+  // 监听foucusflag
+  useEffect(() => {
+    if (focusflag) {
+      //  关闭搜索框的append
+      window.addEventListener('click', closeMidAppend)
+    } else {
+      window.removeEventListener('click', closeMidAppend)
+    }
+  }, [focusflag])
 
   // 关闭登录页面
   const colseLogin = () => {    
@@ -355,11 +349,6 @@ const Topnav = (props) => {
     navigate("/")
     localStorage.clear()
     window.location.reload()
-
-    // dispatch(JSON.stringify(setuserinfo('')))
-    // setTimeout(() => {
-    //   window.location.reload()
-    // },100)
   }
 
   // 清除搜索历史
@@ -368,6 +357,33 @@ const Topnav = (props) => {
     setOldkeywords([])
   }
 
+  // 通过历史关键词搜索
+  const tothiskeyword = (e) => {
+    const kw = e.target.dataset.keyword
+    // 添加历史关键词
+    if (localStorage.getItem('keywords') != null) {
+      const words = JSON.parse(localStorage.getItem('keywords'))
+      words.push(keyword)
+      localStorage.setItem('keywords', JSON.stringify(words))
+    } else {
+      const keywords = [keyword]
+      localStorage.setItem('keywords', JSON.stringify(kw))
+    }
+
+    const url = `/all/${kw}/${uid}`
+    // navigate(`/all/keyword/${uid}`)
+    window.open(url, "_blank")
+  }
+
+  // 通过搜索结果，点击打开
+  const tothiskeyword2 = (e) => {
+    const kw = e.target.dataset.keyword
+    const url = `/all/${kw}/${uid}`
+    window.open(url, "_blank")
+    
+  }
+
+  // 清除一个搜索记录关键词
   const clearthiskeyword = (e) => {
     const aindex = parseInt(e.target.dataset.index)
     let words = JSON.parse(localStorage.getItem('keywords'))
@@ -378,15 +394,15 @@ const Topnav = (props) => {
     setOldkeywords(newwords)
   }
 
+  // 选择收藏夹
   const changefavlist = async (e) => {
     const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
     const fid = parseInt(e.target.dataset.fid || e.target.parentNode.dataset.fid)
-    console.log('fix :', fid);
-    
+    // console.log('fix :', fid);
     setFavindex(index)
-    const res = await getOneList(fid)
+    const res = await getOneList(fid, 0, null)
     setFavonesum(res)
-    console.log(res);
+    // console.log(res);
     
   }
 
@@ -454,7 +470,11 @@ const Topnav = (props) => {
               <Link to={`/channels/番剧`} target='blank'>番剧</Link>
             </div>
             <div className="oneitem moveanimation">直播</div>
-            <div className="oneitem moveanimation">漫画</div>
+            <div className="oneitem moveanimation"
+              onClick={() => window.open(mgurl + '/' + uid, "_balnk")}
+            >
+              漫画
+            </div>
           </div>
           <div className="midp" ref={searchboxref}>
             <div className="out-midbox"
@@ -496,7 +516,7 @@ const Topnav = (props) => {
                           oldkeywords.map((item, index) =>
                             <div className="onehis" key={item}>
                               <sapn className="icon iconfont" data-index={index} onClick={clearthiskeyword}>&#xe7b7;</sapn>
-                              <span className="inner-tt-cont">{item}</span>
+                              <span className="inner-tt-cont" data-keyword={item} onClick={tothiskeyword}>{item}</span>
                             </div>
                           )
                         }
@@ -519,9 +539,8 @@ const Topnav = (props) => {
                   {
                     keywordresult.map(item =>
                       <div className="one-keyword-reslut" key={item}
-                        onClick={() => {
-                          window.open(`/all/${item}/${uid}`)
-                        }}
+                        data-keyword={item}
+                        onClick={tothiskeyword2}
                       >{item}</div>
                     )
                   }

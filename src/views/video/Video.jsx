@@ -1,10 +1,10 @@
 import './Video.scss'
 import Topnav from '../../components/Topnav/Topnav'
-import { useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { getByVid, updateinfo, getVideoLikely, getDm, sendDm } from '../../api/video'
 import { debounce } from '../../util/fnc'
-import { addComment, deleteComment, getAllComment } from '../../api/comment'
+import { addComment, deleteComment, getAllComment, addLikeinfo, deletelikeinfo } from '../../api/comment'
 import Totop from '../../components/toTop/totop'
 import { getFavlist, addOneVideo, addOneFavlist } from '../../api/favlist'
 import { useLocation } from 'react-router-dom'
@@ -12,9 +12,10 @@ import Notice from '../../components/notice/notice'
 import { getByUid, getByUidFollowed, toFollow, toUnfollow } from '../../api/user'
 import { tofollow, canclefollow, tovideo, touserspace } from '../../util/fnc'
 import { baseurl, baseurl2 } from '../../api'
+import { getVideoFormList, getUserListOne } from '../../api/videolist'
 
 function VideoPart (props) {
-  const vid = props.vid
+  const vid = +props.vid
   // const userinfos = JSON.parse(localStorage.getItem('userinfo')) ? 
   //       JSON.parse(localStorage.getItem('userinfo')) : null
   // const [userinfo, setUserinfo] = useState(() => userinfos)
@@ -33,7 +34,11 @@ function VideoPart (props) {
   const [fullfalg, setFullflag] = useState(false)           // 全屏
   const [clearflag, setClear] = useState(false)         // 清晰度
   const [speedflag, setSpeed] = useState(false)         // 倍速
-  const [volumeflag, setVolume] = useState(true)        // 声音
+   // 改变音量
+  const [volumeheight, setVolumeHeight] = useState(100),
+        [volumeopen, setVolumeopen] = useState(true),        // 静音 or 打开 声音
+        [volumeflag, setVolume] = useState(false)        // 声音控制条
+
   const [sysflag, setSys] = useState(false)             // 设置
   const [windoflag, setWindoflag] = useState(false)     // 小屏幕
   const [windoflag2, setWindoflag2] = useState(false)   // 网页宽屏
@@ -59,13 +64,63 @@ function VideoPart (props) {
   const createref = useRef()  // 新建
   const [newFavtitle, setNewfavtitle] = useState()
 
+  const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
+        [vlistindex, setVlistindex] = useState(0)                  // 列表篇中当前播放的视频的index
+
+  const [taglist, settaglist] = useState([])
+  useEffect(() => {
+    const getData = async () => {
+      const res = (await getByVid(vid, uid))
+      // 刚开始数据还没加载出来， 无法使用slice
+      res.time = (res.time).slice(0, 10) + ' ' + (res.time).slice(11, 16) // 在{ } 中修改会报错
+      setThisvid(res)
+
+      // 弹幕
+      const res2 = await getDm(vid)
+      setDmlist(res2)
+      document.title = `${res.title}`
+      settaglist(res.tags)
+
+      // 视频选集
+      const res3 = await getVideoFormList(res.listid)
+      for (let i = 0; i < res3.length; i++) {
+        if (res3[i].vid === vid) {
+          setVlistindex(i + 1)
+        }
+      }
+      setVlist(res3)
+
+      const text = res.title      
+      const font = '22px PingFang SC'
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      context.font = font;
+      const {
+        width
+      } = context.measureText(text);
+      if (width >= textpart.current.clientWidth) {
+        setTitleflag(true)
+      } else {
+        setTitleflag(false)
+      }
+    }
+    getData()
+    const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
+    window.addEventListener('scroll', () => {
+      const top = document.body.scrollTop || document.documentElement.scrollTop
+      if (top > distance) {
+        setBottomScrollflag(true)
+      } else {
+        setBottomScrollflag(false)
+      }
+    })
+  },[])
+
   let timer1 = null
   const enter1 = () => {
-    if (timer2 != null) {
+    if (timer1 !== null) {
       setSpeed(false)
-    }
-
-    if (timer1 != null) {
+      setVolume(false)
       clearTimeout(timer1)
     }
     setClear(true)
@@ -75,27 +130,41 @@ function VideoPart (props) {
     timer1 = setTimeout(() => {
       setClear(false)
       timer1 = null
-    },800)
+    },500)
   }
 
   // 倍速
-  let timer2 = null
   const enter2 = () => {
-    if (timer1 != null) {
+    if (timer1 !== null) {
       setClear(false)
-    }
-
-    if (timer2 != null) {
-      clearTimeout(timer2)
-      timer2 = null
+      setVolume(false)
+      clearTimeout(timer1)
     }
     setSpeed(true)
   }
 
   const leave2 = () => {
-    timer2 = setTimeout(() => {
+    timer1 = setTimeout(() => {
       setSpeed(false)
-    },800)
+      timer1 = null
+    },500)
+  }
+
+  // 音量
+  const enter3 = () => {
+    if (timer1 !== null) {
+      setClear(false)
+      setSpeed(false)
+      clearTimeout(timer1)
+    }
+    setVolume(true)
+  }
+
+  const leave3 = () => {
+    timer1 = setTimeout(() => {
+      setVolume(false)
+      timer1 = null
+    },500)
   }
 
   const [speednum, setSpeednum] = useState(1)
@@ -104,19 +173,127 @@ function VideoPart (props) {
     let num = e.target.dataset.sp - '0'
     setSpeednum(num)
     videoref.current.playbackRate = (num)
+  }  
+
+  const changevolume = (e) => {
+    const proHeight = 100
+    let height = volumeheight
+    if (e.target.className === "voice-pro1") {
+      height = e.target.getBoundingClientRect().top + proHeight - e.clientY
+    } else if (e.target.className === "voice-pro2"){
+      height = e.target.parentNode.getBoundingClientRect().top + proHeight - e.clientY
+    }
+    setVolumeHeight(height)
   }
 
-  // 音量事件
-  const toopenvolume = () => {
-    setVolume(true)
-    videoref.current.volume = 0.5
+  useEffect(() => {
+    videoref.current.volume = volumeheight * 0.01
+  }, [volumeheight])
+
+// 元数据加载完成
+const videoloadedmated = () => {
+  // 监听全屏改变事件
+  window.addEventListener("fullscreenchange", () => {
+    // 全屏时为全屏元素   退出全屏时为null
+    const fullelement = document.fullscreenElement      
+    if (fullelement !== null && fullfalg === false) {
+      setFullflag(true)
+    } else if (fullelement === null){
+      // 按esc时的情况
+      setFullflag(false)
+    }
+  })
+  // 键盘事件
+  window.addEventListener("keydown", (e) => {    
+    const k = e.key.toLowerCase()      
+    switch (k) {
+      case " ":
+        e.preventDefault()
+        clickvideo()
+        console.log('播放暂停');
+        
+        break;
+      case 'f':
+        console.log('全屏');
+        fullscreenfnc()
+        // tempfnc()
+        break;
+      case ' ':
+        console.log('暂停');
+        clickvideo()
+        break;
+      case 'd':
+        console.log('弹幕');
+        break;
+      case 'm':
+        console.log('静音');
+        break;
+      case ']':
+        console.log('下一集');
+        break;
+      case '[':
+        console.log('上一级');
+        break;
+      case 'arrowup':
+        videoprogresaddnum(5)
+        break;
+      case 'arrowleft':
+        console.log('');
+        break;
+      case 'arrowright':
+        break;
+      case 'arrowdown':
+        setVolumeHeight(volumeheight - 5)
+        break;
+      default:
+        break;
+      }
+    
+   })
   }
 
-  const toclosevolume = () => {
-    setVolume(false)
-    videoref.current.volume = 0
+  const videoprogresaddnum = (num) => {
+    Promise.resolve().then(() => {
+      setVolumeHeight(() => {
+        if (num > 0) {
+          return volumeheight > 95 ? 100 : volumeheight + 5
+        } else {
+          return volumeheight < 5 ? 0 : volumeheight - 5
+        }
+      })
+    })
   }
-  
+
+  // 开始拖动
+  let dragstart = false,
+      starposition = 0,     // 鼠标开始的位置
+      moveY = 0,            // y轴移动的距离
+      endpositon = 0,        // 结束时y位置
+      boxY = 0             // 音量距离位置
+
+  const dragstartfnc = (e) => {
+    dragstart = true
+    starposition = e.clientY
+    boxY = 
+    console.log('start',starposition);
+    document.addEventListener("mouseup", dragend)  // 拖拽结束
+    document.addEventListener("mouseover", draging)  // 拖拽结束
+  }
+  const draging = (e) => {
+    if (dragstart) {
+      console.log('draging');
+      moveY= e.clientX-starposition;
+      console.log(moveY);
+      
+    }
+  }
+
+  const dragend = () => {
+    dragstart = false
+    console.log('dragend');
+    document.removeEventListener("mouseup", dragend)
+  }
+
   const videobox = useRef() // 视频区域
   const videoref = useRef() // 视频资源
   // 视频相关函数
@@ -147,7 +324,7 @@ function VideoPart (props) {
 
   // playing 	当音频/视频在因缓冲而暂停或停止后已就绪时触发。
   const videoplating = () => {
-    console.log('playing');
+    console.log('加载完成playing');
     
   }
 
@@ -165,20 +342,19 @@ function VideoPart (props) {
   }
   // pause  手动暂停  跳转时加载暂停
   const videopause = () => {
-    // console.log('pause');  
+    console.log('pause');  
   }
 
   // 视频加载等待。当视频由于需要缓冲下一帧而停止，等待时触发
   const videowating = () => {
-    console.log('wating, 加载中');
+    console.log('正在缓冲',videoref.current.buffered);
   }
   
   const videoerror = () => {
-    // 跳转加载
-    setLoadflag(false)
-    
+    // 视频error
+    console.log('video error');
+    // setLoadflag(false)
   }
-  // progress 当浏览器正在下载音频/视频时触发。
 
   // opupdate 当目前的播放位置已更改时触发。
   const videotimeupdate  = () => {    
@@ -199,18 +375,6 @@ function VideoPart (props) {
       setNowTime(+ mm + ":" + ss)
     }
 
-    // if (duration > 0) {
-    //   for (let i = 0; i < videoref.current.buffered.length; i++) {
-    //     // 寻找当前时间之后最近的点
-    //     if (videoref.current.buffered.start(videoref.current.buffered.length - 1 - i) < videoref.current.currentTime) {
-    //       let bufferedLength = ((videoref.current.buffered.end(videoref.current.buffered.length - 1 - i) + now )/ duration) * 100 +"%";
-    //       // console.log(bufferedLength)
-    //       // let res = ((now + bufferedLength)/ duration).toFixed(2) * 100
-    //       setLoadprogress(bufferedLength)
-    //       break;
-    //   }
-    //   }
-    // }
   }
 
   // pleyend  视频播放完
@@ -267,16 +431,20 @@ function VideoPart (props) {
   }
 
   // 全屏事件
-  const fullscreenfnc = () => {
-    if (document.fullscreenEnabled) {
-      if (!window.screenTop && !window.screenY) {
+  const fullscreenfnc = () => {   
+    if (document.fullscreenEnabled) {      
+      if (!fullfalg && document.fullscreenElement === null) {        
         videobox.current.requestFullscreen()
-      } else {
-        document.exitFullscreen() 
+        setFullflag(true)
+      } else {        
+        if (document.fullscreenElement !== null) {
+          document.exitFullscreen()
+          setFullflag(false)
+        }
       }
-      setFullflag(!fullfalg)
-    }
+    }    
   }
+  
   // 移动事件
   let timer = null
   let enterflag = false
@@ -332,7 +500,9 @@ function VideoPart (props) {
     const duration = videoref.current.duration
     videoref.current.currentTime = Math.floor(duration * pro)
     if (videoref.current.pause) {
-      videoref.current.play()
+      setTimeout(() => {
+        videoref.current.play()
+      }, 150)
     }
   }
 
@@ -425,49 +595,6 @@ function VideoPart (props) {
     }
   }
 
-  const [taglist, settaglist] = useState([])
-  useEffect(() => {
-    const getData = async () => {
-      const res = (await getByVid(vid, uid))
-      console.log('???', res);
-      
-      res.time = (res.time).slice(0, 10) + ' ' + (res.time).slice(11, 16) // 在{ } 中修改会报错
-      setThisvid(res)
-
-      // 弹幕
-      const res2 = await getDm(vid)
-      setDmlist(res2)
-
-      document.title = `${res.title}`
-      
-      settaglist(res.tags)
-
-      const text = res.title      
-      const font = '22px PingFang SC'
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      context.font = font;
-      const {
-        width
-      } = context.measureText(text);
-      if (width >= textpart.current.clientWidth) {
-        setTitleflag(true)
-      } else {
-        setTitleflag(false)
-      }
-    }
-    getData()
-    const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
-    window.addEventListener('scroll', () => {
-      const top = document.body.scrollTop || document.documentElement.scrollTop
-      if (top > distance) {
-        setBottomScrollflag(true)
-      } else {
-        setBottomScrollflag(false)
-      }
-    })
-  },[])
-
 // 关闭页面是触发
   window.addEventListener('beforeunload', async() => {
     // document.addEventListener('visibilitychange', async() => {
@@ -483,7 +610,7 @@ function VideoPart (props) {
           await updateinfo(data)
         }
         return
-    })
+  })
 
   const switchfnc = () => {
     switch (speednum) {
@@ -655,7 +782,7 @@ function VideoPart (props) {
     const index = parseInt(e.target.dataset.index)
     const w = e.target.dataset.word
     if (index === 0) {
-
+      window.open(`/channels/${w}`, '_blank')
     } else {
       window.open(`/all/${w}/${uid}`, '_blank')
     }
@@ -702,6 +829,20 @@ function VideoPart (props) {
       }
     }
   }
+
+  // 上一个视频
+  const navigate = useNavigate()
+  const prvvideo = () => {
+    navigate(`/video/${vlist[vlistindex - 2].vid}`)
+    document.location.reload()
+  }
+
+  // 下一个视频
+  const nextvideo = () => {
+    navigate(`/video/${vlist[vlistindex].vid}`)
+    document.location.reload()
+  }
+
   return (
     <>
       <Totop 
@@ -758,19 +899,21 @@ function VideoPart (props) {
             onMouseMove={debounce(mousemovefnc, 10)}
             // onMouseLeave={leavevideopart}
             >
-            <video src={thisvid != null ? thisvid.path : null}
+            <video
+              src={thisvid != null ? thisvid.path : null}
+              ref={videoref}
               onCanPlay={videoloaded}
               onProgress={videoprogressfnc}
               onTimeUpdate={videotimeupdate}
               onPlaying={videoplating}
-              onSeeking={videoseeking}
-              onSeeked={videoseeked}
+              // onSeeking={videoseeking}
+              // onSeeked={videoseeked}
               onWaiting={videowating}
               onEnded={playend}
               onPlay={videoplay}
               onPause={videopause}
               onError={videoerror}
-              ref={videoref}
+              onLoadedMetadata={videoloadedmated}
               className='videosrc'>
             </video>
           </div>
@@ -783,13 +926,23 @@ function VideoPart (props) {
             onDoubleClick={handledoubleclick}
             >
               {
-                dmlist.map((item, index) =>
-                  <div className="danmu-div" key={item.id}
-                    style={{animationPlayState: playflag && timeprogress >=(item.sendtime) ? '' : 'paused',
+                dmflag && dmlist.map((item, index) =>
+                  item.type === 0 ?
+                    <div className="danmu-div" key={item.id}
+                      style={{animationPlayState: playflag ? 'running' : 'paused',
                             color: (item.color) + '',
                             textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                            top: (index % 10 * 20 + 5) + 'px'
-                    }}>{item.text}</div>
+                            top: (index % 20 * 25 + 10) + 'px',
+                            fontSize: '16px'
+                    }}>{item.text + " " +item.sendtime}</div>  
+                  :
+                    <div className="danmu-div" key={item.id}
+                    style={{animationPlayState: playflag ? 'running' : 'paused',
+                            color: (item.color) + '',
+                            textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                            top: (index % 20 * 25 + 10) + 'px',
+                            fontSize: '16px'
+                    }}>{item.text + " " +item.sendtime}</div> 
                 )
               }
           </div>
@@ -799,16 +952,28 @@ function VideoPart (props) {
             onMouseEnter={entervop}
             onMouseLeave={leaveop}
             >
-            <div className="progressbox" ref={progressref}  onClick={tothitime}>
-              <div className="loadprogress" onClick={tothitime} style={{width: loadprogress + "%"}}></div>
-              <div className="done-box" onClick={tothitime} style={{width: videoprogress + '%'}}></div>
+            <div className="progressbox"
+              ref={progressref}
+              onClick={tothitime}
+            >
+              <div className="loadprogress"
+                onClick={tothitime}
+                style={{width: loadprogress + "%"}}
+              ></div>
+              <div className="done-box"
+                onClick={tothitime}
+                style={{width: videoprogress + '%'}}
+              ></div>
             </div>
             <div className="videoopationbox">
               <div className="vidconleft">
                 {
-                  false &&
+                  vlist.length > 0 && vlistindex - 1 > 0 &&
                   <div className="out111">
-                    <div className="leftinnerspan icon iconfont" style={{rotate: '-180deg'}}>&#xe609;</div>
+                    <div className="leftinnerspan icon iconfont"
+                      style={{rotate: '-180deg'}}
+                      onClick={prvvideo}
+                    >&#xe609;</div>
                   </div>
                 }
                 {
@@ -817,7 +982,12 @@ function VideoPart (props) {
                   :
                   <span className="icon iconfont" onClick={clickvideo}>&#xe60f;</span>
                 }
-                {false && <div className="icon iconfont">&#xe609;</div>}
+                {
+                  vlist.length > 0 && vlistindex < vlist.length &&
+                    <div className="icon iconfont"
+                      onClick={nextvideo}
+                    >&#xe609;</div>
+                }
                 <span className="timerspan">
                   {nowtime} / {thisvid.vidlong}
                 </span>
@@ -894,17 +1064,43 @@ function VideoPart (props) {
                 </div>
                 <div className='outtbox'>
                   {
-                    volumeflag ?
-                    <span className='icon iconfont sp11' onClick={toclosevolume}>&#xea11;</span>
+                    volumeopen ?
+                    <span className='icon iconfont sp11'
+                      onMouseEnter={enter3}
+                      onMouseLeave={leave3}
+                      onClick={() => {
+                        setVolumeopen(false)
+                        videoref.current.volume = 0
+                      }}
+                    >&#xea11;</span>
                     :
-                    <span className='icon iconfont sp12' onClick={toopenvolume}>&#xea0f;</span> 
+                    <span className='icon iconfont sp12'
+                      onMouseEnter={enter3}
+                      onMouseLeave={leave3}
+                      onClick={() => {
+                        setVolumeopen(true)
+                        videoref.current.volume = volumeheight
+                      }}
+                      >&#xea0f;</span> 
                   }
                   {
-                    false && 
-                    <div className="appendbox3">
-                      <div className="voicenum">12%</div>
+                    volumeflag && 
+                      <div className="appendbox3"
+                        onMouseEnter={enter3}
+                        onMouseLeave={leave3}
+                        onClick={changevolume}
+                    >
+                      <div className="voicenum">{volumeheight}</div>
                       <div className="voiceprogress">
-                        
+                        <div className="voice-pro1">
+                          <div className="voice-pro2"
+                            style={{height: `${volumeheight}%`}}
+                          >
+                            <div className="drag-btn"
+                              onMouseDown={dragstartfnc}
+                            ></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   }
@@ -1057,8 +1253,11 @@ function VideoPart (props) {
                     // ⭐ 用click 的话 会执行两次   ？？？？？
                     onMouseUp={choivethisfavlist}>   
                     <div className="left-cehedbox" data-index={index} data-fid={item.fid}>
-                    <input type="checkbox" className="onechecked" id={item.fid} hidden/>
-                      <span className={favchecked[index] ? 'activebox icon iconfont': "icon iconfont"}>&#xe616;</span>
+                      <input type="checkbox" className="onechecked" id={item.fid}
+                        hidden
+                        value={favchecked[index]}
+                      />
+                      <div className={favchecked[index] ? 'activebox11 icon iconfont': "icon iconfont"}>&#xe616;</div>
                     </div>
                     <div className="right-fainfobox" data-index={index} data-fid={item.fid}>
                       <span className='sp1'>{item.title}</span>
@@ -1078,7 +1277,8 @@ function VideoPart (props) {
                   :
                   <div className="box11-d12" ref={createbox} onClick={clickcreatebox}>
                     <input type="text" className="createnewfav" foucs placeholder='最多输入20个字'
-                      onChange={(e) => setNewfavtitle(e.target.value)}/>
+                      onChange={(e) => setNewfavtitle(e.target.value)}
+                    />
                     <div className="cof-d3" onClick={tocreatenewfav}>新建</div>
                   </div>
                 }
@@ -1101,7 +1301,7 @@ function VideoPart (props) {
         {
           taglist.map((item, index) =>
             <div key={index} className="onetag"
-              data-idnex={index} data-word={item} onClick={tothiskeyword}>{item}
+              data-index={index} data-word={item} onClick={tothiskeyword}>{item}
             {
               index === 0 &&
               <span className="icon iconfont mtagicon">&#xe632;</span>
@@ -1116,49 +1316,29 @@ function VideoPart (props) {
 
 function CommentPart (props) {
   const vid = props.vid
-  // const userinfos = JSON.parse(localStorage.getItem('userinfo'))
-  // const [userinfo, setUserinfo] = useState(() => userinfos)
-
   const [thisvid, setThisvid] = useState()
-
-
   const userinfo = props.userinfo
   const uid = parseInt(userinfo !== null && userinfo !== '' ? userinfo.uid : -1)
 
-
-  const [commentType, setCommentType] = useState(1)
+  const [commentnums, setCommentnums] = useState(0)      // 评论个数
+  const [commentType, setCommentType] = useState(0)
   const [commentlist, setCommentlist] = useState([])
-  const [commentArray, setCommentarray] = useState([])
-  // 评论框flag
-  const [commentflag, setCommentflag] = useState(false)
+  const [commentArray, setCommentarray] = useState([])   // 回复消息时，flag===true，弹出回复框
+  const [secondnums, setSecondsnums] = useState([])      // 查看全部二级评论flag
+  const [commentflag, setCommentflag] = useState(false)    // 评论框flag
   const sendpart = useRef()
   const sendpart2 = useRef()
   const [commentshowone ,setShowOne] = useState(false)  // 翻滚显示下面的评论
+  const [commentcontent, setContnet] = useState('')     // 一级回复内容
+  const [commentcontent2, setContnet2] = useState('')   // 二级回复内容
 
-  const [commentcontent, setContnet] = useState('')
-  const [commentcontent2, setContnet2] = useState('')
-  const [sendable, setSendbale] = useState(false)
-  const [sendable2, setSendbale2] = useState(false)
-
-  // comment
-  const nipcontent1 = useRef()
-  const nipcontent12 = useRef()
-  const nipcontent2 = useRef()
-  const inputcomemnt = (e) => {
-    setContnet(e.target.value)
-    if (e.target.value.length > 0) {
-      setSendbale(true)
-    } else {
-      setSendbale(false)
-    }
-  }
-
+  // 发送一级评论
   const sendcomment = async () => {
     if (userinfo === null) {
       alert('请先登录')
       return;
     }
-    if (sendable === true) {
+    if (commentcontent.length > 0) {
       const data = {
         uid: userinfo.uid,
         vid: vid,
@@ -1167,16 +1347,14 @@ function CommentPart (props) {
         fid: 0,
         hisuid: thisvid.uid
       }
-      const res = (await addComment(data))
-      if (res === 200) {
+      const res = await addComment(data)
+      if (res) {
         // 清除
-        setSendbale(false)
         setCommentflag(false)
         setContnet('')                          // 清除输入框中内容
-        if (nipcontent1.current != null) nipcontent1.current.value = ''            // 顶部的
-        if (nipcontent12.current != null) nipcontent12.current.value = ''            // 底部的的
         // 更新数据
         const data2 = {
+          id: res,
           uid: userinfo.uid,
           vid: vid,
           content: commentcontent,
@@ -1184,12 +1362,16 @@ function CommentPart (props) {
           fid: 0,
           time: '刚刚',
           avatar: userinfo.avatar,
-          name: userinfo.name
+          name: userinfo.name,
+          liked: false,
+          likes: 0,
+          lists: []  // 否则会报 找不到 slice 错误
         }
         setCommentlist([
           ...commentlist,
           data2
         ])
+        setCommentnums(commentnums + 1)
         alert('success')
       }
     } else {
@@ -1197,9 +1379,9 @@ function CommentPart (props) {
     }
   }
 
-  // 回复评论 二级
+  // 回复评论（一级）
   const [replaydata, setReplaydata] = useState({})
-  const toreplaycomment = async (e) => {
+  const toreplaycomment = (e) => {
     const index = parseInt(e.target.dataset.index)
     const newarrya = commentArray.map((item, tindex) => {
       if (tindex === index) {
@@ -1210,42 +1392,31 @@ function CommentPart (props) {
     setCommentarray(newarrya)
     
     const data = {
-      topid: e.target.dataset.topid,
-      fid: e.target.dataset.fid,
-      fname: e.target.dataset.name
+      topid: e.target.dataset.topid,             // 一级评论的id
+      fid: e.target.dataset.fid,                 // 要回复评论的id
+      fname: e.target.dataset.name               // 要回复评论的人的名字
     }
     setReplaydata(data)
   }
 
-  const inputcomemnt2 = (e) => {
-    setContnet2(e.target.value)
-    if (e.target.value.length > 0) {
-      setSendbale2(true)
-    } else {
-      setSendbale2(false)
-    }
-  }
-
+  // 发送评论（二级）
   const sendcomment2 = async () => {
-    if (sendable2 === true) {
+    if (commentcontent2.length > 0) {
       const data = {
         uid: userinfo.uid,
         vid: vid,
         content: commentcontent2,
-        topid: replaydata.topid,   // 最顶层， 一级id
+        topid: replaydata.topid,    // 最顶层， 一级id
         fid: replaydata.fid,        // 二级id， 回复的评论的id
-        hisuid: thisvid.uid,
-        // name: userinfo.name,
-        // avatar: userinfo.avatar,
-        // fname: replaydata.fname
+        hisuid: thisvid.uid         // 回复对象的uid
       }
-      const res = (await addComment(data))
-      if (res === 200) {
-        setSendbale2(false)
+      const res = await addComment(data)
+      if (res) {
         setCommentflag(false)
         setContnet2('') 
 
         const data2 = {
+          id: res,
           uid: userinfo.uid,
           vid: vid,
           content: commentcontent2,
@@ -1254,13 +1425,21 @@ function CommentPart (props) {
           name: userinfo.name,
           avatar: userinfo.avatar,
           time: '刚刚',
-          fname: replaydata.fname
+          fname: replaydata.fname,
+          liked: false,
+          likes: 0
         }
-        if (nipcontent2.current != null) nipcontent2.current.value = ''            // bottom的
-        setCommentlist([
-          ...commentlist,
-          data
-        ])
+        // 更新列表
+        const newArray = commentArray.map((item, ind) => {
+          if (item === true) {
+            commentlist[ind].lists.push(data2)
+          }
+          return commentlist[ind]
+        })
+        setCommentlist(commentlist)
+        // 更新commentArray（让二级回复框消失）
+        setCommentarray(new Array(commentlist.length).fill(false))
+        setCommentnums(commentnums + 1)
         alert('replay success')
       } else {
         alert('replay failure')
@@ -1274,33 +1453,36 @@ function CommentPart (props) {
   const todeletecomment = async (e) => {
     const id = parseInt(e.target.dataset.id)
     const topid = parseInt(e.target.dataset.topid)
+    const index1 = parseInt(e.target.dataset.index1)      // 删除一级评论
+    const index21 = parseInt(e.target.dataset.index21)    // 二级评论的一级评论的index
+    const index22 = parseInt(e.target.dataset.index22)    // 二级评论的index
 
     // 如果是一级评论
     if (parseInt(e.target.dataset.topid) === 0) {
+      // ⭐ 直接删除，这样很快，但重新赋值会出错
+      // commentlist.splice(index1, 1)    // index未要删除位置的索引， 1 未删除个数，   改变数组
       setCommentlist(
         commentlist.filter(item =>
           item.id !== id
         )
       )
     } else {
-      for (let i = 0; i < commentlist.length; i++) {
-        if (parseInt(e.target.dataset.topid) === commentlist[i].id) {
-          const newone = commentlist.map(item => {
-            if (item.id === topid) {
-              commentlist[i].lists = (commentlist[i].lists).filter(item => item.id !== id )  // 新的数组（其中更新的一个）
-              return commentlist[i]
-            } else {
-              return commentlist[i]
-            }
-          })
-          console.log('...', newone);          
-          // 替换
-          setCommentlist(newone)
-        }
-      }
+      // ⭐ 问题同上     
+      // const newlists = commentlist[index].lists.filter((item, i) => i !== sindex)
+      // commentlist[index].lists = newlists      
+      // setCommentlist(commentlist)
+      setCommentlist(
+        commentlist.map((item1, i) => {
+          if (i === index21) {
+            item1.lists = item1.lists.filter((item2, j) => j !== index22)
+          }
+          return item1
+        })
+      )
     }
-    const res = (await deleteComment(id, vid))
+    const res = await deleteComment(id, vid)
     if (res === 200) {
+      setCommentnums(commentnums - 1)
       alert('delete success')
     } else {
       alert('failure')
@@ -1309,14 +1491,17 @@ function CommentPart (props) {
 
   useEffect(() => {
     const getData = async () => {      
-      const res = await getAllComment(vid)
+      const res = await getAllComment(vid, uid, 0)
       setCommentlist(res)      
-      console.log('all comment is:', res);
-      
+      // console.log('all comment is:', res);
+      let tempsum = 0;
+      for (let i = 0; i < res.length; i++) {        
+        tempsum += (1 + res[i].lists.length)
+      }
+      setCommentnums(tempsum)
       setCommentarray(new Array(res.length).fill(false))
-
+      setSecondsnums(new Array(res.length).fill(3))
       const res2 = await getByVid(vid, uid)
-      
       setThisvid(res2)
     }
     getData()
@@ -1346,18 +1531,110 @@ function CommentPart (props) {
       const distance = sendpart.current.offsetTop
       setShowOne(top > distance ? true : false);
     }
+
+    // 评论排序
+    const changeCommentType = async (e) => {
+      const type = parseInt(e.target.dataset.type)
+      const res = await getAllComment(vid, uid, type)
+      setCommentlist(res) 
+    }
+
+    // 点赞评论
+    const likethiscomment = async (e) => {
+      if (uid === -1) {
+        alert("请先登录")
+        return
+      }      
+      const thisliked = e.target.dataset.liked || e.target.parentNode.dataset.liked
+      const cid = e.target.dataset.cid || e.target.parentNode.dataset.cid
+      const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)            // 0： 一级评论   1： 二级
+      const index1 = parseInt(e.target.dataset.index1 || e.target.parentNode.dataset.index1)       // 删除一级评论
+      const index21 = parseInt(e.target.dataset.index21 || e.target.parentNode.dataset.index21)    // 二级评论的一级评论的index
+      const index22 = parseInt(e.target.dataset.index22 || e.target.parentNode.dataset.index22)    // 二级评论的index
+      console.log(index21, index22);
+      
+      if (thisliked === 'true') {        
+        const res = deletelikeinfo(cid, uid)
+        if (res) {
+          if (type === 0) {
+            setCommentlist(
+              commentlist.map((item1, i) => {
+                if (i === index1) {
+                  item1.liked = false
+                  item1.likes -= 1
+                }
+                return item1
+              })
+            )
+          } else {
+            setCommentlist(
+              commentlist.map((item1, i) => {
+                if (i === index21) {
+                  item1.lists = item1.lists.map((item2, j) => {
+                    if (j === index22) {
+                      item2.liked = false
+                      item2.likes -= 1
+                    }
+                    return item2
+                  })
+                }
+                return item1
+              })
+            )
+          }
+        } 
+      } else {
+        const hisuid = e.target.dataset.hisuid || e.target.parentNode.dataset.hisuid
+        const data = {
+          type: 2,
+          hisuid: hisuid,
+          uid: uid,
+          cid: cid,
+          vid: thisvid.vid
+        }
+        const res = await addLikeinfo(data);
+        if (res) {
+          if (type === 0) {            
+            setCommentlist(
+              commentlist.map((item1, i) => {
+                if (i === index1) {
+                  item1.liked = true
+                  item1.likes += 1
+                }
+                return item1
+              })
+            )
+          } else {
+            setCommentlist(
+              commentlist.map((item1, i) => {
+                if (i === index21) {
+                  item1.lists = item1.lists.map((item2, j) => {
+                    if (j === index22) {
+                      item2.liked = true
+                      item2.likes += 1
+                    }
+                    return item2
+                  })
+                }
+                return item1
+              })
+            )
+          }
+        }
+      }
+    }
   return (
     <>
     <div className="commetnbox">
       <div className="commenttitle">
         <div className="cmt1">
           <h2>评论</h2>
-          <span style={{fontSize: '14px'}}>{commentlist.length}</span>
+          <span style={{fontSize: '14px'}}>{commentnums}</span>
         </div>
         <div className="cmt2">
-          <span onClick={() => setCommentType(1)} style={{color: commentType === 1 ? '#18191C' : '#9499A0'}}>最热</span>
+          <span onClick={changeCommentType} data-type="0" style={{color: commentType === 0 ? '#18191C' : '#9499A0'}}>最热</span>
           <div></div>
-          <span onClick={() => setCommentType(2)}  style={{color: commentType === 2 ? '#18191C' : '#9499A0'}}>最新</span>
+          <span onClick={changeCommentType} data-type="1" style={{color: commentType === 1 ? '#18191C' : '#9499A0'}}>最新</span>
         </div>
       </div>
       {/* 顶部一级评论 */}
@@ -1373,8 +1650,8 @@ function CommentPart (props) {
                   setCommentflag(true)
                   window.addEventListener('click', cilckfnc)
                 }}
-                onChange={inputcomemnt}
-                ref={nipcontent1}
+                onChange={(e) => setContnet(e.target.value)}
+                value={commentcontent}
                 placeholder='写点什么吧~'
               ></textarea>
             </div>
@@ -1386,7 +1663,7 @@ function CommentPart (props) {
                 </div>
                 <div className="rightsends"
                 onClick={sendcomment}
-                style={{backgroundColor: sendable ? '#32AEEC' : '#00AEEC80'}}
+                style={{backgroundColor: commentcontent.length > 0 ? '#32AEEC' : '#00AEEC80'}}
                 >发布</div>
               </div>
             }
@@ -1411,8 +1688,15 @@ function CommentPart (props) {
                   </span>
                 </div>
                 <div className="eommentinfos">
-                  <span>{() => item.time.slice(0, 10)}</span>
-                  <div className="liseli">
+                  <span className='timesp1'>{() => item.time.slice(0, 10)}</span>
+                  <div className={item.liked ? "liseli lise-active" : 'liseli'}
+                    data-cid={item.id}
+                    data-hisuid={item.uid}
+                    data-liked={item.liked}
+                    data-index1={index}
+                    data-type="0"
+                    onClick={likethiscomment}
+                  >
                     <span className='icon iconfont'>&#xe61c;</span>
                     <span className='likenum'>{item.likes}</span>
                   </div>
@@ -1422,6 +1706,7 @@ function CommentPart (props) {
                     <span className='cmback'
                       data-id={item.id}
                       data-topid={item.topid}
+                      data-index1={item.index}
                       onClick={todeletecomment}>删除</span>
                     :
                     <span className='cmback'
@@ -1435,58 +1720,75 @@ function CommentPart (props) {
                   }
                 </div>
                 { 
-                  item.lists != null ?
-                    item.lists.map((item2) =>
-                      <div className="secondcomments" key={item2.id}>
-                        <div className="onesecondcomment">
-                          <div className="leftpartsceavatar">
-                            <img src={item2.avatar} alt="" className="secondavatar" />
-                          </div>
-                          <div className="rightusercomment-a">
-                            <div className="rightcommentscrond">
-                              <span className="secondname">{item2.name}</span>
-                              <span className="secondcontent">
-                                <span className="text11" style={{color: '#9499A0'}}>
-                                  回复{item2.fname} :
-                                </span>
-                                {item2.content}
+                  item.lists.slice(0, secondnums[index]).map((item2, index2) =>
+                    <div className="secondcomments" key={item2.id}>
+                      <div className="onesecondcomment">
+                        <div className="leftpartsceavatar">
+                          <img src={item2.avatar} alt="" className="secondavatar" />
+                        </div>
+                        <div className="rightusercomment-a">
+                          <div className="rightcommentscrond">
+                            <span className="secondname">{item2.name}</span>
+                            <span className="secondcontent">
+                              <span className="text11" style={{color: '#9499A0'}}>
+                                回复{item2.fname} :
                               </span>
+                              {item2.content}
+                            </span>
+                          </div>
+                          <div className="secondcommentinfos">
+                            <span className='timesp1'>{item2.time.slice(0, 10)}</span>
+                            <div className={item2.liked ? "liseli lise-active" : 'liseli'}
+                              data-cid={item2.id}
+                              data-hisuid={item2.uid}
+                              data-liked={item2.liked}
+                              data-index21={index}
+                              data-index22={index2}
+                              data-type="1"
+                              onClick={likethiscomment}
+                            >
+                              <span className='icon iconfont'>&#xe61c;</span>
+                              <span className='likenum'>{item2.likes}</span>
                             </div>
-                            <div className="secondcommentinfos">
-                              <span>{item.time.slice(0, 10)}</span>
-                              <div className="liseli">
-                                <span className='icon iconfont'>&#xe61c;</span>
-                                <span className='likenum'>{item2.likes}</span>
-                              </div>
-                              {
-                                userinfo != null && item2.uid === userinfo.uid ?
-                                <span className='cmback'
-                                  data-id={item2.id}
-                                  data-topid={item2.topid}   // 获取，两者不一样
-                                  onClick={todeletecomment}>删除</span>
-                                :
-                                <span className='cmback'
-                                  data-id={item2.id}
-                                  data-fid={item2.uid}
-                                  data-topid={item.id}    // 设置父id
-                                  data-name={item2.name}
-                                  data-index={index}
-                                  onClick={toreplaycomment}
-                                >回复</span>
-                              }
-                            </div>
+                            {
+                              userinfo != null && item2.uid === userinfo.uid ?
+                              <span className='cmback'
+                                data-id={item2.id}
+                                data-topid={item2.topid}       // topid != 0, 说明不是一级评论
+                                data-index21={index}
+                                data-index22={index2}
+                                onClick={todeletecomment}>删除</span>
+                              :
+                              <span className='cmback'
+                                data-id={item2.id}
+                                data-fid={item2.uid}
+                                data-topid={item.id}           // 设置父id
+                                data-name={item2.name}
+                                data-index={index}
+                                onClick={toreplaycomment}
+                              >回复</span>
+                            }
                           </div>
                         </div>
                       </div>
-                    )
-                  :
-                  null
+                    </div>
+                  )
                 }
                 {
-                  item.lists != null && item.listslength > 2 &&
+                  item.lists.length > 3 && secondnums[index] < item.lists.length &&
                   <div className="watchmore">
-                    <span>共{item.listslength}条评论,</span>
-                    <span className='watchmoreclick'>点击查看</span>
+                    <span>共{item.lists.length}条评论,</span>
+                    <span className='watchmoreclick'
+                      onClick={() =>
+                        setSecondsnums(item, i => {
+                          if (i === index) {
+                            return item.lists.length
+                          } else {
+                            return item
+                          }
+                        })
+                      }
+                    >点击查看</span>
                   </div>
                 }
                 {
@@ -1501,8 +1803,8 @@ function CommentPart (props) {
                       <div className="rightppp">
                         <div className="rightcommentpart"> 
                           <textarea name="" id="" className="comtextarea"
-                            onChange={inputcomemnt2}
-                            vlaue={commentcontent2}
+                            onChange={(e) => setContnet2(e.target.value)}
+                            value={commentcontent2}
                             placeholder={'回复@ ' + replaydata.fname + ' :'}
                           ></textarea>
                         </div>
@@ -1512,7 +1814,7 @@ function CommentPart (props) {
                           </div>
                           <div className="rightsends"
                           onClick={sendcomment2}
-                          style={{backgroundColor: sendable2 ? '#32AEEC' : '#00AEEC80'}}
+                          style={{backgroundColor: commentcontent2.length > 0 ? '#32AEEC' : '#00AEEC80'}}
                           >发布</div>
                         </div>
                       </div>
@@ -1528,7 +1830,10 @@ function CommentPart (props) {
       {
         // 底部一级评论
         commentshowone &&
-        <div className="sendbox2bottom" ref={sendpart2}>
+        <div className="sendbox2bottom"
+          ref={sendpart2}
+          style={{width: sendpart.current.clientWidth + "px"}}
+        >
           <div className="snetext">
               <div className="avatarpart">
                 <img src={userinfo != null ? userinfo.avatar : null} alt="" className="useravatarcom" />
@@ -1540,9 +1845,8 @@ function CommentPart (props) {
                       setCommentflag(true)
                       window.addEventListener('click', cilckfnc2)
                     }}
-                    onChange={inputcomemnt}
-                    vlaue={commentcontent}
-                    ref={nipcontent12}
+                    onChange={(e) => setContnet(e.target.value)}
+                    value={commentcontent}
                     placeholder='写点什么吧~'
                   ></textarea>
                 </div>
@@ -1553,7 +1857,7 @@ function CommentPart (props) {
                     </div>
                     <div className="rightsends"
                     onClick={sendcomment}
-                    style={{backgroundColor: sendable ? '#32AEEC' : '#00AEEC80'}}
+                    style={{backgroundColor: sendcomment.length > 0 ? '#32AEEC' : '#00AEEC80'}}
                     >发布</div>
                   </div>
                 }
@@ -1566,14 +1870,20 @@ function CommentPart (props) {
 }
 
 function RightPart (props) {
-  const vid = props.vid
+  const vid = +props.vid
   const userinfo = props.userinfo
   const uid = parseInt(userinfo != null ? userinfo.uid : -1)    // myuid
   
   const [thisvid, setThisvid] = useState({})
   const [videouser, setVideouser] = useState()
-  const [videolist, setVideolist] = useState([])
-  const [upinfo, setUpinfo] = useState()
+  const [recommendlist, setRecommendlist] = useState([])          // 推荐列表
+  const [upinfo, setUpinfo] = useState()                          // up主的信息
+  const [videoinfo, setVideoinfo] = useState()                    // 视频信息
+
+  const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
+        [vlistindex, setVlistindex] = useState(0),                  // 列表篇中当前播放的视频的index
+        [allplays, setAllpalys] = useState(0),                      // 列表视频总播放量
+        [listname, setListname] = useState("")                       // 视频列表的信息
 
   const rigtbox = useRef()
   const recommendref = useRef()
@@ -1609,34 +1919,52 @@ function RightPart (props) {
     const getData = async () => {
       const res = await Promise.all([getByVid(vid, uid), getVideoLikely(vid), getDm(vid)])
       console.log(res);
-      
+      setVideoinfo(res[0])
       const upuid = res[0].uid     // 作者的uid
-      
+
+      const res3 = await getVideoFormList(res[0].listid)
+      console.log("=============");
+      let tempnums = 0
+      for (let i = 0; i < res3.length; i++) {
+        tempnums += res3[i].plays
+        if (res3[i].vid === vid) {
+          setVlistindex(i + 1)
+        }
+      }
+      setAllpalys(tempnums)
+      setVlist(res3)
+
+      if (res[0].listid !== -1) {
+        const res4 = await getUserListOne(res[0].listid)
+        console.log(res4);
+        setListname(res4.title)
+      }
+
       const res2 = await getByUidFollowed(upuid, uid)
-      console.log('作者信息:', res2);
+      // console.log('作者信息:', res2);
       setUpinfo(res2)
       // 弹幕
-
       setThisvid(res[0])
-      setVideolist(res[1])
+      setRecommendlist(res[1])
       setDmlist(res[2])
     }
     getData()
     // 不让数据变化
     // setDistance(recommendref.current.offsetTop - recommendref.current.clientHeight)
-    
-    window.addEventListener('scroll', () => {
-      let distance = recommendref.current.offsetTop
-      const top = document.body.scrollTop || document.documentElement.scrollTop
-      // console.log(recommendref.current.offsetTop,"   ",top);
-      // console.log('scrolling....');
-      
-      if (distance<= top) {
-        setScrollflag(true)
-      } else {        
-        setScrollflag(false)
-      }
-    })
+    if (recommendref != null) {
+      document.addEventListener('scroll', () => {
+        let distance = recommendref.current.offsetTop
+        const top = document.body.scrollTop || document.documentElement.scrollTop
+        // console.log(recommendref.current.offsetTop,"   ",top);
+        // console.log('scrolling....');
+        
+        if (distance<= top) {
+          setScrollflag(true)
+        } else {        
+          setScrollflag(false)
+        }
+      })
+    }
   },[])
 
   // 发私信
@@ -1682,6 +2010,14 @@ function RightPart (props) {
       followed: false
     })
   }
+
+  const navigate = useNavigate()
+  const tothisvideo = (e) => {
+    const vid = e.target.dataset.vid || e.target.parentNode.dataset.vid
+    navigate(`/video/${vid}`)
+    document.location.reload()
+  }
+  
   return (
     <>
     <div className="upinfosbox">
@@ -1722,7 +2058,9 @@ function RightPart (props) {
         </div>
         {
           dmlist.map(item =>
-          <div className="onedanmu">
+          <div className="onedanmu"
+            key={item.id}
+          >
             <div className="times">{item.sendtime}</div>
             <div className="contents">{item.text}</div>
             <div className="sendtimes">{item.time.slice(0, 10)}</div>
@@ -1734,12 +2072,12 @@ function RightPart (props) {
     </div>
     {
       // 视频列表
-      true &&
+      videoinfo != null && videoinfo.listid !== -1 &&
         <div className="playlist">
           <div className="playlist-title">
             <div>
-              <span className="pt-span1">播放列表</span>
-              <span className="pt-span2">(1/10)</span>
+              <span className="pt-span1">{listname}</span>
+              <span className="pt-span2">({vlistindex} / {vlist.length})</span>
             </div>
             <div>
               <span className="pt-span2">自动连播</span>
@@ -1750,20 +2088,28 @@ function RightPart (props) {
             </div>
           </div>
           <div className="pt-infos">
-            <div>1</div>
-            <div>2</div>
+            <div className='otdiv1'>总播放量: {allplays}</div>
+            {/* <div>订阅列表</div> */}
           </div>
           <div className="videolist-content">
-            <div className={ true ? "one-videolist-vide vc-active" : "one-videolist-vide" }>
-              <span className="video-name">阿松大</span>
-              <span className="video-time">12:21</span>
-            </div>
+            {
+              vlist.map((item, index) =>
+                <div key={item.id}
+                  className={ vlistindex === index + 1 ? "one-videolist-vide vc-active" : "one-videolist-vide" }
+                  data-vid={item.vid}
+                  onClick={tothisvideo}
+                >
+                  <span className="video-name">{item.title}</span>
+                  <span className="video-time">{item.vidlong}</span>
+                </div>
+              )
+            }
           </div>
         </div>
     }
     {
       // 选集  番剧 电视剧。。。
-      true &&
+      false &&
       <div className="seasionlist">
         <div className="anima-title">
           <div>
@@ -1776,7 +2122,9 @@ function RightPart (props) {
         <div className="seasion-nums">
           {
             chapters.map((item, index) => 
-              <div className="one-div-chapter">{index + 1}</div>
+              <div className="one-div-chapter"
+                key={item.id}
+              >{index + 1}</div>
             )
           }
         </div>
@@ -1789,7 +2137,7 @@ function RightPart (props) {
         top: scrollflag ? '80px' : '0',
         }}>
         {
-          videolist.map(item =>
+          recommendlist.map(item =>
             <div className="onevideo" key={item.vid}>
               <div className="recom-video-box">
                 <div className="timebox">{item.vidlong}</div>
@@ -1844,17 +2192,12 @@ function Video () {
 
   const updateuser = async () => {
     console.log('硬币减一');
-    
     const res2 = await getByUid(userinfo.uid)
     localStorage.setItem('userinfo', JSON.stringify(res2))
     setUserinfo(res2)
   }
   return (
     <div className="video-box">
-      <Notice 
-        type={'success'}
-        content={'xixi'}
-      />
       <Topnav />
       <div className="video-inner">
         <div className="vid-leftp">

@@ -126,7 +126,7 @@
   position: static;
   width: 1054px;
   box-sizing: border-box;
-  padding-bottom: 80px;
+  padding-bottom: 20px;
   .topinfovid {
     box-sizing: border-box;
     padding-top: 20px;
@@ -311,10 +311,13 @@
           translate: 110% 0;
           position: absolute;
           color: #fff;
-          font-size: 20px;
           font-weight: 540;
+          line-height: 20px;
+          box-sizing: border-box;
+          text-underline-offset:3px;
           font-family: '-apple';
           animation: danmumove 8s linear;
+          font-weight: 550;
         }
       }
       @keyframes danmumove {
@@ -391,7 +394,7 @@
               font-size: 12px;
             }
           }
-          // 弹幕框
+          // 弹幕框   (全屏时候)
           .mid-dm-box {
             .mid-dm {
               width: 730px;
@@ -407,14 +410,14 @@
                 user-select: none;
                 position: relative;
                 &:hover {
-                    color: #32aeec;
-                    .innericon {
-                      color: #32AEEC;
-                    }
-                    .innericon2 {
-                      color: #32aaec;
-                    }
+                  color: #32aeec;
+                  .innericon {
+                    color: #32AEEC;
                   }
+                  .innericon2 {
+                    color: #32aaec;
+                  }
+                }
                 .innericon {
                   position: absolute;
                   width: 12px;
@@ -423,8 +426,8 @@
                   background-color: #fff;
                   color: #32AEEC;
                   font-size: 12px;
-                  bottom: 3px;
-                  right: 1px;
+                  bottom: 4px;
+                  right: -7px;
                 }
                  .innericon2 {
                   position: absolute;
@@ -434,8 +437,8 @@
                   background-color: #fff;
                   color: #686666;
                   font-size: 12px;
-                  bottom: 3px;
-                  right: 1px;
+                  bottom: 4px;
+                  right: -7px;
                 }
               }
               .danmusnedbox {
@@ -506,10 +509,10 @@
               user-select: none;
               margin-left: 20px;
               position: relative;
-              cursor: pointer;
               .textspan {
                 font-size: 13px;
                 color: #e4dfdf;
+                cursor: pointer;
                 &:hover {
                   color: #fff;
                 }
@@ -517,6 +520,7 @@
               .icon {
                 font-size: 18px;
                 color: #e4dfdf;
+                cursor: pointer;
                 &:hover {
                   color: #fff;
                 }
@@ -560,6 +564,7 @@
                 color: #e4dfdf;
                 text-align: center;
                 line-height: 36px;
+                cursor: pointer;
                 &:hover {
                   background-color: #5a5a5ae2;
                   border-radius: 2px;
@@ -586,6 +591,7 @@
                 color: #e4dfdf;
                 text-align: center;
                 line-height: 36px;
+                cursor: pointer;
                 &:hover {
                   background-color: #5a5a5ae2;
                   border-radius: 2px;
@@ -604,6 +610,7 @@
               translate: 50% 0;
               box-sizing: border-box;
               padding: 10px 0;
+              cursor: normal;
               .voicenum {
                 margin: 0;
                 width: 100%;
@@ -612,11 +619,39 @@
                 line-height: 20px;
                 font-size: 12px;
                 color: #e4dfdf;
+                margin-bottom: 5px;
               }
               .voiceprogress {
                 margin: 0;
                 width: 100%;
-                height: 60px;
+                height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .voice-pro1 {
+                  width: 2px;
+                  height: 100px;
+                  background-color: #e4dfdf;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: end;
+                  cursor: pointer;
+                  .voice-pro2 {
+                    width: 2px;
+                    height: 100%;
+                    background-color: #32aeec;
+                    position: relative;
+                  }
+                  .drag-btn {
+                    position: absolute;
+                    top: -6px;
+                    left: -5px;
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background-color: #32aeec;
+                  }
+                }
               }
             }
           }
@@ -707,28 +742,28 @@
                 color: #32aaec;
               }
             }
-          .innericon {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 6px;
-            background-color: #fff;
-            color: #32AEEC;
-            font-size: 12px;
-            bottom: 3px;
-            right: 1px;
-          }
-           .innericon2 {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 6px;
-            background-color: #fff;
-            color: #686666;
-            font-size: 12px;
-            bottom: 3px;
-            right: 1px;
-          }
+            .innericon {
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              border-radius: 6px;
+              background-color: #fff;
+              color: #32AEEC;
+              font-size: 12px;
+              bottom: 4px;
+              right: -7px;
+            }
+             .innericon2 {
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              border-radius: 6px;
+              background-color: #fff;
+              color: #686666;
+              font-size: 12px;
+              bottom: 4px;
+              right: -7px;
+            }
         }
         .danmusnedbox {
           flex: 1;
@@ -1109,6 +1144,7 @@
             display: flex;
             border: 1px solid #9a9c9e;
             border-radius: 4px;
+            position: relative;
             // box-sizing: border-box;
             .onechecked {
               margin: auto;
@@ -1125,9 +1161,11 @@
               color: #fff;
               background-color: #fff;
             }
-            .activebox {
-              width: 100%;
-              height: 100%;
+            .activebox11 {
+              position: absolute;
+              left: 0;
+              width: 20px;
+              height: 20px;
               text-align: center;
               line-height: 18px;
               // border-radius: 4px;
@@ -1523,12 +1561,14 @@
             display: flex;
             align-items: center;
             .cmback {
+              font-size: 13px;
+              color: #9499A0;
               cursor: pointer;
               &:hover {
                 color: #32AEEC;
               }
             }
-            span {
+            .timesp1 {
               font-size: 13px;
               color: #9499A0;
               user-select: none;
@@ -1537,18 +1577,19 @@
               height: 25px;
               margin: 0 20px;
               line-height: 25px;
-            }
-            div {
+              font-size: 13px;
+              color: #9499a0;
               cursor: pointer;
               &:hover {
-                span {
-                  color: #00AECC;
-                }
+                color: #00aeec;
               }
+            }
+            .lise-active {
+              color: #00aeec;
+            }
               .likenum {
                 margin-left: 5px;
               }
-            }
           }
         }
         .secondcomments {
@@ -1596,35 +1637,42 @@
                 }
               }
               .secondcommentinfos {
-                width: 100%;
-                height: 25px;
                 margin-top: 3px;
+                width: 100%;
+                line-height: 25px;
+                height: 25px;
                 display: flex;
                 align-items: center;
                 .cmback {
-                  cursor: pointer;
-                }
-                span {
-                  user-select: none;
                   font-size: 13px;
                   color: #9499A0;
+                  cursor: pointer;
+                  &:hover {
+                    color: #32AEEC;
+                  }
+                }
+                .timesp1 {
+                  font-size: 13px;
+                  color: #9499A0;
+                  user-select: none;
                 }
                 .liseli {
                   height: 25px;
-                  line-height: 25px;
                   margin: 0 20px;
-                }
-                div {
+                  line-height: 25px;
+                  font-size: 13px;
+                  color: #9499a0;
                   cursor: pointer;
                   &:hover {
-                    span {
-                      color: #00AECC;
-                    }
+                    color: #00aeec;
                   }
+                }
+                .lise-active {
+                  color: #00aeec;
+                }
                   .likenum {
                     margin-left: 5px;
                   }
-                }
               }
             }
           }
@@ -1633,13 +1681,12 @@
     }
   }
   .sendbox2bottom {
-    margin-top: 10px;
     box-sizing: border-box;
     padding: 15px 0;
     height: fit-content;
     position: fixed;
     bottom: 0;
-    width: 1054px;
+    // width: 1054px;
     background-color: #fff;
     border-top: 1px solid #E3E5E7;
     .snetext {
@@ -2060,8 +2107,11 @@
       display: flex;
       justify-content: space-between;
       border-bottom: 1px solid #e3e6e9;
-      div {
-
+      .otdiv1 {
+        height: 24px;
+        line-height: 24px;
+        font-size: 12px;
+        color: #9499A0;
       }
     }
     .videolist-content {
@@ -2085,12 +2135,19 @@
         user-select: none;
         .video-name {
           font: 15px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          word-break: break-all;
+          white-space: nowrap;
           color: #18191C;
         }
         .video-time {
+          margin-left: 15px;
           color: #9499A0;
+          margin-right: 3px;
         }
         &:hover {
+          background-color: #fff;
           .video-name {
             color: #32AEEC;
           }
@@ -2109,6 +2166,19 @@
         }
   
       }
+    }
+    .videolist-content::-webkit-scrollbar {
+      width: 6px;
+      background-color: transparent;
+    }
+    .videolist-content::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: #e3e5e7;
+      border-radius: 3px;
+    }
+    .videolist-content::-webkit-scrollbar-track {
+      width: 6px;
+      background-color: transparent;
     }
   }
   .recommendlist {

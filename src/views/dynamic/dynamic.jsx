@@ -17,7 +17,6 @@ function DynamicM () {
 
   const [dylist, setDylist] = useState([])
   const [textcontent, setText] = useState('')
-  const [textlength, setLength] = useState(0)
   const [imgs, setImgs] = useState([])
   const [imgsleng, setimglength] = useState(0)
 
@@ -25,6 +24,7 @@ function DynamicM () {
   const [postionfalg, setPostion] = useState(false)
   const [opationfalg , setOPationfalg] = useState(0)  // 1 转发   2 评论
   const [nowdyindex, setNowdyindex] = useState(-1)    // 当前所点击的，一次之打开一个
+  
   useEffect(() => {
     const getData = async () => {
       const res = await getDyanmciList(uid, 1)
@@ -35,7 +35,7 @@ function DynamicM () {
     }
     getData()
 
-    const topheigth = livingref.current.offsetTop
+    const topheigth = livingref.current.offsetTop + 64 // padding-top的距离    
     window.addEventListener('scroll', () => {
       const top = document.body.scrollTop || document.documentElement.scrollTop
       if (top >= topheigth) {
@@ -46,12 +46,7 @@ function DynamicM () {
     })
   },[])
 
-  const changinput = (e) => {
-    const text = e.target.value
-    setText(text)
-    setLength(text.length)
-  }
-
+  // 发送动态
   const senddy = async () => {
     if (textcontent === null && textcontent === "" && imgs.length === 0) {
       alert('不能为空')
@@ -78,25 +73,22 @@ function DynamicM () {
 
           // 清空原来数据
           setText('')
-          setLength(0)
           setImgs([])
           setimglength(0)
         }
       }
     } else {
       setText('')
-      setLength(0)
-    }
-    
+    }    
     const newlist = await getDyanmciList(uid, 1)
     setDylist(newlist)
   }
 
+  // 上传图片
   const inputimgs = (e) => {
     if (imgsleng === 9) {
       return
     }
-
     let files = e.target.files
     let temp = []
     for (let i = 0; i < files.length; i++) {
@@ -123,6 +115,7 @@ function DynamicM () {
     }    
   }
 
+  // 删除一张图片
   const deletethis = (e) => {
     const tindex= parseInt(e.target.dataset.index)
     setImgs(
@@ -145,12 +138,11 @@ function DynamicM () {
     setOPationfalg(2)
   }
 
+  // 方法一张图片
   const openimg = (e) => {
     // 阻止事件冒泡
     e.stopPropagation()
     e.preventDefault()
-
-    console.log('2333');
     
   }
   return (
@@ -205,7 +197,7 @@ function DynamicM () {
           <div className="send-mydynamic">
             <div className="sendbox-box">
               <textarea name="" id="" className="traea" placeholder='写点什么吧~'
-                onChange={changinput}
+                onChange={(e) => setText(e.target.value)}
                 value={textcontent}
               ></textarea>
             </div>
@@ -235,14 +227,15 @@ function DynamicM () {
                 <span className="icon iconfont">&#xe667;</span>
                 <span className="icon iconfont imgpin"
                 style={{color: imgsleng > 0 ? '#32AEEC' : '#18191C'}}>&#xe67f;
-                  <input type="file" className="inputimgs" accept="image/*" multiple
+                  <input type="file" className="inputimgs"
+                    accept="image/*" multiple
                     onChange={inputimgs}
                   />
                   </span>
                 <span className="icon iconfont">&#xe626;</span>
               </div>
               <div className='btn-d2'>
-                <span className="numtext">{textlength}</span>
+                <span className="numtext">{textcontent.length}</span>
                 <span className="icon iconfont">&#xe638;</span>
                 <span className="sendbox" onClick={senddy}>发送</span>
               </div>
@@ -476,7 +469,18 @@ function DynamicM () {
                       </div>
                     </div>
                   }
-                </div>)
+                </div>
+              )
+            }
+            {
+              dylist.length === 0 &&
+              <div className="noresult-videw">
+                <div className="noresult-img"
+                  style={{background: `url(${baseurl}/sys/nodata02.png)`,
+                                      backgroundPosition: 'center 50px',
+                                      backgroundRepeat: 'no-repeat'}}>
+                </div>
+              </div>
             }
           </div>
         </div>

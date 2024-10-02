@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import "./sum"
 import { Link } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { getVideoFormList, getUnaddVideo, addVideoToList } from "../../../api/videolist"
+import { getVideoFormList, getUnaddVideo, addVideoToList, deleteVideoList, chanegListInfo, getUserListOne } from "../../../api/videolist"
+import { updateinfo } from "../../../api/video"
 import { tovideo } from "../../../util/fnc"
 
 function Allvideos() {
@@ -11,18 +12,32 @@ function Allvideos() {
   const listid =  params.listid
   const [viewflag, setViewflag] = useState(false)
 
+  const [listinfo, setListinfo] = useState()
+
   const [videos, setVideos] = useState([])
   const [unvideos, setUnvideos] = useState([])
   const [selectlist, setSelectlist] = useState([])  // 要添加的视频列表
 
+  const [deletefalg1, setDeletefalg1] = useState(false)
+  const [editorflag, setEditorfalg] = useState(0)    // 1 编辑  2 删除
+
+  const [titleinp, setTitleinp] = useState(""),
+        [introinp, setIntroinp] = useState("")
+
+  const [videoeditor, setVideoeditor] = useState(-1)
 
   useEffect(() => {
     const getData = async () => {
       const res = await getVideoFormList(listid)
       setVideos(res)
-      const res2 = await getUnaddVideo(listid, uid)
+      const res2 = await getUnaddVideo(uid)
       setUnvideos(res2)
       setSelectlist(new Array(res2.length).fill(false))
+
+      const res3 = await getUserListOne(listid)
+      setListinfo(res3)
+      setTitleinp(res3.title)
+      setIntroinp(res3.intro)
     }
     getData()
   },[])
@@ -36,6 +51,7 @@ function Allvideos() {
     tocloseview()
   }
 
+  // 添加视频到列表中
   const onHandle2 = async () => {
     const vids = []
     for (let i = 0; i < selectlist.length; i++) {
@@ -43,9 +59,16 @@ function Allvideos() {
         vids.push(unvideos[i].vid)
       }
     }
-    const res = await addVideoToList(listid, vids, uid)
+    const res = await addVideoToList(listid, uid, vids)
     if (res) {
       console.log('add sunccess');
+      // 更新列表内容
+      const res2 = await getVideoFormList(listid)
+      setVideos(res2)
+      // 更新未添加列表
+      const res3 = await getUnaddVideo(uid)
+      setUnvideos(res3)
+      setSelectlist(new Array(res3.length).fill(false))
       tocloseview()
     }
   }
@@ -57,6 +80,53 @@ function Allvideos() {
       else return item
     }))
   }
+
+  // ...
+  const deletebtnfnc = (e) => {
+    if (e.target.className === 'delete-append') {
+      setEditorfalg(2)
+    }
+    setDeletefalg1(false)
+  }
+
+  const chaneginfo = async () => {
+    const data = {
+      listid: listid,
+      title: titleinp,
+      intro: introinp
+    }
+    const res = await chanegListInfo(data)
+    setEditorfalg(0)
+  }
+
+  // 删除列表
+  const navigate = useNavigate()
+  const deletelist = async () => {
+    const res = await deleteVideoList(listid)
+    setEditorfalg(0)
+    if (res) {
+      navigate(`/${uid}/channel`)
+    }
+  }
+  
+  // 删除视频
+  const [nowvid, setNowvid] = useState(-1)
+  const deletethisvid = async () => {
+    const data = {
+      vid: nowvid,
+      listid: -1,
+      type: 10   // 更新视频listid
+    }
+    console.log(data);
+    
+    const res = await updateinfo(data)
+    if (res) {
+      const res2 = await getVideoFormList(listid)
+      setVideos(res2)
+    }
+    setNowvid(-1)
+    setEditorfalg(0)
+  }
   return (
     <div className="sum-view">
       <div className="title-sum">
@@ -65,15 +135,101 @@ function Allvideos() {
             <div className="title-span">我的合集和视频列表</div>
           </Link>
          <div className="icon iconfont rightsp">&#xe775;</div>
-         <div className="titel-span2">233</div>
+         <div className="titel-span2">{listinfo != null ? listinfo.title : ""}</div>
         </div>
       </div>
       <div className="list-infos-line">
         <div className="lil1-box">
           <span className="lil1-span1">{videos.length}个视频</span>
         </div>
-        <div className="lil2-box">233</div>
+        <div className="lil2-box">
+          <div className="editorbox"
+            onClick={() => setEditorfalg(1)}
+          >编辑</div>
+          <div className="deletebox">
+            <span className="icon iconfont"
+              onClick={() => {
+                setDeletefalg1(true)
+              }}
+            >&#xe653;</span>
+            {
+              deletefalg1 &&
+              <div className="delete-append"
+                onClick={() => {
+                  setDeletefalg1(false)
+                  setEditorfalg(2)
+                }}
+              >删除这个视频列表</div>
+            }
+          </div>
+        </div>
       </div>
+      {
+        editorflag > 0 &&
+        <div className="append-view-videosum">
+          {
+            editorflag === 1 &&
+            <div className="editor-view">
+              <div className="editor-title">编辑列表信息</div>
+              <div className="title-input">
+                <input type="text" className="titleinp"
+                  placeholder="标题"
+                  value={titleinp}
+                  onChange={(e) => setTitleinp(e.target.value)}
+                />
+              </div>
+              <div className="intro-input">
+                <textarea className="introinp"
+                  placeholder="简介"
+                  value={introinp}
+                  onChange={(e) => setIntroinp(e.target.value)}
+                ></textarea>
+              </div>
+              <div className="editor-line">
+                <div className="dbl-btn1"
+                  onClick={() => {
+                    setEditorfalg(0)
+                    setTitleinp("")
+                    setIntroinp("")
+                  }}
+                >取消</div>
+                <div className="dbl-btn2"
+                  onClick={chaneginfo}
+                >确定</div>
+              </div>
+            </div>
+          }
+          {
+            editorflag === 2 &&
+            <div className="delete-view">
+              <div className="delete-title">确定删除这个列表</div>
+              <div className="delete-btn-line">
+                <div className="dbl-btn1"
+                  onClick={() => setEditorfalg(0)}
+                >取消</div>
+                <div className="dbl-btn2"
+                  onClick={deletelist}
+                >删除</div>
+              </div>
+            </div>
+          }
+          {
+            editorflag === 3 &&
+            <div className="delete-view">
+              <div className="delete-title">确定删除这个视频</div>
+              <div className="delete-btn-line">
+                <div className="dbl-btn1"
+                  onClick={() => setEditorfalg(0)}
+                >取消</div>
+                <div className="dbl-btn2"
+                  onClick={deletethisvid}
+                >删除</div>
+              </div>
+            </div>
+          }
+        </div>
+
+      }
       <div className="box-content-videlost">
       <div className="sum-content1">
         <div className="add-newlist-bnt" onClick={() => setViewflag(true)}>
@@ -81,13 +237,33 @@ function Allvideos() {
           <span>添加视频</span>
         </div>
         {
-          videos.map(item=>
+          videos.map((item, index) =>
             <div className="one-vlist-box" key={item.vid}>
               <div className="ovb-top">
                 <img src={item.cover} alt="" className="style1-img"  data-vid={item.vid} onClick={tovideo}/>
                 <div className="right-time-2">{item.vidlong}</div>
               </div>
-              <div className="ovb-btn2" data-vid={item.vid} onClick={tovideo}>{item.title}</div>
+              <div className="ovb-btn2">
+                <div className="title-box-ss1"
+                  data-vid={item.vid}
+                  onClick={tovideo}
+                >{item.title}</div>
+                <div className="right-deitor-box">
+                  <span className="icon iconfont"
+                    onClick={() => setVideoeditor(index)}
+                  >&#xe653;</span>
+                  {
+                    videoeditor === index &&
+                    <div className="video-editor-box"
+                      onClick={() => {
+                        setNowvid(item.vid)
+                        setEditorfalg(3)
+                        setVideoeditor(-1)
+                      }}
+                    >删除此视频</div>
+                  }
+                </div>
+              </div>
             </div>
           )
         }

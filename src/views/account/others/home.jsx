@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import './home.scss'
+import { useParams } from 'react-router-dom'
 
 
 function AccountHome () {
-  const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-
-  const [flag1, setFlag1] = useState(true)
+  const params = useParams()
+  const uid = params.uid
+  const [userinfo, setUserinfo] = useState(() => JSON.parse(localStorage.getItem('userinfo')))
+  const [flag1, setFlag1] = useState(false)
   const [flag2, setFlag2] = useState(false)
   const [flag3, setFlag3] = useState(false)
 
@@ -17,14 +19,14 @@ function AccountHome () {
           <div className="uname-acc">{userinfo.name}</div>
           <div className="ua-mang-infos">
             <div className="lv-box">
-              LV6
+              LV{userinfo.lv}
               <div className="up-tangle"></div>
               <div className="down-tangle"></div>
             </div>
             <div className="lv-progress">
               <div className="done-lv-pro"></div>
             </div>
-            <span className="lv-numtext">50 / 23333</span>
+            <span className="lv-numtext">{userinfo.exp} / 23333</span>
           </div>
           <div className="ua-otherinfo">
             <span className="icon iconfont">&#xe617;</span>

@@ -1,10 +1,18 @@
 import http from ".";
 
-// 获得一个列表
+// 获得用户的播放列表
 export function getUserVideoList(uid) {
   return http({
     method: 'GET',
-    url: `/video/getUserVideoList/${uid}`,
+    url: `/video/getUserVideoList/${uid}`
+  })
+}
+
+// 获得一个播放列表
+export function getUserListOne(listid) {
+  return http({
+    method: 'GET',
+    url: `/video/getUserListOne/${listid}`
   })
 }
 
@@ -18,10 +26,10 @@ export function addVideoList(data) {
 }
 
 // 添加视频到列表中
-export function addVideoToList(listid, vids, uid) {
+export function addVideoToList(listid, uid, vids) {
   return http({
     method: 'GET',
-    url: `/video/addVideoToList/${listid}/${vids}/${uid}`
+    url: `/video/addVideoToList/${listid}/${uid}/${vids}`
   })
 }
 
@@ -34,9 +42,26 @@ export function getVideoFormList(listid) {
 }
 
 // 一个列表中未添加过的视频
-export function getUnaddVideo(listid, uid) {
+export function getUnaddVideo(uid) {
   return http({
     method: 'GET',
-    url: `/video/getUnaddVideo/${listid}/${uid}`
+    url: `/video/getUnaddVideo/${uid}`
   })
 }
+
+// 改变信息
+export function chanegListInfo (data) {
+  return http({
+    method: 'POST',
+    url: '/video/chanegListInfo',
+    data: data
+  })
+}
+
+export function deleteVideoList (listid) {
+  return http({
+    method: 'GET',
+    url: `/video/deleteVideoList/${listid}`
+  })
+}
+

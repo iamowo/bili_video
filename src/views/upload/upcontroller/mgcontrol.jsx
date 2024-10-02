@@ -4,7 +4,7 @@ import { getAllv, userdeletevideo, userChnageInfo } from "../../../api/video"
 import { useParams } from "react-router-dom"
 import { baseurl } from "../../../api"
 
-function Vdieocontrol() {
+function Mgcontrol() {
   const params = useParams()
   const uid = params.uid
 
@@ -209,4 +209,4 @@ function Vdieocontrol() {
   )
 }
 
-export default Vdieocontrol
+export default Mgcontrol

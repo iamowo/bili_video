@@ -6,7 +6,7 @@ import { RouterProvider } from "react-router-dom";
 
 import './static/font/iconfont.css'
 import router from './router';
-import store from './store'; // redux 的根store
+import store from './store';           // redux 的根store
 import { Provider } from 'react-redux';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

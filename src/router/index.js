@@ -13,6 +13,8 @@ import Artical from "../views/user/video/article";
 import Videos from "../views/user/video/videos";
 import Mainhome from "../views/user/main/main";
 import Search from "../views/user/search/search";
+import SearchVideo from "../views/user/search/searchvideo";
+import SearchDynamic from "../views/user/search/searchDynamic";
 import Favlist from "../views/user/favlist/favlist"
 import Anima from "../views/user/anima/anima"
 import Setting from "../views/user/setting/setting"
@@ -59,6 +61,8 @@ import Upcenter from "../views/upload/upcenter/upcentr";
 import Control from "../views/control/control";
 import Vdieocontrol from "../views/upload/upcontroller/videocontrol";
 import Upvideo2 from "../views/upload/upvideo2/upvideo2";
+import Upmg from "../views/upload/upmg/Upmg";
+import Mgcontrol from "../views/upload/upcontroller/mgcontrol";
 
 // live
 import Livinghoom from "../views/living/livinghome/livinghoow";
@@ -81,6 +85,8 @@ import AllMaintag from "../views/maintag/moreview";
 
 // error
 import Error from "../views/404/error"
+
+import Test from "../views/testV/test";
 
 const router = createBrowserRouter([
   {
@@ -122,7 +128,18 @@ const router = createBrowserRouter([
       },
       {
         path: 'search',
-        element: <Search />
+        element: <Search />,
+        children: [
+          {
+            index: true,
+            path: 'video/:keyword',
+            element: <SearchVideo />
+          },
+          {
+            path: 'dynamic/:keyword',
+            element: <SearchDynamic />
+          }
+        ]
       },
       {
         // 不带fid时默认收藏夹
@@ -276,8 +293,16 @@ const router = createBrowserRouter([
         element: <Vdieocontrol />
       },
       {
+        path: "manager/mg",
+        element: <Mgcontrol />
+      },
+      {
         path: "upvideo2",
         element: <Upvideo2 />
+      },
+      {
+        path: 'uploadmg',
+        element: <Upmg />
       }
     ]
   },
@@ -318,8 +343,12 @@ const router = createBrowserRouter([
     ]
   },
   {
-    path: '/audit',
+    path: 'audit',
     element: <Audit />
+  },
+  {
+    path: 'test',
+    element: <Test />
   },
   {
     path: '*',

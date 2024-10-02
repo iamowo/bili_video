@@ -5,6 +5,7 @@ import { getDyanmciList } from '../../../api/dynamic'
 import { tovideo, touserspace } from '../../../util/fnc'
 import { useParams } from 'react-router-dom'
 import { getByUid } from '../../../api/user'
+import { baseurl } from '../../../api'
 
 function Dynamic () {
   const params = useParams()
@@ -39,7 +40,7 @@ function Dynamic () {
                 <div className="dy-right-box">
                   <div className="dy-toptitle">
                     <div className="dy-top1">{item.name}</div>
-                    <div className="dy-top2">{item.time}</div>
+                    <div className="dy-top2">{item.time.slice(0, 10)}</div>
                   </div>
                   <div className="dy-onecontentbox">
                     <div className="dy-text">{item.content}</div>
@@ -87,7 +88,18 @@ function Dynamic () {
               </div>
             )
           }
-          <div className="dynamic-bottom-span">没有更多了~</div>
+          {
+            dynamiclist.length > 0 ?
+            <div className="dynamic-bottom-span">没有更多了~</div>
+            :
+            <div className="noresult-videw">
+              <div className="noresult-img"
+                style={{background: `url(${baseurl}/sys/nodata02.png)`,
+                                    backgroundPosition: 'center 50px',
+                                    backgroundRepeat: 'no-repeat'}}>
+              </div>
+            </div>
+          }
         </div>
       <div className="dynamic-right-content">
         <div className="rightuserinfo">

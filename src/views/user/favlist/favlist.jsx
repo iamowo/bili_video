@@ -1,10 +1,11 @@
 import './favlist.scss'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getFavlist, getOneList, addOneFavlist, deleteFav, updateFav } from '../../../api/favlist'
+import { getFavlist, getOneList, addOneFavlist, deleteFav, updateFav, deleteVideoFromFav, deleteMangFav } from '../../../api/favlist'
 import {tovideo} from '../../../util/fnc'
 import { getByUid } from '../../../api/user'
 import { useOutletContext } from 'react-router-dom'   // 获取父传给子的数据
+import { searchKw } from '../../../api/video'
 
 function Favlist () {
   const isme = useOutletContext()        // 是不是本人空间
@@ -22,7 +23,13 @@ function Favlist () {
     nums: '',
     pub: 0
   })
-  const [videolist, setVideolist] = useState([])
+  const [opationflag, setOpationflag] = useState(false)   // 操作收藏夹flag
+  const [videolist, setVideolist] = useState([]),
+        [templist, setTemplist] = useState([]),
+        [checkedall, setCheckedall] = useState(false),    // 全选
+        [checked, setChecked] = useState([]),
+        [checkednum, setCheckednum] = useState(0)
+
   const [leftindex, setLefindex] = useState(0)         // 左侧列表index，用于列表之间切换用
   const [newfavfalg, setNewfavflag] = useState(false)
   const [createtitle, setCreatetitle] = useState("")
@@ -30,19 +37,29 @@ function Favlist () {
 
   const params = useParams()
   const uid = parseInt(params.uid)  // up 的uid
+  let fid = parseInt(params.fid)
   const [defaultfid, setDefaid] = useState()        // 默认收藏夹id
+
+  const [deleteindex, setDeleteindex] = useState(-1),
+        [deletevid, setDeletevid] = useState(-1)
+
+  const [sortstyle, setSortstyle] = useState(0),    // 0 最新  1 播放量
+        [sortflag, setSortflag] = useState(false)
+
+  const [keyword, setKeyword] = useState("")
+
   useEffect(() => {
     const getData = async() => {
       const res = await Promise.all([getFavlist(uid, -1), getByUid(uid)])
       setFavlist(res[0])        // 左侧列表
-      
+
       setDefaid(res[1].defaultfid)
       const tempdefaultfid = res[1].defaultfid
 
-      const res2 = await getOneList(tempdefaultfid)
+      const res2 = await getOneList(tempdefaultfid, 0, null)
       setVideolist(res2)      // 一个收藏夹中的视频
-      console.log(res2);
-      
+      setTemplist(res2)
+      setChecked(new Array(res2.length).fill(false))
 
       const ninfo = {
         title: res[0][0].title,
@@ -52,6 +69,11 @@ function Favlist () {
         pub: res[0][0].pub
       }
       setNowinfos(ninfo)
+
+      // 表示为默认收藏夹
+      if (fid === 'NaN') {
+        fid = res[0][leftindex].fid
+      }
     }
     getData()
   },[])
@@ -60,9 +82,10 @@ function Favlist () {
     const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
     const fid = parseInt(e.target.dataset.fid || e.target.parentNode.dataset.fid)
     setLefindex(index)
-    const res = await getOneList(fid)
+    const res = await getOneList(fid, 0, null)
     console.log('...',res);
     setVideolist(res)
+    setChecked(new Array(videolist.length).fill(false))
     const ninfo = {
       title: favlist[index].title,
       cover: favlist[index].cover,
@@ -155,12 +178,92 @@ function Favlist () {
     if (res) {
       setFavlist(res)
     }
-    toclosedelete()
+    setDeleteflag(false)
   }
 
-  // 关闭删除
-  const toclosedelete = () => {
-    setDeleteflag(false)
+
+  // 删除一个视频
+  const deletefavvidedo = async () => {
+    console.log(fid, deletevid);
+    const res = await deleteVideoFromFav(fid, deletevid)
+    if (res) {
+      const res2 = await getOneList(fid, 0, null)
+      setVideolist(res2)      // 一个收藏夹中的视频
+      setChecked(new Array(videolist.length).fill(false))
+    }
+    setDeletevid(-1)
+    setDeleteindex(-1)
+  }
+
+  const choivethissort = async (type) => {
+    setSortstyle(parseInt(type))
+    const res = await getOneList(fid, type, null)
+    if (res) {
+      setVideolist(res)
+      setChecked(new Array(videolist.length).fill(false))
+    }
+    setSortflag(false)
+  }
+
+  // 搜索
+  const ensearch = async () => {
+    if (keyword.length === 0) {
+      setVideolist(templist)
+      setChecked(new Array(videolist.length).fill(false))
+      return
+    }
+    const nlist = videolist.filter(item =>    
+      item.title.includes(keyword)
+    )
+    if (nlist === 0) {
+      alert('没有结果')
+      return
+    }
+    console.log(nlist);
+    
+    // const res = await getOneList(fid, 0, keyword)
+    setVideolist(nlist)
+    setChecked(new Array(nlist.length).fill(false))
+  }
+
+  const entertosearch = (e) => {
+    if (e.key === 'Enter') {
+      ensearch()
+    }
+  }
+
+  // 批量操作
+  const clickthisvideochecked = (index) => {
+    const newlist = checked.map((item, ind) => {
+      if (ind === index) {
+        if (!item) {
+          setCheckednum(checkednum + 1)
+        } else {
+          setCheckednum(checkednum - 1)
+        }
+        return !item
+      }
+      return item
+    })
+    setChecked(newlist)
+  }
+
+  // 批量删除
+  const deletemang = async () => {
+    const vids = []
+    fid = params.fid || favindex[leftindex].fid
+    checked.forEach((item, index) => {
+      if (item) {
+        vids.push(videolist[index].vid)
+      }
+    })
+    const res = await deleteMangFav(fid, vids);
+    if (res) {
+      const res2 = await getOneList(fid, 0, null)
+      setVideolist(res2)      // 一个收藏夹中的视频
+      setChecked(new Array(videolist.length).fill(false))
+    }
+    setOpationflag(false)
   }
   return (
     <div className="user-videos">
@@ -217,12 +320,12 @@ function Favlist () {
           <div className="new-fav-box">
             <div className="nfb-title">
               <span className="ntb-title">确认提示</span>
-              <div className="icon iconfont" onClick={toclosedelete}>&#xe643;</div>
+              <div className="icon iconfont" onClick={() => setDeleteflag(false)}>&#xe643;</div>
             </div>
             <div className="text-line1">确认删除这个收藏夹吗?</div>
             <div className="send-lin-two">
               <div className="inner-one" data-fid={1} onClick={suretodelete}>确认</div>
-              <div className="inner-one2" onClick={toclosedelete}>取消</div>
+              <div className="inner-one2" onClick={() => setDeleteflag(false)}>取消</div>
             </div>
           </div>
         </div>
@@ -277,7 +380,7 @@ function Favlist () {
             <div className="fav-listname">{nowinfos.title}</div>
             <div className="fav-userinfos">
               <span style={{marginRight: '15px'}}>创建者: {nowinfos.name}</span>
-              <span>播放次数: 22</span>
+              <span>播放次数: 0</span>
             </div>
             <div className="fav-userinfos">
               <span className='icon1'>{nowinfos.nums}个内容</span>
@@ -291,40 +394,117 @@ function Favlist () {
             </div>
           </div>
         </div>
-        <div className="control-opation">
-          <div className="opa1">
-            <span>批量操作</span>
+        {
+          opationflag ?
+          <div className="control-opation2">
+            <div className="co-line1">
+              <div className="back-tofav"
+                onClick={() => setOpationflag(false)}
+              >
+                <div className="icon iconfont">&#xe775;</div>
+                <span>返回</span>
+              </div>
+            </div>
+            <div className="co-line2">
+              <div className="coline2-left">
+                <div className="one-co-let">
+                  <label htmlFor="ckall">
+                    <input id="ckall" type="checkbox" className="checkall"
+                      checked={checkedall}
+                      value={checkedall}
+                      onChange={() => setCheckedall(!checkedall)}
+                    />
+                    <span>全选</span>
+                  </label>
+                </div>
+                <div className="one-co-let">
+                  <div className="delete-video-btn"
+                    onClick={deletemang}
+                  >
+                    取消收藏
+                  </div>
+                </div>
+              </div>
+              <div className="coline2-right">已选择{checkednum}个视频</div>
+            </div>
           </div>
-          <div className="opa1">
-            <span>全部分区</span>
+          :
+          <div className="control-opation">
+            <div className="opa1"
+              onClick={() => {
+                if (videolist.length === 0) {
+                  return
+                }
+                setOpationflag(true)
+              }}
+            >
+              <span>批量操作</span>
+            </div>
+            <div className="opa1">
+              {
+                sortstyle == 0 ?
+                  <span
+                  onClick={() => setSortflag(true)}
+                >最近收藏</span>
+                :
+                <span
+                  onClick={() => setSortflag(true)}
+                >最多播放</span>
+              }
+              {
+                sortflag &&
+                <div className="append-two-box">
+                  <div className="ap1"
+                    onClick={() => choivethissort(0)}
+                  >最近收藏</div>
+                  <div className="ap1 ap11"
+                    onClick={() => choivethissort(1)}
+                  >最多播放</div>
+                </div>
+              }
+            </div>
+            <div className="searchopabox">
+              <input type="text" className="searchinp"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={entertosearch}
+              />
+              <span className='icon iconfont'
+                onClick={ensearch}
+              >&#xe6a8;</span>
+            </div>
           </div>
-          <div className="opa1">
-            <span>最近收藏</span>
-          </div>
-          <div className="searchopabox">
-            <input type="text" className="searchinp" />
-            <span>?</span>
-          </div>
-        </div>
-        <div className="control-opation2">
-
-        </div>
+        }
         <div className="video-contentparta">
         {
-          videolist.map(item =>
+          videolist.map((item, index) =>
           <div className="one-videopart" key={item.id}>
             <div className="one-fav-box1">
               <div className="ofb-out-box">
                 <img src={item.cover} alt="" className="ofb-top-img" />
-                <div className="tiem-one-box">{item.vidlong}</div>
-                <div className="fav-one-mask-box"
-                  data-vid={item.vid}
-                  onClick={tovideo}>
-                  <span className="fomb-sp">播放: {item.plays}</span>
-                  <span className="fomb-sp">收藏: {item.favorites}</span>
-                  <span className="fomb-sp">up主: {item.name}</span>
-                  <span className="fomb-sp">投稿: {item.time.slice(0, 10)}</span>
-                </div>
+                {
+                  opationflag ?
+                  <div className="mask-favlist2"
+                    onClick={() => clickthisvideochecked(index)}
+                  >
+                    <input type="checkbox" className="falvcheck"
+                      checked={checked[index]}
+                      value={checked[index]}
+                    />
+                  </div>
+                  :
+                  <div className="mask-favlist1">
+                    <div className="tiem-one-box">{item.vidlong}</div>
+                    <div className="fav-one-mask-box"
+                      data-vid={item.vid}
+                      onClick={tovideo}>
+                      <span className="fomb-sp">播放: {item.plays}</span>
+                      <span className="fomb-sp">收藏: {item.favorites}</span>
+                      <span className="fomb-sp">up主: {item.name}</span>
+                      <span className="fomb-sp">投稿: {item.time.slice(0, 10)}</span>
+                    </div>
+                  </div>
+                }
               </div>
               <div className="ofb-bt-title"
                 data-vid={item.vid}
@@ -332,7 +512,20 @@ function Favlist () {
               >{item.title}</div>
               <div className="ofb-bt-info">
                 <span className="llspan-p1">收藏于: {item.time.slice(0, 10)}</span>
-                <span className="rrspan-p2 icon iconfont">&#xe653;</span>
+                <div className="control-box">
+                  <span className="rrspan-p2 icon iconfont"
+                    onClick={() => {
+                      setDeletevid(item.vid)
+                      setDeleteindex(index)
+                    }}
+                  >&#xe653;</span>
+                  {
+                    deleteindex === index &&
+                    <div className="append-deletebox"
+                      onClick={deletefavvidedo}
+                    >删除视频</div>
+                  }
+                </div>
               </div>
             </div>
           </div>

@@ -48,6 +48,14 @@ export function getVideoLikely(vid) {
   })
 }
 
+// 获得二已经上传过的切片
+export function getAlready(hashValue, uid) {
+  return http ({
+    method: 'GET',
+    url: `/video/getAlready/${hashValue}/${uid}`
+  })
+}
+
 // 上传视频信息
 export function uploadVideoInfos(data) {
   return http ({
@@ -67,10 +75,10 @@ export function uploadChunks(data) {
 }
 
 // 和并切片
-export function mergeChunks() {
+export function mergeChunks(uid, vid) {
   return http ({
     method: 'GET',
-    url: '/video/mergeChunks',
+    url: `/video/mergeChunks/${uid}/${vid}`
   })
 }
 

@@ -1,30 +1,20 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
-import { getVideoByUid } from "../../../api/video"
+import { useState } from "react"
+import "./search.scss"
+import { useParams, Link } from "react-router-dom"
 import { baseurl } from "../../../api/index"
 
-function Videos () {
+function SearchVideo() {
   const params = useParams()
   const uid = params.uid  
-  const [videolist, setVideolist] = useState([])
-  const [videostyle, setVideostyle] = useState(0)
-  const [videostyle2, setVideostyle2] = useState(0)
+  const keyword = params.keyword
+  const [videolist, setVideolist] = useState([
 
-  useEffect(() => {
-    const getData = async () => {
-      const res = await getVideoByUid(uid, 0)
-      console.log(res);
-      setVideolist(res)
-    }
-
-    getData()
-  },[])
-
+  ])
   return (
     <div>
       <div className="video-right-title-sss">
         <div>
-          <span className="vrt-sp1">视频</span>
+          <span className="vrt-sp1">TA的视频</span>
           <span className="sort1">最新发布</span>
           <span className="sort1">最多播放</span>
           <span className="sort1">最多收藏</span>
@@ -33,7 +23,12 @@ function Videos () {
       </div>
       {
         videolist.length > 0 ?
-        <div>
+        <div className="search-video-view">
+          <div className="search-line-spicale">
+            <span className="sls-sp1">共找到关于“ {keyword} ”的</span>
+            <span className="sls-sp2"> {12} </span>
+            <span className="sls-sp1">个视频</span>
+          </div>
           <div className="selectline2">
             <div>
               <span className="sptext">全部</span>
@@ -76,10 +71,16 @@ function Videos () {
                                 backgroundPosition: 'center 50px',
                                 backgroundRepeat: 'no-repeat'}}>
           </div>
+          <div className="ssp2-nores">没有找到“ {keyword} ”的动态哦</div>
+          <div className="watch-moreline">
+            <Link to={`/${uid}/videos`}>
+              <div className="look-all-dy">查看全部视频</div>
+            </Link>
+          </div>
         </div>
       }
     </div>
   )
 }
 
-export default Videos
+export default SearchVideo

@@ -15,16 +15,17 @@
   left: 0;
   z-index: 1;
   background-color: #fff;
-  .contnetnbox {
+  .contnetnboxtop {
     display: flex;
     align-items: center;
-    .up-icon {
-      font-size: 25px;
-      font-weight: 560;
-      color: #32AECC;
-      margin-right: 20px;
-    }
+    justify-content: center;
     a {
+      .up-icon {
+        font-size: 25px;
+        font-weight: 560;
+        color: #32AECC;
+        margin-right: 20px;
+      }
       text-decoration: none;
     }
     .icon {

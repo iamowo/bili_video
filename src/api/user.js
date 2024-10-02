@@ -85,5 +85,21 @@ export function getFans(uid) {
   })
 }
 
+export function getSetting(uid) {
+  return http({
+    method: 'GET',
+    url: `/user/getSetting/${uid}`
+  })
+}
+
+// 空间设置
+export function changeSetting(data) {
+  return http({
+    method: 'POST',
+    url: '/user/changeSetting',
+    data: data
+  })
+}
+
 
 

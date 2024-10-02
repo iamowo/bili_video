@@ -1,9 +1,9 @@
 import http from ".";
 
-export function getAllComment(vid) {
+export function getAllComment(vid, uid, type) {
   return http({
     method: 'GET',
-    url: `/comment/getAllComment/${vid}`
+    url: `/comment/getAllComment/${vid}/${uid}/${type}`
   })
 }
 
@@ -19,5 +19,20 @@ export function deleteComment(id, vid) {
   return http({
     method: 'GET',
     url: `/comment/deleteComment/${id}/${vid}`
+  })
+}
+
+export function addLikeinfo (data) {
+  return http({
+    method: 'POST',
+    url: '/comment/addLikeinfo',
+    data: data
+  })
+}
+
+export function deletelikeinfo (cid, uid) {
+  return http({
+    method: 'GET',
+    url: `/comment/deletelikeinfo/${cid}/${uid}`
   })
 }

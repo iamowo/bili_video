@@ -21,7 +21,7 @@ function Sum() {
     const getData = async () => {
       const res = await getUserVideoList(uid)
       setVlist(res)
-      const res2 = await getUnaddVideo(-1, uid)  // listid = -1 时， 查找全部视频
+      const res2 = await getUnaddVideo(uid)  // listid = -1 时， 查找全部视频
       setUnvideos(res2)
       setSelectlist(new Array(res2.length).fill(false))
     }
@@ -67,6 +67,7 @@ function Sum() {
     tocloseview()
   }
 
+  // 确认提交
   const onHandle2 = async () => {
     const vids = []
     for (let i = 0; i < selectlist.length; i++) {
@@ -74,11 +75,14 @@ function Sum() {
         vids.push(unvideos[i].vid)
       }
     }
-    const res = await addVideoToList(newlistid, vids, uid)
+    const res = await addVideoToList(newlistid, uid, vids)
     if (res) {
-      console.log('add sunccess');
       const res2 = await getUserVideoList(uid)
       setVlist(res2)
+      // 更新列表
+      const res3 = await getUnaddVideo(uid)  // listid = -1 时， 查找全部视频
+      setUnvideos(res3)
+      setSelectlist(new Array(res3.length).fill(false))
       tocloseview()
     }
   }

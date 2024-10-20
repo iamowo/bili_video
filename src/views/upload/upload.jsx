@@ -35,11 +35,12 @@ function Upload () {
         <div className="ua-left">
           <Link to={`/${uid}/platform/upload/video`}  onClick={() => setLeftindex(0)}>
             <div className="upload-btn">
-              <span className="icon iconfont">投稿</span>
+              <span className="icon iconfont">上传</span>
             </div>
           </Link>
           {
-            userinfo.permissions >= 1 &&
+            // userinfo.permissions >= 1 &&
+            false &&
               <Link to={`/${uid}/platform/upvideo2`}  onClick={() => setLeftindex(0)}>
               <div className="upload-btn">
                 <span className="icon iconfont">上传</span>
@@ -68,8 +69,8 @@ function Upload () {
             <Link to={`/${uid}/platform/manager/video`} onClick={() => setLeftindex(2)}>
               <div className={ leftindex === 2 ? "moere-up-box moere-up-box-active" :"moere-up-box"}>视频稿件</div>
             </Link>
-            <Link to={`/${uid}/platform/manager/mg`} onClick={() => setLeftindex(2)}>
-              <div className={ leftindex === 2 ? "moere-up-box moere-up-box-active" :"moere-up-box"}>漫画稿件</div>
+            <Link to={`/${uid}/platform/manager/mg`} onClick={() => setLeftindex(3)}>
+              <div className={ leftindex === 3 ? "moere-up-box moere-up-box-active" :"moere-up-box"}>漫画稿件</div>
             </Link>
           </div>
         </div>

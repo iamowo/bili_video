@@ -2,36 +2,64 @@ import './index.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import Dynamic from '../user/dynamic/dynamic'
 import { useEffect, useRef, useState } from 'react'
-import { getDyanmciList, sendDynamic, sendDyimgs } from '../../api/dynamic'
+import { getDyanmciList, sendDynamic, sendDyimgs, updateDyinfo, getAllTopical,  addTopical ,addTopicalWatchs, addTopicalCount } from '../../api/dynamic'
+import { getHomeDynamic } from '../../api/video'
 import Totop from '../../components/toTop/totop'
-import { tovideo, touserspace } from '../../util/fnc'
-import { todynamic } from '../../util/fnc'
 import { baseurl } from '../../api'
+import DynamicCom from '../../components/dynamic/dynamicCom'
+import message from '../../components/notice/notice'
+import { setuserinfo } from '../../store/modules/userStore'
+import { useParams } from 'react-router-dom'
+import At from '../../components/At/at'
+import Emoji from '../../components/emoji/emoji'
 
 function DynamicM () {
-  const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = userinfo.uid
+  const params = useParams()
+  const [userinfo, setUserinfo] = useState(() => JSON.parse(localStorage.getItem('userinfo')))
+  const uid = parseInt(params.uid)
 
   document.title = "动态首页"
   document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
 
   const [dylist, setDylist] = useState([])
+  const [oldlist, setOldlist] = useState([])
   const [textcontent, setText] = useState('')
   const [imgs, setImgs] = useState([])
   const [imgsleng, setimglength] = useState(0)
-
+  const [userindex, setUserindex] = useState(0)             // 0 全部动态  1，2，3.。。 关注的人的动态
+  const [duindex, steDuindex] = useState(0)                 // 0 全部   1 动态    2 视频
   const livingref = useRef()
   const [postionfalg, setPostion] = useState(false)
-  const [opationfalg , setOPationfalg] = useState(0)  // 1 转发   2 评论
-  const [nowdyindex, setNowdyindex] = useState(-1)    // 当前所点击的，一次之打开一个
-  
+  const [opationfalg , setOPationfalg] = useState(0)        // 1 转发   2 评论
+  const [nowdyindex, setNowdyindex] = useState(-1)          // 当前所点击的，一次之打开一个
+  const [deleteflag, setDeletaflag] = useState(false),       // 删除一条动态
+        [deletedid, setDeletedid] = useState(-1)           // 要删除的did
+  const [dyuser, setDyuser] = useState([])                  // 发送动态的用户
+
+  const [topicalflag, setTopicalflag] = useState(false),
+        [topical, setTopical] = useState({}),
+        [topicallist, setToplicalist] = useState([])
+
+  const [oneemoji, setOneemoji] = useState(''),
+        [emojiflag, setEmojiflag] = useState(false),
+        [atfalg, setAtflag] = useState(false),
+        [atuser, setAtuser] = useState()
+  const [searchtopical, setSearchtopical] = useState(),
+        [newTopicalflag, setNewtopicalflag] = useState(false),
+        [topicaltitle, setTopicaltitle] = useState(""),
+        [topicalintro, setTopicalintro] = useState("")
+
   useEffect(() => {
     const getData = async () => {
-      const res = await getDyanmciList(uid, 1)
-      console.log('..:', res);
-      if (res) {
-        setDylist(res)
-      }
+      const res = await Promise.all([getDyanmciList(uid, 1), getHomeDynamic(uid, 1), getAllTopical()])
+      setDylist(res[0])
+      setOldlist(res[0])
+      // 去重
+      console.log(res[1]);
+      
+      setDyuser(res[1])
+
+      setToplicalist(res[2])
     }
     getData()
 
@@ -46,20 +74,42 @@ function DynamicM () {
     })
   },[])
 
+  useEffect(() => {
+    console.log(duindex);
+    
+    if (duindex === 0) {
+      setDylist(oldlist)
+    } else if (duindex === 1) {
+      setDylist(oldlist.filter(item => item.type !== 1 && item.type !== 3))
+    } else {
+      setDylist(oldlist.filter(item => item.type !== 0 && item.type !== 2))
+    }
+  }, [duindex])
+
   // 发送动态
   const senddy = async () => {
-    if (textcontent === null && textcontent === "" && imgs.length === 0) {
-      alert('不能为空')
-      return
+    console.log(textcontent === "");
+    console.log(imgs.length === 0);
+    
+    if (textcontent === "" && imgs.length === 0) {
+      message.open({type: 'error', content: '内容不能为空'})
+      return -1
     }
-    const info = {
+
+    const data = {
       uid: uid,
       content: textcontent,
-      type: 0
+      type: 0,
     }
-    const did = await sendDynamic(info)
-
-    if (did != -1 && imgs.length > 0) {
+    if (JSON.stringify(topical) !== '{}') {
+      addTopicalCount(topical.tid)
+      data.topical = topical.topical
+      setTopical({})
+    }
+    const did = await sendDynamic(data)
+    updateuserinfos(1)
+    // 本地更新
+    if (did !== -1 && imgs.length > 0) {
       for (let i = 0; i < imgs.length; i++) {
         const data = new FormData()
         data.append('uid', uid)
@@ -69,8 +119,6 @@ function DynamicM () {
         const res = await sendDyimgs(data)
 
         if (i === imgs.length - 1 && res) {
-          console.log('success');
-
           // 清空原来数据
           setText('')
           setImgs([])
@@ -79,9 +127,10 @@ function DynamicM () {
       }
     } else {
       setText('')
-    }    
+    }
     const newlist = await getDyanmciList(uid, 1)
     setDylist(newlist)
+    return 0
   }
 
   // 上传图片
@@ -125,25 +174,84 @@ function DynamicM () {
     )
   }
 
-  const handleShare = (e) => {    
-    const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
-    console.log(index);
-    setNowdyindex(index)
-    setOPationfalg(1)
+  // 删除一条动态
+  const deletethisdynamic = async () => {
+    const data = {
+      id: deletedid,
+      deleted: 1,
+      uid: uid
+    }
+    const res = await updateDyinfo(data)
+    setDylist(dylist.filter(item => item.id !== parseInt(deletedid)))
+    setDeletaflag(false)
+    updateuserinfos(-1)
   }
 
-  const handleComment = (e) => {
-    const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
-    setNowdyindex(index)                            
-    setOPationfalg(2)
+  const selectthisuser = (index, uid) => {
+    setUserindex(index)
+    if (parseInt(index) === 0) {
+      setDylist(oldlist)
+    } else {
+      setDylist(oldlist.filter(item => item.uid === uid))
+    }
   }
 
-  // 方法一张图片
-  const openimg = (e) => {
-    // 阻止事件冒泡
-    e.stopPropagation()
-    e.preventDefault()
-    
+  const updateuserinfos = (num) => {
+    setUserinfo({
+      ...userinfo,
+      dynamics: userinfo.dynamics + num
+    })
+    userinfo.dynamics = userinfo.dynamics + num
+    localStorage.setItem('userinfo', JSON.stringify(userinfo))
+    console.log(userinfo);
+  }
+
+  useEffect(() => {
+    if (oneemoji !== '') {
+      setText(textcontent + oneemoji)
+      setOneemoji("")
+    }
+  }, [oneemoji])
+
+  useEffect(() => {
+    if (atuser != null && atuser !== '') {
+      setText(textcontent + '@' + atuser.name + " ")
+    }
+  }, [atuser])
+
+  const topicalBox = useRef()
+
+  useEffect(() => {
+    if (topicalflag) {
+      window.addEventListener('click', cliclkCloseTopical)
+    } else {
+      // window.removeEventListener('click', cliclkCloseTopical)
+    }
+  }, [topicalflag])
+
+  const cliclkCloseTopical = (e) => {
+    console.log(topicalBox.current, '   ',e.target);
+    if (!topicalBox?.current?.contains(e.target)) {
+      setTopicalflag(false)
+    }
+  }
+
+  const selectThisTopical = (topical) => {
+    setTopical(topical)
+    setTopicalflag(false)
+  }
+
+  const createNewTopical = async() => {
+    const data = {
+      uid: uid,
+      topical: topicaltitle,
+      intro: topicalintro,
+    }
+    const res = await addTopical(data)
+    if (res) {
+      const res2 = await getAllTopical()
+      setToplicalist(res2)
+    }
   }
   return (
     <div className="dynamic-box">
@@ -156,19 +264,25 @@ function DynamicM () {
               <img src={userinfo.avatar} alt="" className="user-avatar" />
               <div className="user-right-infos">
                 <div className="uri-title">{userinfo.name}</div>
-                <div className="url-infoss"></div>
+                <div className="url-infoss">LV: {userinfo.lv}</div>
               </div>
             </div>
             <div className="bottom-infos">
-              <div className="oneinfos">
+              <div className="oneinfos"
+                onClick={() => window.open(`/${uid}/fans/follow`, '_blank')}
+              >
                 <span className="tt-span">{userinfo.follows}</span>
                 <span className="bb-span">关注</span>
               </div>
-              <div className="oneinfos">
+              <div className="oneinfos"
+                onClick={() => window.open(`/${uid}/fans/fan`, '_blank')}
+              >
                 <span className="tt-span">{userinfo.fans}</span>
                 <span className="bb-span">粉丝</span>
               </div>
-              <div className="oneinfos">
+              <div className="oneinfos"
+                onClick={() => window.open(`/${uid}/dynamic`, '_blank')}
+              >
                 <span className="tt-span">{userinfo.dynamics}</span>
                 <span className="bb-span">动态</span>
               </div>
@@ -180,9 +294,9 @@ function DynamicM () {
             <div className="livinttitle">
               <div>
                 <span className="tt-left-title">正在直播</span>
-                <span className="living-num">1</span>
+                <span className="living-num">{1}</span>
               </div>
-              <span>more</span>
+              <span className='icon iconfont'>更多关注 &#xe775;</span>
             </div>
             <div className="one-living">
               <img src="" alt="" className="user-avatar" />
@@ -195,6 +309,105 @@ function DynamicM () {
         </div>
         <div className="dy-main">
           <div className="send-mydynamic">
+            <div className="topical-line">
+              <div className="topical-out-box"
+                ref={topicalBox}
+              >
+                {
+                  JSON.stringify(topical) === "{}" ?
+                  <div className="choicetopical"
+                    onClick={() => {
+                      setAtflag(false)
+                      setEmojiflag(false)
+                      setTopicalflag(!topicalflag)
+                    }}
+                  >
+                    <span>#  选择话题</span>
+                  </div>
+                  :
+                  <div className="choicetopical2">
+                    <span>#  {topical?.topical}</span>
+                    <span className="icon iconfont"
+                      onClick={() => setTopical({})}
+                    >&#xe7b7;</span>
+                  </div>
+                }
+                {
+                  newTopicalflag &&
+                  <div className="newtopical-view">
+                    <div className="newtopical-bg"></div>
+                    <div className="newtopical-box">
+                      <div className="nb-titlele">
+                        <span>新建话题</span>
+                        <span className="icon iconfont"
+                          onClick={() => {
+                            setTopicaltitle("")
+                            setTopicalintro("")
+                            setNewtopicalflag(false)
+                          }}
+                        >&#xe6bf;</span>
+                      </div>
+                      <input type="text" className="nb-title"
+                        onChange={(e) => setTopicaltitle(e.target.value)}
+                        value={topicaltitle}
+                        placeholder='话题名称'
+                      />
+                      <textarea name="" id="" className='nb-intro'
+                        onChange={(e) => setTopicalintro(e.target.value)}
+                        value={topicalintro}
+                        placeholder='话题标题'
+                      ></textarea>
+                      <div className="nb-btn-line">
+                        <div className="nb-cancle-btn"
+                          onClick={() => {
+                            setTopicaltitle("")
+                            setTopicalintro("")
+                            setNewtopicalflag(false)
+                          }}
+                        >取消</div>
+                        <div className="nb-ok-btn"
+                          onClick={createNewTopical}
+                        >确定</div>
+                      </div>
+                    </div>
+                  </div>
+                }
+                <div
+                  className={topicalflag ? "choice-box choice-box-active" : "choice-box"}
+                >
+                  <div className="topical-toppart">
+                    <div className="top-line1">
+                      <span className="icon iconfont">&#xe6a8;</span>
+                      <input type="text" className="topline-inp2"
+                        placeholder='搜索话题'
+                      />
+                    </div>
+                  </div>
+                  <div className="topical-content-b">
+                    {
+                      topicallist.map(item =>
+                        <div className="one-topical"
+                          onClick={() => selectThisTopical(item)}
+                        >
+                          <div className="one-tp-line1">
+                            <div className="ljing">#</div>
+                            <span className="topical-title">{item.topical}</span>
+                          </div>
+                          <div className="one-tp-line2">
+                            <span className="topicaon-infos">阅读量{item.counts}</span>
+                          </div>
+                        </div>
+                      )
+                    }
+                  </div>
+                  <div className="topical-bottompart">
+                    <div className="btn-create-topical"
+                      onClick={() => setNewtopicalflag(true)}
+                    >新建话题</div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="sendbox-box">
               <textarea name="" id="" className="traea" placeholder='写点什么吧~'
                 onChange={(e) => setText(e.target.value)}
@@ -204,13 +417,12 @@ function DynamicM () {
             <div className="imgpart">
               {
                 imgs.map((item, index) =>
-                  <div key={index} className="oneinpimg" draggable="true"
-                  // style={{backgroundImage: `url(URL.createObjectURL(${item}))`}}
-                  >
+                  <div key={index} className="oneinpimg" draggable="true">
                     <img src={URL.createObjectURL(item)} alt="" className="aimg" />
                     <div className="deletethis icon iconfont"
-                    data-index={index}
-                    onClick={deletethis}>&#xe7b7;</div>
+                      data-index={index}
+                      onClick={deletethis}>&#xe7b7;
+                    </div>
                   </div>
                 )
               }
@@ -224,253 +436,141 @@ function DynamicM () {
             </div>
             <div className="bottom-opation">
               <div className='btm-d1'>
-                <span className="icon iconfont">&#xe667;</span>
+                <div className={atfalg ? "iconbox iconbox-active" : "iconbox"}>
+                  <span className="icon iconfont"
+                    onClick={() => {
+                      setAtflag(!atfalg)
+                      setEmojiflag(false)
+                      setTopicalflag(false)
+                    }}
+                  >&#xe667;</span>
+                  {
+                      atfalg &&
+                      <div className="at-box">
+                        <At
+                          uid={uid}
+                          setAtflag={setAtflag}
+                          setAtuser={setAtuser}
+                        />
+                      </div>
+                    }
+                </div>
                 <span className="icon iconfont imgpin"
-                style={{color: imgsleng > 0 ? '#32AEEC' : '#18191C'}}>&#xe67f;
+                  style={{color: imgsleng > 0 ? '#32AEEC' : '#18191C'}}>&#xe67f;
                   <input type="file" className="inputimgs"
                     accept="image/*" multiple
                     onChange={inputimgs}
                   />
                   </span>
-                <span className="icon iconfont">&#xe626;</span>
+                <div className={emojiflag ? "iconbox iconbox-active" : "iconbox"}>
+                  <span className="icon iconfont"
+                    onClick={() => {
+                      setAtflag(false)
+                      setTopicalflag(false)
+                      setEmojiflag(!emojiflag)
+                    }}
+                  >&#xe626;</span>
+                    {
+                      emojiflag &&
+                      <div className="emoji-box">
+                        <Emoji 
+                          oneemoji={oneemoji}
+                          setOneemoji={setOneemoji}
+                          setEmojiflag={setEmojiflag}
+                        />
+                      </div>
+                    }
+                </div>
               </div>
               <div className='btn-d2'>
                 <span className="numtext">{textcontent.length}</span>
                 <span className="icon iconfont">&#xe638;</span>
-                <span className="sendbox" onClick={senddy}>发送</span>
+                <span className="sendbox"
+                  onClick={senddy}
+                >发送</span>
               </div>
             </div>
           </div>
           <div className="sub-userbox">
-            <div className="one-sun-people">
-              <div className="osp-avatar"></div>
-              <div className="osp-name">阿松大12312312</div>
+            <div className={userindex === 0 ? "one-sun-people one-active-user" : "one-sun-people"}
+              onClick={() => selectthisuser(0, -1)}
+            >
+              <div className="osp-avatar">
+                <div className="icon iconfont">&#xe6ca;</div>
+              </div>
+              <div className="osp-name">全部动态</div>
             </div>
+            {
+              dyuser.map((item, index) =>
+                <div className={userindex === index + 1 ? "one-sun-people one-active-user" : "one-sun-people"}
+                  onClick={() => selectthisuser(index + 1, item.uid)}
+                >
+                  <div className="osp-avatar">
+                    <img src={item.avatar} alt="" className="one-user-ava" />
+                  </div>
+                  <div className="osp-name">{item.name}</div>
+                </div>
+              )
+            }
           </div>
-          <div className="type-dynamic">
-            <div className="one-type">
-              <span>全部</span>
-              <div className="active-span"></div>
+          {
+            userindex === 0 &&
+            <div className="type-dynamic">
+              <div className="one-type"
+                onClick={() => steDuindex(0)}
+              >
+                <span>全部</span>
+                  <div className={ duindex === 0 ? "active-span active-span-active" : "active-span"}></div>
+              </div>
+              <div className="one-type"
+                  onClick={() => steDuindex(1)}
+              >
+                <span>动态</span>
+                  <div className={ duindex === 1 ? "active-span active-span-active" : "active-span"}></div>
+              </div>
+              <div className="one-type"
+                  onClick={() => steDuindex(2)}
+              >
+                <span>视频</span>
+                  <div className={ duindex === 2 ? "active-span active-span-active" : "active-span"}></div>
+              </div>
             </div>
-            <div className="one-type">
-              <span>视频</span>
-              <div className="active-span"></div>
-            </div>
-            <div className="one-type">
-              <span>专栏</span>
-              <div className="active-span"></div>
-            </div>
-          </div>
+          }
           <div className="dy-contemtnbox">
             {
               dylist.map((item, index) => 
-                <div key={item.id} className="one-dynamic-box">
-                  <div className='TTP'>
-                    <img src={item.avatar} alt="" className="left-user-avatar" />
-                    <div className="right-user-conetnt">
-                      <div className="dy-ibe-name">{item.name}</div>
-                      <div className="data-infos">
-                        <span className="time-span">{item.time.slice(0, 10)}</span>
-                        {
-                          item.type === 3 &&
-                          <span className="ts-right-sp">投稿了视频</span>
-                        }
-                      </div>
-                      <div className="content-out-box">
-                        <div className="user-dy-contnet" data-did={item.id} onClick={todynamic}>{item.content}</div>
-                        {
-                          item.type === 0 && item.imgs[0] != null &&
-                          <div className="user-send-img-box" data-did={item.id} onClick={todynamic}>
-                            {
-                              item.imgs.map(item2 =>
-                                <img src={item2} alt="" className="one-sss-img"
-                                  onClick={openimg}/>
-                              )
-                            }
-                          </div>
-                        }
-                      </div>
-                      {
-                        item.type === 1 &&
-                        <div className="video-type-box">
-                          <div className="vtb-inner-video-box">
-                            <div className="vtb-title-line">
-                              <div className="left-userinfo">
-                                <img src={item.video.avatar} alt="" className="vtb-lu-cover"
-                                  data-uid={item.video.uid} onClick={touserspace}/>
-                                <span className="vtb-lu-name"
-                                  data-uid={item.video.uid} onClick={touserspace}>{item.video.name}</span>
-                                <span className="vtb-lu-text">投稿的视频</span>
-                              </div>
-                              <div className="right-sub-info">
-                                <span className="icon iconfont">&#xe643;</span>
-                                <span className="rbi-addsub">关注</span>
-                              </div>
-                            </div>
-                            <div className="vtb-video-box1">
-                              <div className="left-img-vtb-img">
-                                <img src={item.video.cover} alt="" className="livu-img"
-                                data-vid={item.video.vid} onClick={tovideo}/>
-                              </div>
-                              <div className="left-info-vtb">
-                                <div className="liv-title" data-vid={item.video.vid} onClick={tovideo}>{item.video.title}</div>
-                                <div className="liv-intro">{item.video.intro}</div>
-                                <div className="liv-infos-d">
-                                  <div className="one-info-livbox">
-                                    <span className="icon iconfont">&#xe6b8;</span>
-                                    <span className="oio-nums">{item.video.plays}</span>
-                                  </div>
-                                  <div className="one-info-livbox">
-                                    <span className="icon iconfont">&#xe666;</span>
-                                    <span className="oio-nums">{item.video.danmus}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      {
-                        item.type === 2 &&
-                        <div className="dynamic-type-box">
-                          <div className="dtb-inner-box">
-                            <div className="vtb-title-line">
-                              <div className="left-userinfo">
-                                <img src={item.dy2.avatar} alt="" className="vtb-lu-cover"
-                                  data-uid={item.dy2.uid}/>
-                                <span className="vtb-lu-name"
-                                  data-uid={item.dy2.uid}>{item.dy2.name}</span>
-                                <span className="vtb-lu-text">的动态</span>
-                              </div>
-                              <div className="right-sub-info">
-                                <span className="icon iconfont">&#xe643;</span>
-                                <span className="rbi-addsub">关注</span>
-                              </div>
-                            </div>
-                            <div className="dtb-content-box">{item.dy2.content}</div>
-                            <div className="dtb-imgs">
-                              {
-                                item.dy2.imgs.map(oneimg =>
-                                  <img src={oneimg} alt="" className="oneimg-dy2" />
-                                )
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      {
-                        item.type === 3 &&
-                        <div className="my-send-video">
-                          <div className="left-send-my-avatr">
-                            <img src={item.video.cover} alt="" className="lsma-avatar" />
-                          </div>
-                          <div className="right-send-my-info">
-                            <div className="rsyi-title">{item.video.title}</div>
-                            <div className="rsyi-intro">{item.video.intro}</div>
-                            <div className="rsyi-infos">
-                              <div className="rsyi-div">
-                                <span className="icon iconfont" style={{fontSize: '13px'}}>&#xe6b8;</span>
-                                <span className="rsyi-text">{item.video.plays}</span>
-                              </div>
-                              <div className="rsyi-div">
-                                <span className="icon iconfont">&#xe666;</span>
-                                <span className="rsyi-text">{item.video.danmus}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      <div className="dy-opation-b">
-                        <div className="one-opation-a"
-                          data-index={index}
-                          onClick={handleShare}
-                          style={{color: (opationfalg === 1 && nowdyindex === index) ? '#32AEEC' : '#9499A0'}}>
-                          <span className="icon iconfont">&#xe633;</span>
-                          {
-                            item.shares > 0 ?
-                            <span className="iconnum">{item.shares}</span>
-                            :
-                            <span className="iconnum">转发</span>
-                          }
-                        </div>
-                        <div className="one-opation-a"
-                          data-index={index}
-                          onClick={handleComment}
-                          style={{color: (opationfalg === 2 && nowdyindex === index) ? '#32AEEC' : '#9499A0'}}>
-                          <span className="icon iconfont"
-                          >&#xe648;</span>
-                          {
-                            item.likes > 0 ?
-                            <span className="iconnum">{item.likes}</span>
-                            :
-                            <span className="iconnum">评论</span>
-                          }                      </div>
-                        <div className={false ? "one-opation-a one-active" : "one-opation-a"}>
-                          <span className="icon iconfont">&#xe61c;</span>
-                          {
-                            item.comments > 0 ?
-                            <span className="iconnum">{item.comments}</span>
-                            :
-                            <span className="iconnum">点赞</span>
-                          }                       </div>
-                      </div>
-                      {
-                        // 转发
-                        (opationfalg === 1 && nowdyindex === index) &&
-                        <div className="share-box">
-                          <img src={userinfo.avatar} alt="" className="left-share-avatar" />
-                          <div className="right-share-box">
-                            <div className="send-part">
-                              <div className="titleline">转发{item.name}的动态~</div>
-                              <textarea className='texta2'></textarea>
-                            </div>
-                            <div className="bottom-opation-part">
-                              <div className="emog-icon icon iconfont" style={{fontSize: '22px', color: '#9499A0'}}>&#xe667;</div>
-                              <div className="right-numandsend">
-                                <div className="numspan">400</div>
-                                <div className="snedspan">发送</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                  {
-                    // 评论
-                    (opationfalg === 2 && nowdyindex === index) &&
-                    <div className="comment-box">
-                      <div className="toptitleline">
-                        <div className="lbox">
-                          <span className="lbox-sp11">评论</span>
-                          <span className="lbox-sp12">1</span>
-                        </div>
-                        <div className="rbox">
-                          <span className="rbox-spp">最热</span>
-                          <span className="rbox-line1"></span>
-                          <span className="rbox-spp">最新</span>
-                        </div>
-                      </div>
-                      <div className="send-dy-sendbox">
-                        <img src={userinfo.avatar} alt="" className="useravatar2-dy" />
-                        <div className="send-r-outbox">
-                        <div className="send-dy-innerbox">
-                          <textarea name="" id="" className="inp333-dy"></textarea>
-                        </div>
-                        <div className="send-dy-bottom-opation">
-                          <div className="sdbp-left">
-                            <span className="icon iconfont" style={{fontSize: '22px', color: '#9499A0'}}>&#xe667;</span>
-                          </div>
-                          <div className="sdbp-right">
-                            <div className="sdbp-r-send">发布</div>
-                          </div>
-                        </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
+                <DynamicCom 
+                  item={item}
+                  index={index}
+                  userinfo={userinfo}
+                  setDeletaflag={setDeletaflag}
+                  setDeletedid={setDeletedid}
+                  dylist={dylist}
+                  setDylist={setDylist}
+                />
               )
+            }
+            {
+              deleteflag &&
+              <div className="control-view-delete">
+                <div className="deletebox">
+                  <div className="delete-line1">确定删除这条动态</div>
+                  <div className="delete-line2">
+                    <div className="delete-btn1"
+                      onClick={() => {
+                        setDeletedid(-1)
+                        setDeletaflag(false)
+                      }}
+                    >取消</div>
+                    <div className="delete-btn2"
+                      onClick={() => {
+                        deletethisdynamic()
+                        message.open({type: "info", content: '删除成功'})
+                      }}
+                    >删除</div>
+                  </div>
+                </div>
+              </div>
             }
             {
               dylist.length === 0 &&
@@ -488,11 +588,28 @@ function DynamicM () {
           <div className="dy-rnak">
             <div className="rank-title">话题</div>
             <div className="one-rank-b">
-              <div className="orb-left"></div>
-              <div className="orb-right">
-                <div className="orb-r-top">asdasd</div>
-                <div className="orb-r-bottom">1231</div>
-              </div>
+              {
+                topicallist.map(item =>
+                  <div className="one-topical-right-rank"
+                    onClick={async () => {
+                      await addTopicalWatchs(parseInt(item.tid), item.topical)
+                      // 跳转页面
+                      window.open(`/topical/${item.topical}`, "_blank")
+                    }}
+                  >
+                    <div className="orb-left">#</div>
+                    <div className="orb-right">
+                      <div className="orb-r-top">
+                        <span>{item.topical}</span>
+                      </div>
+                      <div className="orb-r-bottom">
+                        <span style={{marginRight: '10px'}}>{item.watch}浏览</span>
+                        <span>{item.counts}帖子</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
             </div>
           </div>
         </div>

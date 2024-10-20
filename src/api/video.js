@@ -75,10 +75,10 @@ export function uploadChunks(data) {
 }
 
 // 和并切片
-export function mergeChunks(uid, vid) {
+export function mergeChunks(uid, vid, type) {
   return http ({
     method: 'GET',
-    url: `/video/mergeChunks/${uid}/${vid}`
+    url: `/video/mergeChunks/${uid}/${vid}/${type}`
   })
 }
 
@@ -153,7 +153,7 @@ export function getHomeDynamicVideo(uid, page, num, size) {
 export function getHomeHistory(uid, page, num, size) {
   return http({
     method: 'GET',
-    url: `/video/getHomHistory/${uid}/${page}/${num}/${size}`
+    url: `/video/getHomeHistory/${uid}/${page}/${num}/${size}`
   })
 }
 
@@ -207,10 +207,10 @@ export function changeFamous(uid, vids) {
 }
 
 // 个人空间  获取带图片的动态，不带图片的不要
-export function getHomeDynamic (uid) {
+export function getHomeDynamic (uid, type) {
   return http({
     method: 'GET',
-    url: `/video/getHomeDynamic/${uid}`
+    url: `/video/getHomeDynamic/${uid}/${type}`
   })
 }
 

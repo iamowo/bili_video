@@ -182,7 +182,7 @@ function Vdieocontrol() {
                     onChange={(e) => setNewtitle(e.target.value)}/>
                   <div className="num-edi">{newtitle.length}/80</div>
                 </div>
-                <div className="div-chang-line">标题</div>
+                <div className="div-chang-line">简介</div>
                 <div className="div-chang-box2">
                   <textarea name="" id="" className="changintro"
                     onChange={(e) => setNewintro(e.target.value)}

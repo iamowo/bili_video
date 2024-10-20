@@ -89,6 +89,10 @@
       display: flex;
       align-items: center;
       margin-right: 20px;
+      img {
+        width: 56px;
+        height: 30px;
+      }
       a {
         display: flex;
         align-items: center;
@@ -194,6 +198,9 @@
       width: 100%;
       max-height: 400px;
       background-color: #fff;
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 10px 0 20px;
       .one-keyword-reslut {
         width: 100%;
         height: 32px;
@@ -248,6 +255,7 @@
           height: fit-content;
           // background-color: red;
           display: flex;
+          flex-wrap: wrap;
           .onehis {
             position: relative;
             box-sizing: border-box;
@@ -264,8 +272,8 @@
             user-select: none;
             .icon {
               position: absolute;
-              right: -5px;
-              top: -5px;
+              right: -12px;
+              top: -7px;
               font-size: 13px;
               color: #9499A0;
               cursor: pointer;
@@ -306,6 +314,59 @@
           }
         }
       }
+      .hotsort-box {
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        font-size: 16px;
+        color: #222;
+        box-sizing: border-box;
+        padding: 0 15px;
+      }
+      .hot-box {
+        width: 100%;
+        height: 200px;
+        box-sizing: border-box;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        .onehot-box {
+          box-sizing: border-box;
+          padding: 0 20px;
+          width: 50%;
+          height: 40px;
+          line-height: 40px;
+          font-size: 14px;
+          color: #222;
+          cursor: pointer;
+          user-select: none;
+
+          overflow: hidden;
+          word-break: break-all;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          span {
+            color: #9499a0;
+            margin-right: 10px;
+          }
+          &:hover {
+            background-color: #ebe6e6;
+          }
+        }
+      }
+    }
+    .mid-append::-webkit-scrollbar-track {
+      width: 6px;
+      background-color: transparent;
+    }
+    .mid-append::-webkit-scrollbar-thumb {
+      width: 6px;
+      border-radius: 3px;
+      background-color: #dfe2e6;
+    }
+    .mid-append::-webkit-scrollbar {
+      width: 6px;
+      background-color: transparent;
     }
   }
   .rightp {
@@ -342,7 +403,7 @@
       }
       .icon {
         margin-bottom: 3px;
-        font-size: 22px;
+        font-size: 18px;
         font-weight: 560;
       }
       .text {
@@ -459,7 +520,7 @@
                 width: 46px;
                 height: 46px;
                 box-sizing: border-box;
-                border: 2px solid red;
+                border: 2px solid rgb(238, 235, 235);
                 padding: 2px;
                 border-radius: 23px;
                 cursor: pointer;
@@ -666,7 +727,7 @@
                 }
                 .oarb-rightingos {
                   height: 72px;
-                  width: 100%;
+                  flex: 1;
                   margin-left: 10px;
                   display: flex;
                   flex-direction: column;

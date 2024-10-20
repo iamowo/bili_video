@@ -40,7 +40,6 @@
       .banner-cotainer {
         width: 100%;
         height: 100%;
-        background-color: red;
       }
     }
     .view-container {
@@ -72,6 +71,8 @@
         .one-video-box {
           width: 100%;
           height: 200px;
+          flex-shrink: 0;
+          overflow: hidden;
           .vbox-img-box {
             width: 100%;
             height: 130px;
@@ -135,6 +136,7 @@
               overflow: hidden;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
+              word-break: break-all;
               &:hover {
                 color: #32aeec;
               }
@@ -186,9 +188,9 @@
         .ran-containt {
           margin-top: 10px;
           width: 100%;
-          height: 700px;
+          height: fit-content;
           box-sizing: border-box;
-          padding: 0 20px;
+          padding: 0 20px 20px;
           // background-color: red;
           .one-rank-box {
             width: 100%;

@@ -2,7 +2,8 @@ import './all.scss'
 import { useState, useEffect } from 'react'
 import { getByKeywordAll, getByKeywordName } from '../../../api/video'
 import { useParams } from 'react-router-dom'
-import { touserspace, tovideo } from '../../../util/fnc'
+import { touserspace, tovideo, HeightLightKw } from '../../../util/fnc'
+import Noresult from '../../../components/NoResult/Noresult'
 
 function All () {
   const params = useParams()
@@ -119,7 +120,9 @@ function All () {
               </div>
               <div className="oa-title"
                 data-vid={item.vid} onClick={tovideo}
-              >{item.title}</div>
+              >
+                <span dangerouslySetInnerHTML={{__html: HeightLightKw(item.title, keyword, "span", 0)}}></span>
+              </div>
               <div className="oa-infos">
                 <div className='name-part-aa'
                 data-uid={item.uid} onClick={touserspace}
@@ -133,24 +136,10 @@ function All () {
             </div>     
           )
         }
-        {
-          alllist.length === 0 &&
-          <div className="nores-box">搜索结果为空</div>
-        }
       </div>
       {
-        alllist.length > 36 &&
-        <div className="bottom-page-line">
-          <div className="bpl-lastpage">上一页</div>
-          <div className="page-allcontent">
-            {
-              pagelist.map((item, index) =>
-                <div key={index} className={index === 1 ? "opepage-active onepage-se" : "onepage-se"}>{index + 1}</div>
-              )
-            }
-          </div>
-          <div className="bpl-nextpage">下一页</div>
-        </div>
+        alllist.length === 0 &&
+        <Noresult />
       }
     </div>
   )

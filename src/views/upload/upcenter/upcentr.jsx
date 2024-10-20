@@ -4,21 +4,22 @@ import './index.scss'
 import { useState, useRef, useEffect } from 'react'
 import { uploadVideoInfos, uploadChunks, mergeChunks, getAlready } from '../../../api/video'
 import SparkMD5 from 'spark-md5' // 切片用
-import { sendDynamic } from '../../../api/dynamic'  // 上传视频后 发送动态
 import { getUserVideoList, addVideoList } from '../../../api/videolist'
 import { baseurl } from '../../../api'
-import { addOneFavlist } from '../../../api/favlist'
+import { getAnimationList } from '../../../api/animation'
+import message from '../../../components/notice/notice'
 
 function Upcenter () {
   const [upindex, setUpindex] = useState(0)  // 0视频   1 漫画
 
   const params = useParams()
   const uid = params.uid
-  const type = params.type
+  const type = params.type  // 没用
 
   let filedata = null
   const [upprogress, setProgress] = useState('ready'),    //' ready uploading infos done
         [videofile, setVideoFile] = useState(null),   
+        [seasonflag, setSeasonflag] = useState(false),     // 连续剧？
         [vidcover, setCover] = useState(null),            // cover url(默认时第一帧)
         [coverhw, setCoverHw] = useState(true),           // true 宽 >= 高    flase 高 > 宽
         [coverfile, setCoverfile] = useState(''),         // 封面的file，还要尽心截取
@@ -42,6 +43,14 @@ function Upcenter () {
         [listtitle, setListtitle] = useState(""),
         [listintro, setListintro] = useState("")
 
+  const [listflag2, setListflag2] = useState(false),
+        [listindex2, setListindex2] = useState(-1),          // 选择第几个列表
+        [animationlist, setAnimationlist] = useState([])     // 继续上传的列表
+
+  const [seasonnum, setSeasonnum] = useState(),
+        [chapternum, setChapternum] = useState(),
+        [chaptertitle, setChaptertitle] = useState("")
+
   const mtagref = useRef()
   const watchref = useRef()
   const spanref = useRef()
@@ -55,9 +64,10 @@ function Upcenter () {
 
   useEffect(() => {
       const getData = async () => {
-        const res = await getUserVideoList(uid)
+        const res = await Promise.all([getUserVideoList(uid), getAnimationList()])
         console.log('res is:', res);
-        setVideotoselect(res)
+        setVideotoselect(res[0])
+        setAnimationlist(res[1])
       }
       getData()
       window.addEventListener('click', (e) => {
@@ -81,12 +91,14 @@ function Upcenter () {
     videofileref.current.click()
   }
 
+  // 拖拽上传
   const dropfile1 = (e) => {   
     e.preventDefault()
     console.log('drop'); 
     const thisfile = e.dataTransfer.files[0]
     changevideoinp(thisfile)
   }
+
   // 添加视频
   const changevideoinp = (dragfile, e) => {
     // 监察文件格式，判断是不是 视频
@@ -159,7 +171,6 @@ function Upcenter () {
       // const w = mainbox.current.clientWidth + 'px'
       // const h = mainbox.current.clientHeight + 'px'
       // img2.current.style.clip = `rect(0, ${w}, ${h} ,0)`
-
       // console.log(canvasref.current);
       // const ctx = canvasref.current.getContext('2d')
       // ctx.drawImage(newimg)
@@ -181,9 +192,7 @@ function Upcenter () {
     e.preventDefault();
     // 获取拖拽上传的文件（files是个数组 此处默认限制只能上传一个）
     console.log('获取拖拽上传的文件---',e.dataTransfer.files[0]);
-    if(e.dataTransfer.files[0].type.includes('video/')) {
-      console.log('111');
-      
+    if(e.dataTransfer.files[0].type.includes('video/')) {      
       // file = e.dataTransfer.files[0]
     } else {
       alert('请选择正确的文件类型')
@@ -236,9 +245,9 @@ function Upcenter () {
     try {
       const res = await getAlready(HASH, uid);
       already = res.already
-      thisvid = res.vid
+      thisvid = parseInt(res.vid)
     } catch (err) {}
-    console.log(thisvid, already);
+    console.log("=============:",thisvid, already);
     // 上传视频信息（标题，简介等。。。。
     if (thisvid === -1) {
       // 还没上传过此视频
@@ -251,8 +260,13 @@ function Upcenter () {
         maintag: maintag,
         othertags: tags,
         hashValue: HASH,
-        listid: listindex !== -1 ? videolisttoselect[listindex].listid : -1
-      }      
+        listid: listindex !== -1 ? videolisttoselect[listindex].listid : -1,
+        aid: listindex2 !== -1 ? animationlist[listindex2].aid : -1,
+        type: seasonflag ? 1 : 0,
+        season: seasonnum,
+        chapter: chapternum,
+        chaptertitle: chaptertitle
+      }
       console.log(data);
       thisvid = await uploadVideoInfos(data) // 返回vid
       // 添加到视频列表
@@ -300,9 +314,13 @@ function Upcenter () {
       // 没有上传完成
       console.log(index , count);
       if (index >= count) {
-        const res = await mergeChunks(uid, vid)
+        if (seasonflag) {
+          // 连续剧
+          await mergeChunks(uid, vid, 1)
+        } else {
+          await mergeChunks(uid, vid, 0)
+        }
         setPersent(100)
-        setProgress('done')
       }
     }
 
@@ -327,24 +345,19 @@ function Upcenter () {
         return Promise.reject('error')
       }).catch(() => {
         console.log('上传文件失败');
-        // ElMessage({
-        //   type: 'error'  ,
-        //   message: '上传文件失败'
-        // })
       })
     })
     
   }
 
+  useEffect(() => {
+    if (uppersent >= 100) {
+      setProgress('done')
+      message.open({type: 'info', content: '上传成功', flag: true})
+    }
+  }, [uppersent])
+  
 // ----------------------------------
-
-  const settitlea = (e) => {    
-    setTileler(e.target.value)
-  }
-
-  const setintroa = (e) => {
-    setIntroinp(e.target.value)
-  }
 
   const upmore = () => {
     setProgress('ready')
@@ -569,14 +582,37 @@ function Upcenter () {
                   </div>
                 </div>
               </div>
-              <div className="addtovidellist-line">
-                <div className="al-left1">添加到视频列表</div>
-                <div className="al-right"
-                  onClick={() => setListflag(1)}
-                >
-                  <span className="numspan">{listindex !== -1 ? videolisttoselect[listindex].title : null}</span>
+              {
+                
+                <div className="addtovidellist-line">
+                  <div className="al-left1">连续剧</div>
+                  <div className={seasonflag ? "switchbox1 switchbox2" : "switchbox1"}
+                    onClick={() => setSeasonflag(!seasonflag)}
+                  >
+                    <div className="switch-box"></div>
+                  </div>
                 </div>
-              </div>
+              }
+              {
+                seasonflag ?
+                <div className="addtovidellist-line">
+                  <div className="al-left1">添加番剧列表</div>
+                  <div className="al-right"
+                  onClick={() => setListflag2(true)}
+                >
+                    <span className="numspan">{listindex2 !== -1 ? animationlist[listindex2].title : null}</span>
+                  </div>
+                </div>
+                :
+                <div className="addtovidellist-line">
+                  <div className="al-left1">添加到视频列表</div>
+                  <div className="al-right"
+                    onClick={() => setListflag(1)}
+                  >
+                    <span className="numspan">{listindex !== -1 ? videolisttoselect[listindex].title : null}</span>
+                  </div>
+                </div>
+              }
               {
                 listflag > 0  &&
                   <div className="select-view-list">
@@ -586,7 +622,10 @@ function Upcenter () {
                         <div className="lbt-line1x">
                           <span>选择列表</span>
                           <div className="icon iconfont"
-                            onClick={() => setListflag(0)}
+                            onClick={() => {
+                              setListindex(-1)
+                              setListflag(0)
+                            }}
                           >&#xe643;</div>
                         </div>
                         <div className="lbt-content">
@@ -595,7 +634,10 @@ function Upcenter () {
                               videolisttoselect.map((item, index) =>
                                 <div className={listindex === index ? "one-lbt-box olb-active" : "one-lbt-box"}
                                   key={item.id}
-                                  onClick={() => setListindex(index)}
+                                  onClick={() => {
+                                    setListindex2(-1)
+                                    setListindex(index)
+                                  }}
                                 >
                                   <div className="llbt-left-cover">
                                     <img src={item.cover} alt="" className="llbt-cover-img" />
@@ -653,7 +695,12 @@ function Upcenter () {
                         </div>
                         <div className="lbt-bottom">
                           <div className="lb-btn1"
-                            onClick={() => setListflag(1)}
+                            onClick={() => {
+                              setListtitle("")
+                              setListintro("")
+                              setListindex(-1)
+                              setListflag(1)
+                            }}
                           >取消</div>
                           <div className="lb-btn2"
                             onClick={tocreateList}
@@ -662,6 +709,67 @@ function Upcenter () {
                       </div>
                     }
                   </div>
+              }
+              {
+                listflag2 &&
+                <div className="select-view-list">
+                  <div className="list-box-tos">
+                    <div className="lbt-line1x">
+                      <span>选择番剧列表</span>
+                      <div className="icon iconfont"
+                        onClick={() => {
+                          setListindex2(-1)
+                          setListflag2(false)
+                        }}
+                      >&#xe643;</div>
+                    </div>
+                    <div className="lbt-content">
+                      <div className="lbt-innerbox">
+                        {
+                          animationlist.map((item, index) =>
+                            <div className={listindex2 === index ? "one-lbt-box olb-active" : "one-lbt-box"}
+                              key={item.aid}
+                              onClick={() => {
+                                setListindex(-1)
+                                setListindex2(index)
+                              }}
+                            >
+                              <div className="llbt-left-cover">
+                                <img src={item.cover} alt="" className="llbt-cover-img" />
+                              </div>
+                              <div className="llbt-right-info">
+                                <div className="llb-right-title">{item.title}</div>
+                                <div className="llb-nums">共 {item.chapters} 级</div>
+                              </div>
+                            </div>
+                          )
+                        }
+                        {
+                          animationlist.length === 0 &&
+                          <div className="noresult-videw">
+                            <div className="noresult-img"
+                              style={{background: `url(${baseurl}/sys/nodata02.png)`,
+                                                  backgroundPosition: 'center 50px',
+                                                  backgroundRepeat: 'no-repeat'}}>
+                            </div>
+                            <div className="noresult-text">没有视频列表~</div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                    <div className="lbt-bottom">
+                      <div className="lb-btn1"
+                        onClick={() => {
+                          setListindex2(-1)
+                          setListflag2(false)
+                        }}
+                      >取消</div>
+                      <div className="lb-btn2"
+                        onClick={() => setListflag2(false)}
+                      >确定</div>
+                    </div>
+                  </div>
+                </div>
               }
               <div className="upbox-title2">基本信息</div>
               <div className="one-upbox3">
@@ -841,7 +949,7 @@ function Upcenter () {
                 <div className="title-out-box">
                   <input type="text" className="rightinp"
                     maxLength={60}
-                    onChange={settitlea}
+                    onChange={(e) => setTileler(e.target.value)}
                     value={titleinp}
                   />
                   <div className="spical-sp1">{titleinp.length} / 60</div>
@@ -851,65 +959,111 @@ function Upcenter () {
                 <div className="left-text-span">简介</div>
                 <div className="intro-box">
                   <textarea className='rightinp'
-                    onChange={setintroa}
+                    onChange={(e) => setIntroinp(e.target.value)}
                     value={introinp}>
                   </textarea>
                 </div>
               </div>
-              <div className="one-upbox" style={{marginTop: '30px'}}>
-                <div className="left-text-span">分类
-                  <span style={{color: "pink"}}>*</span>
-                </div>
-                <div className="input-box-main-tag">
-                  <div className="input2box">
-                    <span className='inp2span' ref={spanref}>{maintag}</span>
-                    <div className="icon iconfont watchmore" ref={watchref}>&#xe775;</div>
+              <div>
+                <div className="one-upbox" style={{marginTop: '30px'}}>
+                  <div className="left-text-span">分类
+                    <span style={{color: "pink"}}>*</span>
                   </div>
-                    <div className="selectMaintag" ref={mtagref}>
-                      <div className="maintag-title">选择主标签</div>
-                      <div className="tag-content">
-                        <div className="innercontent-up">
-                          {
-                            maintaglist.map(item =>
-                              <div className="one-main-tag-s"
-                              data-text={item} key={item}
-                              onClick={clickthistag}
-                              >{item}</div>
-                            )
-                          }
+                  <div className="input-box-main-tag">
+                    <div className="input2box">
+                      <span className='inp2span' ref={spanref}>{maintag}</span>
+                      <div className="icon iconfont watchmore" ref={watchref}>&#xe775;</div>
+                    </div>
+                      <div className="selectMaintag" ref={mtagref}>
+                        <div className="maintag-title">选择主标签</div>
+                        <div className="tag-content">
+                          <div className="innercontent-up">
+                            {
+                              maintaglist.map(item =>
+                                <div className="one-main-tag-s"
+                                data-text={item} key={item}
+                                onClick={clickthistag}
+                                >{item}</div>
+                              )
+                            }
+                          </div>
                         </div>
                       </div>
+                  </div>
+                </div>
+                <div className="one-upbox" style={{marginTop: '30px'}}>
+                  <div className="left-text-span">tags</div>
+                  <div className="input-out-box1">
+                    {/* <div className="tags-list"
+                      style={{opacity: atags.length > 0 && ffalg ? '0' : '1'}}> */}
+                      {
+                        atags.map((item, index) =>
+                          <div className="onetags">
+                            <span>{item}</span>
+                            <span className="icon iconfont"
+                              data-index={index}
+                              onClick={deletethis}>&#xe7b7;</span>
+                          </div>
+                        )                        
+                      }
+                    {/* </div> */}
+                    <input type="text"
+                        className="rightinptags"
+                        onChange={(e) => setTags(e.target.value)} value={tags}
+                        onFocus={() => setFflag(true)}
+                        onBlur={() => setFflag(false)}
+                        onKeyDown={entertosplice}
+                        style={{opacity: atags.length === 0 || ffalg ? '1' : '0'}}
+                    />
+                    <span className="ss-sp">* 按回车输入tag</span>
+                    <span className="ss-sp2">{atags.length} / 10</span>
+                  </div>
+                </div>
+              </div>
+              {
+                seasonflag &&
+                  <div>
+                    <div className="one-upbox">
+                      <div className="left-text-span">季
+                      <span style={{color: "pink"}}>*</span>
+                      </div>
+                      <div className="title-out-box">
+                        <input type="text" className="rightinp"
+                          maxLength={10}
+                          onChange={(e) => setSeasonnum(e.target.value)}
+                          value={seasonnum}
+                        />
+                        <div className="spical-sp1">请输入数字</div>
+                      </div>
                     </div>
-                </div>
-              </div>
-              <div className="one-upbox" style={{marginTop: '30px'}}>
-                <div className="left-text-span">tags</div>
-                <div className="input-out-box1">
-                  {/* <div className="tags-list"
-                     style={{opacity: atags.length > 0 && ffalg ? '0' : '1'}}> */}
-                     {
-                       atags.map((item, index) =>
-                         <div className="onetags">
-                          <span>{item}</span>
-                          <span className="icon iconfont"
-                            data-index={index}
-                            onClick={deletethis}>&#xe7b7;</span>
-                         </div>
-                       )                        
-                     }
-                   {/* </div> */}
-                   <input type="text"
-                      className="rightinptags"
-                      onChange={(e) => setTags(e.target.value)} value={tags}
-                      onFocus={() => setFflag(true)}
-                      onBlur={() => setFflag(false)}
-                      onKeyDown={entertosplice}
-                      style={{opacity: atags.length === 0 || ffalg ? '1' : '0'}}
-                   />
-                  <span className="ss-sp">* 按回车输入tag</span>
-                  <span className="ss-sp2">{atags.length} / 10</span>
-                </div>
-              </div>
+                    <div className="one-upbox">
+                      <div className="left-text-span">章节
+                      <span style={{color: "pink"}}>*</span>
+                      </div>
+                      <div className="title-out-box">
+                        <input type="text" className="rightinp"
+                          maxLength={60}
+                          onChange={(e) => setChapternum(e.target.value)}
+                          value={chapternum}
+                        />
+                        <div className="spical-sp1">请输入数字</div>
+                      </div>
+                    </div>
+                    <div className="one-upbox">
+                      <div className="left-text-span">章节名
+                      <span style={{color: "pink"}}>*</span>
+                      </div>
+                      <div className="title-out-box">
+                        <input type="text" className="rightinp"
+                          maxLength={30}
+                          onChange={(e) => setChaptertitle(e.target.value)}
+                          value={chaptertitle}
+                        />
+                        <div className="spical-sp1">{chaptertitle.length} / 30</div>
+                      </div>
+                    </div>
+                  </div>
+              }
               <div className="upsnebtn"
                 onClick={touploadvideo}
               >上传</div>

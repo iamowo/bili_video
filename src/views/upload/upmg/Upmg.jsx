@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import "./Upmg.scss"
 import { uploadMgInfo, uploadMgImg, getByTitle, updateMg } from "../../../api/mg"
+import { useParams } from "react-router-dom"
 
 function Upmg() {
+  const params = useParams()
+  const uid = parseInt(params.uid)
+  
   const mgsref = useRef()
   const coverref = useRef()
   const [imgfile, setImgfile] = useState([])             // 要上传的图片
@@ -123,6 +127,7 @@ function Upmg() {
       }
       const tags1 = tags.trim().split(" ").filter(item => item !== " ")
       const data = {
+        uid: uid,
         title: titleinp,
         author: authorinp,
         intro: introinp,

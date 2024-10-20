@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { tovideo, touserspace } from '../../../util/fnc'
+import { tovideo, touserspace, HeightLightKw } from '../../../util/fnc'
 import { getByKeywordAll } from '../../../api/video'
+import Noresult from '../../../components/NoResult/Noresult'
 
 function VideoSe () {
   const params = useParams()
@@ -102,7 +103,9 @@ function VideoSe () {
               </div>
               <div className="oa-title"
                 data-vid={item.vid} onClick={tovideo}
-              >{item.title}</div>
+              >
+                <span dangerouslySetInnerHTML={{__html: HeightLightKw(item.title, keyword, "span", 0)}}></span>
+              </div>
               <div className="oa-infos">
                 <div className='name-part-aa'
                 data-uid={item.uid} onClick={touserspace}
@@ -116,11 +119,11 @@ function VideoSe () {
             </div>     
           )
         }
-        {
-          alllist.length === 0 &&
-          <div className="nores-box">没有</div>
-        }
       </div>
+      {
+        alllist.length === 0 &&
+        <Noresult />
+      }
     </div>
   )
 }

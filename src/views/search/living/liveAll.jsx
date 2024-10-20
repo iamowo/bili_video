@@ -73,10 +73,10 @@ function Liveall () {
           livingromm.map(item =>
             <div className="one-liveinroom-se">
               <div className="toplive-imgbox"></div>
-              <div className="live-title-a">纸币鉴名字</div>
+              <div className="live-title-a">livingroom</div>
               <div className="live-user-a">
                 <span className="icon iconfont">&#xe665;</span>
-                <span className="live-user-name1">嘻嘻</span>
+                <span className="live-user-name1">username</span>
               </div>
             </div>
           )

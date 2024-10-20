@@ -1,0 +1,86 @@
+.at-box-view {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.at-title {
+  width: 100%;
+  height: 30px;
+  box-sizing: border-box;
+  padding: 5px 20px;
+  font-size: 14px;
+  color: #9499a0;
+  text-align: left;
+}
+
+.at-content {
+  width: 100%;
+  height: 220px;
+  padding: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+  .one-select-user {
+    width: 100%;
+    height: 52px;
+    box-sizing: border-box;
+    padding: 8px 20px;
+    display: flex;
+    cursor: pointer;
+    user-select: none;
+    &:hover {
+      background-color: #e3e5e7;
+    }
+    .left-usert-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      .user-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+      }
+    }
+    .right-user-info {
+      height: 36px;
+      flex: 1;
+      margin-left: 10px;
+      align-items: flex-start;
+      justify-content: start;
+      .user-name {
+        width: 100%;
+        height: 18px;
+        line-height: 18px;
+        font-size: 14px;
+        color: #222;
+        text-align: left;
+      }
+      .user-fans {
+        width: 100%;
+        height: 18px;
+        line-height: 18px;
+        font-size: 12px;
+        color: #94990a;
+        text-align: left;
+      }
+    }
+  }
+}
+
+.at-content::-webkit-scrollbar {
+  width: 4px;
+  background-color: transparent;
+}
+
+.at-content::-webkit-scrollbar-track {
+  width: 4px;
+  background-color: transparent;
+}
+
+.at-content::-webkit-scrollbar-thumb {
+  width: 4px;
+  border-radius: 2px;
+  background-color: #F1F2F3;
+}

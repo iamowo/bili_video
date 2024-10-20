@@ -30,7 +30,20 @@ function Love () {
                   <div className="top-like-info">
                     <div className="name-likepsan">{item.name}</div>
                     {
-                      <div className="name-textpsan">赞了视频/评论/动态</div>
+                      <div className="name-textpsan">赞了您的
+                        {
+                          item.type === 0 &&
+                          <span>视频</span>
+                        }
+                        {
+                          item.type === 1 &&
+                          <span>动态</span>
+                        }
+                        {
+                          item.type === 2 &&
+                          <span>评论</span>
+                        }
+                      </div>
                     }
                   </div>
                   <div className="bottom-like-info">{item.time.slice(0, 10)}</div>

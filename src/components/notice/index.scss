@@ -18,17 +18,44 @@
 }
 
 .messageItem {
-  width: max-content;
-  background-color: #fff;
-  margin: 1em auto;
-  text-align: center;
-  padding: 12px 12px;
-  border-radius: 8px;
+  margin: 16px auto;
+  // height: 40px;
+  background-color: transparent;
   box-shadow: 0 6px 16px 0 rgb(0 0 0 / 8%), 0 3px 6px -4px rgb(0 0 0 / 12%), 0 9px 28px 8px rgb(0 0 0 / 5%);
+  border-radius: 8px;
   position: relative;
   opacity: 0;
   display: flex;
-  align-items: center;
+  .d1info {
+    height: 40px;
+    line-height: 40px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #32aeec;
+    color: #fff;
+  }
+  .d2warning {
+    height: 40px;
+    line-height: 40px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #e4c665;
+    color: #fff;
+  }
+  .d3error {
+    height: 40px;
+    line-height: 40px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #ee4646;
+    color: #fff;
+  }
 }
 .icon {
   margin-inline-end: 8px;

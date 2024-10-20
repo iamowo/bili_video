@@ -47,9 +47,72 @@ export function shareDynamic (id) {
   })
 }
 
-export function getDynamic (did) {
+export function getDynamic (did, uid) {
   return http({
     method: 'GET',
-    url: `/dynamic/getDynamic/${did}`
+    url: `/dynamic/getDynamic/${did}/${uid}`
+  })
+}
+
+// 更新信息， 删除动态
+export function updateDyinfo (data) {
+  return http({
+    method: 'POST',
+    url: '/dynamic/updateDyinfo',
+    data: data
+  })
+}
+
+// like
+export function addDynamicLike (data) {
+  return http({
+    method: 'POST',
+    url: '/dynamic/addDynamicLike',
+    data: data
+  })
+}
+
+export function getAllTopical () {
+  return http({
+    method: 'GET',
+    url: '/dynamic/getAllTopical'
+  })
+}
+
+export function addTopical (data) {
+  return http({
+    method: 'POST',
+    url: '/dynamic/addTopical',
+    data: data
+  })
+}
+
+export function addTopicalCount (tid) {
+  return http({
+    method: 'GET',
+    url: `/dynamic/addTopicalCount/${tid}`
+  })
+}
+
+export function addTopicalWatchs (tid, topical) {
+  return http({
+    method: 'GET',
+    url: `/dynamic/addTopicalWatchs/${tid}/${topical}`
+  })
+}
+
+// 获取一个topical的信息
+export function getOneTopical (topical) {
+  return http({
+    method: 'GET',
+    url: `/dynamic/getOneTopical/${topical}`
+  })
+}
+
+// 获取一个topical中的所有动态
+export function getDynamicByTopical (topical, uid, sort) {
+  return http({
+    method: 'GET',
+    url: `/dynamic/getDynamicByTopical/${topical}/${uid}/${sort}`
   })
 }

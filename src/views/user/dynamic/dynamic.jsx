@@ -9,7 +9,7 @@ import { baseurl } from '../../../api'
 
 function Dynamic () {
   const params = useParams()
-  const [userinfo, setUserinfo] = useState()
+  const [userinfo, setUserinfo] = useState(() => localStorage.getItem('userinfo'))
   const hisuid = parseInt(params.uid)
   const myinfo = JSON.parse(localStorage.getItem('userinfo'))
   const myuid = myinfo != null ? parseInt(myinfo.uid) : parseInt(-1)
@@ -31,7 +31,7 @@ function Dynamic () {
   return (
     <div className="user-dynamic">
       <div className="dynamic-left-content">
-          {
+          {/* {
             dynamiclist.map(item => 
               <div className="onedynamic" key={item.id}>
                 <div className="dy-left-box">
@@ -86,6 +86,15 @@ function Dynamic () {
                   </div>
                 </div>
               </div>
+            )
+          } */}
+          {
+            dynamiclist.map((item, index) => 
+              <DynamicCom 
+                item={item}
+                index={index}
+                userinfo={userinfo}
+              />
             )
           }
           {

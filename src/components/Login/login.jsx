@@ -3,6 +3,7 @@ import './login.scss'
 import { login, register, findAccount } from '../../api/user';
 import { useDispatch } from 'react-redux';
 import { setuserinfo } from '../../store/modules/userStore'  // redux方法
+import message from '../notice/notice';
 
 function Login (props) {
   // console.log(props.login);
@@ -31,11 +32,13 @@ function Login (props) {
     }    
     // 有了响应拦截器之后就不用写.data.data 了
     const res = await login(loginData)
-    console.log('登录成功:', JSON.stringify(res));
+    console.log(res);
+    
+    // console.log('登录成功:', JSON.stringify(res));
     if (res === 0) {
-      alert('没有此账号')
+      message.open({ type: 'error', content: '没有此账号', flag: true})
     } else if (res === 1) {
-      alert('密码错误')
+      message.open({ type: 'error', content: '密码错误', flag: true})
     } else {
       // login success
       // dispatch(setuserinfo(res))
@@ -59,19 +62,18 @@ function Login (props) {
 
   // 注册
   const loginandregister = async () => {
-    if (inp22 !== inp23) {
-      alert('密码不一致')
+    if (inp21 === "" || inp22 === "" || inp23 === "") {
+      message.open({ type: 'warning', content: '请填写完整信息'})
       return
     }
-    if (inp12 === "" && inp22 === "" && inp23 === "") {
-      alert('请输入完整内容')
+    if (inp22 !== inp23) {
+      message.open({ type: 'warning', content: '密码不一致'})
       return
     }
     const res = await findAccount(inp21)
-    console.log('res======', res);
-    
+    // console.log('res======', res);
     if (res === 201) {
-      alert('此账号已存在')
+      message.open({ type: 'warning', content: '此账号已存在', flag: true})      
       return
     }
     setFlag1(2)
@@ -125,7 +127,7 @@ function Login (props) {
   // 填写个人信息
   const registerbtn2 = async () => {
     if (!useravatar.type.includes("image/")) {
-      alert("头像文件格式错误")
+      message.open({ type: 'error', content: '头像文件格式错误'})
       return
     }
 

@@ -46,4 +46,18 @@ export function getLikeinfo (uid) {
   })
 }
 
+export function getAtinfo (uid) {
+  return http({
+    method: 'GET',
+    url: `/message/getAtinfo/${uid}`
+  })
+}
+
+export function updateWhisperList (uid, deleted) {
+  return http({
+    method: 'GET',
+    url: `/message/updateWhisperList/${uid}/${deleted}`
+  })
+}
+
 

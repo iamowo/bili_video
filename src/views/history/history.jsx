@@ -14,6 +14,8 @@ function History () {
   useEffect(() => {
     const getData = async () => {
       const res = await getHistory(uid);
+      console.log('...',res);
+      
       if (res) {
         setHislist(res)
         setTemphis(res)

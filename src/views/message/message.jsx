@@ -46,7 +46,7 @@ function Message () {
 
   useEffect(() => {
     document.title= '消息中心'
-    document.body.style.background = `url(${baseurl}/sys/whisper_bg.jpg) top / cover no-repeat fixed`
+    document.body.style.background = `url(${baseurl}/sys/messagebg.png) top / cover no-repeat fixed`
   }, [])
   return (
     <div className="message-view-all">

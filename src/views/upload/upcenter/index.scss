@@ -238,6 +238,30 @@
           color: #222;
         }
       }
+      .switchbox1 {
+        width: 60px;
+        height: 30px;
+        background-color: #e3e5e7;
+        border-radius: 15px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        user-select: none;
+        .switch-box {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background-color: #fff;
+          translate: 2px 2px;
+          transition: translate 0.3s ease;
+          user-select: none;
+        }
+      }
+      .switchbox2 {
+        background-color: #32aeec;
+        .switch-box {
+          translate: 32px 2px;
+        }
+      }
     }
     .select-view-list {
       width: 100vw;
@@ -455,7 +479,7 @@
       color: #212121;
     }
     .one-upbox {
-      margin-top: 20px;
+      margin-top: 30px;
       min-height: 40px;
       line-height: 40px;
       display: flex;

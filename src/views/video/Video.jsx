@@ -1,44 +1,47 @@
 import './Video.scss'
 import Topnav from '../../components/Topnav/Topnav'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { getByVid, updateinfo, getVideoLikely, getDm, sendDm } from '../../api/video'
 import { debounce } from '../../util/fnc'
-import { addComment, deleteComment, getAllComment, addLikeinfo, deletelikeinfo } from '../../api/comment'
 import Totop from '../../components/toTop/totop'
 import { getFavlist, addOneVideo, addOneFavlist } from '../../api/favlist'
 import { useLocation } from 'react-router-dom'
-import Notice from '../../components/notice/notice'
 import { getByUid, getByUidFollowed, toFollow, toUnfollow } from '../../api/user'
-import { tofollow, canclefollow, tovideo, touserspace } from '../../util/fnc'
+import { tovideo, touserspace } from '../../util/fnc'
 import { baseurl, baseurl2 } from '../../api'
 import { getVideoFormList, getUserListOne } from '../../api/videolist'
+import message from '../../components/notice/notice'
+import { getSeasons, getAnimationByVid } from '../../api/animation'
+import Comments from '../../components/comments/comments'
+
 
 function VideoPart (props) {
   const vid = +props.vid
-  // const userinfos = JSON.parse(localStorage.getItem('userinfo')) ? 
-  //       JSON.parse(localStorage.getItem('userinfo')) : null
-  // const [userinfo, setUserinfo] = useState(() => userinfos)
-
   const userinfo = props.userinfo    // 硬币减之后，父组件更新，子组件信息无法更新
-  const uid = parseInt(userinfo !== null && userinfo !== '' ? userinfo.uid : -1)
+  const uid = props.uid
   const location = useLocation();
 
-  const [timeprogress, setTimeprogress] = useState(0)
-  const [lastwatchednunm, setLswnum] = useState(0)
-  const [wawtchdonefal, setWdone] = useState(0)
-  const [thisvid, setThisvid] = useState({})            // video info
+  const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
+  const [lastwatchednunm, setLswnum] = useState(0)      // 上次观看的时间
+  const [wawtchdonefal, setWdone] = useState(0)         // 是否观看完
+  // const [thisvid, setThisvid] = useState({})            // video info
+  const thisvid = props.thisvid
+
   const [nowtime ,setNowTime] = useState('00:00')       // time
   const [videoprogress, setProgress] = useState(0)      // progress
   const [loadprogress, setLoadprogress] = useState(0)   // 预加载进度
   const [fullfalg, setFullflag] = useState(false)           // 全屏
   const [clearflag, setClear] = useState(false)         // 清晰度
   const [speedflag, setSpeed] = useState(false)         // 倍速
+  const [settingflag, setSettingflag] = useState(false)  // 设置
+  const [setting1, setSetting1] = useState(false),       // 循环播放
+        [setting2, setSetting2] = useState(false),       // 自动播放下一集
+        [setting3, setSetting3] = useState(true)        // 16：9    4：3
    // 改变音量
   const [volumeheight, setVolumeHeight] = useState(100),
         [volumeopen, setVolumeopen] = useState(true),        // 静音 or 打开 声音
         [volumeflag, setVolume] = useState(false)        // 声音控制条
-
   const [sysflag, setSys] = useState(false)             // 设置
   const [windoflag, setWindoflag] = useState(false)     // 小屏幕
   const [windoflag2, setWindoflag2] = useState(false)   // 网页宽屏
@@ -54,7 +57,8 @@ function VideoPart (props) {
   const [iconflag, setIconflag] = useState(false)  //  打开 icon 页面
   const [icons, setIcons] = useState(1)            // 投币个数
 
-  const [dmlist, setDmlist] = useState([])         // 弹幕列表
+  //const [dmlist, setDmlist] = useState([])         // 弹幕列表
+  const dmlist = props.dmlist
   const [dmtest, setDmtext] = useState()           // 发送弹幕内容
   const [dmflag, setDmflag] = useState(true)       // 是否打开弹幕
 
@@ -68,18 +72,23 @@ function VideoPart (props) {
         [vlistindex, setVlistindex] = useState(0)                  // 列表篇中当前播放的视频的index
 
   const [taglist, settaglist] = useState([])
+  const [littlewindow, setLittlewindow] = useState(false)
+
+  const [animationinfo, setAnimationinfo] = useState({})           // anmation 的信息
+  const recommendlist = props.recommendlist
+  const upinfo = props.upinfo
+
   useEffect(() => {
     const getData = async () => {
       const res = (await getByVid(vid, uid))
       // 刚开始数据还没加载出来， 无法使用slice
       res.time = (res.time).slice(0, 10) + ' ' + (res.time).slice(11, 16) // 在{ } 中修改会报错
-      setThisvid(res)
+      // setThisvid(res)
+      settaglist(res.tags)
 
       // 弹幕
-      const res2 = await getDm(vid)
-      setDmlist(res2)
-      document.title = `${res.title}`
-      settaglist(res.tags)
+      // const res2 = await getDm(vid)
+      // setDmlist(res2)
 
       // 视频选集
       const res3 = await getVideoFormList(res.listid)
@@ -103,6 +112,9 @@ function VideoPart (props) {
       } else {
         setTitleflag(false)
       }
+
+      const res4 = await getAnimationByVid(vid)
+      setAnimationinfo(res4)
     }
     getData()
     const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
@@ -121,6 +133,7 @@ function VideoPart (props) {
     if (timer1 !== null) {
       setSpeed(false)
       setVolume(false)
+      setSettingflag(false)
       clearTimeout(timer1)
     }
     setClear(true)
@@ -138,6 +151,7 @@ function VideoPart (props) {
     if (timer1 !== null) {
       setClear(false)
       setVolume(false)
+      setSettingflag(false)
       clearTimeout(timer1)
     }
     setSpeed(true)
@@ -155,6 +169,7 @@ function VideoPart (props) {
     if (timer1 !== null) {
       setClear(false)
       setSpeed(false)
+      setSettingflag(false)
       clearTimeout(timer1)
     }
     setVolume(true)
@@ -163,6 +178,25 @@ function VideoPart (props) {
   const leave3 = () => {
     timer1 = setTimeout(() => {
       setVolume(false)
+      timer1 = null
+    },500)
+  }
+
+  const enter4 = () => {
+    console.log('enter444');
+    
+    if (timer1 !== null) {
+      setClear(false)
+      setSpeed(false)
+      setVolume(false)
+      clearTimeout(timer1)
+    }
+    setSettingflag(true)
+  }
+
+  const leave4 = () => {
+    timer1 = setTimeout(() => {
+      setSettingflag(false)
       timer1 = null
     },500)
   }
@@ -190,8 +224,53 @@ function VideoPart (props) {
     videoref.current.volume = volumeheight * 0.01
   }, [volumeheight])
 
-// 元数据加载完成
-const videoloadedmated = () => {
+  // 返回弹幕行
+  const [dmlines, setDmlines] = useState(20),
+        [freeline, setFreenline] = useState(() => new Array(20).fill(20)),
+        [dmcontrolflag, setDmcontrolflag] = useState(false),
+        [fontflag, setFontflag] = useState(false),
+        [dmfontsize, setDmfontsize] = useState('16px'),
+        [dmfontcolor, setDmfontcolor] = useState("#fff")
+
+  const fncline = (i) => {
+    console.log('i is: ', i);
+    
+  }
+
+  const fonttimer = useRef()
+
+  const dmcontrolenter = () => {
+    if (fonttimer.current != null) {
+      setFontflag(false)
+      clearTimeout(fonttimer.current)
+      fonttimer.current = null
+    }
+    setDmcontrolflag(true)
+  }
+
+  const dmcontrolleave = () => {
+    fonttimer.current = setTimeout(() => {
+      setDmcontrolflag(false)
+    }, 800)
+  }
+
+  const enterfont = () => {
+    if (fonttimer.current != null) {
+      setDmcontrolflag(false)
+      clearTimeout(fonttimer.current)
+      fonttimer.current = null
+    }
+    setFontflag(true)
+  }
+
+  const leavefont = () => {
+    fonttimer.current = setTimeout(() => {
+      setFontflag(false)
+    }, 800)
+  }
+
+  // 元数据加载完成
+  const videoloadedmated = () => {
   // 监听全屏改变事件
   window.addEventListener("fullscreenchange", () => {
     // 全屏时为全屏元素   退出全屏时为null
@@ -266,18 +345,18 @@ const videoloadedmated = () => {
 
   // 开始拖动
   let dragstart = false,
-      starposition = 0,     // 鼠标开始的位置
-      moveY = 0,            // y轴移动的距离
-      endpositon = 0,        // 结束时y位置
-      boxY = 0             // 音量距离位置
+      starposition = 0,                                       // 鼠标开始的位置
+      moveY = 0,                                              // y轴移动的距离
+      endpositon = 0,                                         // 结束时y位置
+      boxY = 0                                                // 音量距离位置
 
   const dragstartfnc = (e) => {
     dragstart = true
     starposition = e.clientY
     boxY = 
     console.log('start',starposition);
-    document.addEventListener("mouseup", dragend)  // 拖拽结束
-    document.addEventListener("mouseover", draging)  // 拖拽结束
+    document.addEventListener("mouseup", dragend)              // 拖拽结束
+    document.addEventListener("mouseover", draging)            // 拖拽结束
   }
   const draging = (e) => {
     if (dragstart) {
@@ -294,12 +373,13 @@ const videoloadedmated = () => {
     document.removeEventListener("mouseup", dragend)
   }
 
-  const videobox = useRef() // 视频区域
-  const videoref = useRef() // 视频资源
+  const videobox = useRef()                                     // 视频区域
+  const videoref = useRef()                                     // 视频资源
   // 视频相关函数
-  const [loadflag, setLoadflag] = useState(false)  // 加载完成
+  const [loadflag, setLoadflag] = useState(false)               // 加载完成
   const [playflag, setPlayflag] = useState(false)
-  const [vidoopationflag, setVop] = useState(true)  // 显示控制栏 true显示 false不显示
+  const [endflag, setEndflag] = useState(false)                 // 视频结束
+  const [vidoopationflag, setVidoopationflag] = useState(true)  // 显示控制栏 true显示 false不显示
 
   // canplay
   const videoloaded = () => {
@@ -379,8 +459,7 @@ const videoloadedmated = () => {
 
   // pleyend  视频播放完
   const playend = () => {
-    setWdone(1);
-    // console.log('endddd');
+    setEndflag(true)
   }
 
   const [clicked, setcliceked] = useState(false)  // 播放了视频
@@ -410,7 +489,7 @@ const videoloadedmated = () => {
             
             if (res === 0) {
               console.log('xxxx0000xxx');
-              setThisvid({
+              props.setThisvid({
                 ...thisvid,
                 plays: thisvid.plays + 1,
                 lastwatched: 1
@@ -446,46 +525,42 @@ const videoloadedmated = () => {
   }
   
   // 移动事件
-  let timer = null
+  const bottomopationTimer = useRef()
   let enterflag = false
-  const mousemovefnc = () => {
-    setVop(true)
-    if (enterflag === false) {
-      if (timer != null) {
-        clearTimeout(timer)
-      } else {        
-        timer = setTimeout(() => {        
-          setVop(false)
-        },2000)
-      }
-    } else {
-      setTimeout(() => {
-        clearTimeout(timer)
-        timer = null
-      },100)
+  // 鼠标在视频中移动时间
+  const mousemoveonmask = () => {
+    setVidoopationflag(true)
+    if (bottomopationTimer.current != null) {
+      clearTimeout(bottomopationTimer.current)
+      bottomopationTimer.current = null
       return
     }
+    bottomopationTimer.current = setTimeout(() => {
+      setVidoopationflag(false)
+    }, 2000)
   }
 
-  // 底部操作框
+  // 进入底部操作框
   const entervop = () => {
-    setVop(true)
+    setVidoopationflag(true)
+    clearTimeout(bottomopationTimer.current)
     enterflag = true  
   }
 
+  // 离开底部操作框
   const leaveop = () => {
     enterflag = false
-    timer = setTimeout(() => {        
-      setVop(false)
+    bottomopationTimer.current = setTimeout(() => {        
+      setVidoopationflag(false)
     },2000)
   }
 
+  // 离开视频区域
   const leavevideopart = () => {    
-    setVop(false)    
-    if (timer != null) {
-      clearTimeout(timer)
-      timer = null
-    }
+    enterflag = false
+    bottomopationTimer.current = setTimeout(() => {        
+      setVidoopationflag(false)
+    },2000)
   }
 
   const progressref = useRef()
@@ -508,11 +583,14 @@ const videoloadedmated = () => {
 
   // 点赞 投币 收藏 转发
   const clickbtn = async (e) => {
+    e.stopPropagation()
     if (userinfo === null) {
-      alert('请先登录')
+      message.open({ type: 'error', content: '请先登录'})
       return;
     }
-    if (e.target.className === 'onepart' || e.target.parentNode.className === 'onepart') {
+    if (e.target.className === 'onepart' || e.target.parentNode.className === 'onepart'
+        || e.target.className === 'iconbox-a' || e.target.parentNode.className === 'iconbox-a'
+    ) {
       const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)
       if (type === 3) {   // 收藏
         // 获得收藏列表
@@ -540,7 +618,7 @@ const videoloadedmated = () => {
         if (thisvid.iconed === false) {
           setIconflag(true)
         } else {
-          alert('已投币~')
+          message.open({ type: 'info', content: '已经投币不能重复~'})
         }
       } else {
         const data = {
@@ -554,17 +632,19 @@ const videoloadedmated = () => {
         if (res === 1) {
           // 点赞
           if (thisvid.liked === false) {
-            setThisvid({
+            props.setThisvid({
               ...thisvid,
               likes: thisvid.likes + 1,
               liked: !thisvid.liked
             })
+            message.open({ type: 'info', content: '点赞', flag: true})
           } else {
-            setThisvid({
+            props.setThisvid({
               ...thisvid,
               likes: thisvid.likes - 1,
               liked: !thisvid.liked
             })
+            message.open({ type: 'info', content: '取消点赞', flag: true})
           }
         }
         // else if (res === 3) {
@@ -578,7 +658,7 @@ const videoloadedmated = () => {
           // 分享
           // http://localhost:3000/video/84
           // let content = 'http://localhost:3000' + location.pathname
-          let content =  baseurl2 + location.pathname
+          let content = "[" + thisvid.title + "] " + baseurl2 + location.pathname
 
           var aux = document.createElement("input"); 
           aux.setAttribute("value", content); 
@@ -586,10 +666,11 @@ const videoloadedmated = () => {
           aux.select();
           document.execCommand("copy"); 
           document.body.removeChild(aux);
-          setThisvid({
+          props.setThisvid({
             ...thisvid,
             shares: thisvid.shares + 1 
           })
+          message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
         }
       }
     }
@@ -689,6 +770,7 @@ const videoloadedmated = () => {
     // }
   }
 
+  // 新建收藏夹
   const tocreatenewfav = async () => {
     const title = newFavtitle
     console.log(title);
@@ -725,16 +807,16 @@ const videoloadedmated = () => {
       console.log(data);
       const res = await addOneVideo(data)
       if (res) {
-        console.log('success'); 
+        message.open({ type: 'info', content: num > 0 ? '添加收藏' : '取消收藏', flag: true})
         closefavbox()  // 关闭收藏页面
-        setThisvid({
+        props.setThisvid({
           ...thisvid,
           favorites: thisvid.favorites + num,
           faved: !thisvid.faved
         })
       }
     } else {
-      alert('未选择收藏夹')
+      message.open({ type: 'warning', content: '未选择收藏夹'})
     }
   }
 
@@ -749,7 +831,6 @@ const videoloadedmated = () => {
 
   // 确认投币
   const snedconbtn = async () => {
-    
     if (userinfo.icons >= icons) {
       const data = {
         uid: userinfo.uid,
@@ -760,7 +841,7 @@ const videoloadedmated = () => {
       }
       const res = await updateinfo(data)
       if (res) {
-        setThisvid({
+        props.setThisvid({
           ...thisvid,
           icons: thisvid.icons + icons,
           iconed: true               // 投币不能撤回
@@ -770,11 +851,11 @@ const videoloadedmated = () => {
 
      // 子传父 更新用户信息
       props.updateuser()
-
       setIconflag(0)
+      message.open({ type: 'info', content: '已投币~', falg: true})
     } else {
       setIconflag(0)
-      alert('硬币不够')
+      message.open({ type: 'error', content: '剩余硬币不足'})
     }
   }
 
@@ -803,12 +884,12 @@ const videoloadedmated = () => {
 
   const tosendm = async () => {
     if (uid === -1) {
-      alert('login please')
+      message.open({ type: 'error', content: '请先登录'})
       return
     }
     if (dmflag) {
       if (dmtest === '' || dmtest === null) {
-        alert('输入为空')
+        message.open({ type: 'error', content: '输入内容为空'})
         return
       }
       const data = {
@@ -816,7 +897,7 @@ const videoloadedmated = () => {
         uid: uid,
         vid: vid,
         sendtime: timeprogress,
-        color: '#fff',
+        color: dmfontcolor,
         type: 0,
       }
       const res = await sendDm(data)
@@ -824,7 +905,7 @@ const videoloadedmated = () => {
       
       if (res) {
         console.log('send dm successfuly');
-        setDmlist(res)
+        props.setDmlist(res)
         setDmtext("")
       }
     }
@@ -843,6 +924,65 @@ const videoloadedmated = () => {
     document.location.reload()
   }
 
+  // 重播
+  const replayvideo = (e) => {
+    e.stopPropagation()
+    videoref.current.currentTime = 0;
+    videoref.current.play()
+    setEndflag(false)
+  }
+
+  useEffect(() => {
+    console.log('???', endflag);
+    
+  },[endflag])
+  // 关注
+  const tofollowuser = async (e) => {
+    e.stopPropagation()
+    const uid2 = parseInt(e.target.dataset.uid2)
+    if (uid === -1 || uid === null) {
+      message.open({ type: 'error', content: '请先登录'})
+      return
+    }
+    if (uid === uid2) {
+      message.open({ type: 'info', content: '已经关注了自己'})
+      return
+    }
+    const res = await toFollow(uid2, uid)
+    props.setUpinfo({
+      ...upinfo,
+      followed: true
+    })
+    props.setUserinfo({
+      ...props.userinfo,
+      follows: props.userinfo.follows + 1
+    })
+    props.userinfo.follows = props.userinfo.follows + 1
+    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    message.open({type: 'info', content: '已关注', flag: true})
+  }
+
+  // 取消关注
+  const canclefollowuser = async (e) => {
+    e.stopPropagation()
+    if (uid === -1) {
+      message.open({ type: 'error', content: '请先登录'})
+      return
+    }
+    const uid2 = e.target.dataset.uid2
+    const res = await toUnfollow(uid2, uid)
+    props.setUpinfo({
+      ...upinfo,
+      followed: false,
+    })
+    props.setUserinfo({
+      ...props.userinfo,
+      follows: props.userinfo.follows - 1
+    })
+    props.userinfo.follows = props.userinfo.follows - 1
+    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    message.open({type: 'info', content: '取消关注', flag: true})
+  }
   return (
     <>
       <Totop 
@@ -895,10 +1035,7 @@ const videoloadedmated = () => {
                 <div className='icon iconfont nb4'>&#xec1e;</div>
               </div>
           </div>
-          <div className="vodepinnerbox"
-            onMouseMove={debounce(mousemovefnc, 10)}
-            // onMouseLeave={leavevideopart}
-            >
+          <div className="vodepinnerbox">
             <video
               src={thisvid != null ? thisvid.path : null}
               ref={videoref}
@@ -922,19 +1059,134 @@ const videoloadedmated = () => {
             <span className="pausespan icon iconfont">&#xe6ab;</span>
           }
           <div className="vide-mask-over"
+            onMouseMove={mousemoveonmask}
             onClick={clickvideo}
             onDoubleClick={handledoubleclick}
+            onMouseLeave={leavevideopart}
             >
+              {
+                endflag &&
+                <div className="end-view"
+                  onClick={replayvideo}
+                >
+                  <div className="video-end-box">
+                    <div className="userinfo-line">
+                      <div className="recom-img-box">
+                        <img src={upinfo.avatar} alt="" className="user-reco-avatar"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(`/${upinfo?.uid}`, "blank")
+                          }}
+                        />
+                      </div>
+                      <div className="reco-info2">
+                        <div className="reco-user-name">
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              window.open(`/${upinfo?.uid}`, "blank")
+                            }}
+                          >
+                          {upinfo?.name}
+                          </span>
+                        </div>
+                        {
+                          upinfo?.followed ?
+                          <div className="reco-sub-btn spbtnfollow"
+                            data-uid2={upinfo?.uid}
+                            onClick={canclefollowuser}
+                          >取消关注</div>
+                          :
+                          <div className="reco-sub-btn"
+                            data-uid2={upinfo?.uid}
+                            onClick={tofollowuser}
+                          >+ 关注</div>
+                        }
+                      </div>
+                      <div className="remo-right-info">
+                        <div className="repaly-box">
+                          <div className="iconbox-a"
+                            onClick={replayvideo}
+                          >
+                            <span className="icon iconfont">&#xe615;</span>
+                            <span className="icon-text-sp">重播</span>
+                          </div>
+                        </div>
+                        <div className="onter-icons"
+                          onClick={clickbtn}
+                        >
+                          <div className="iconbox-a"
+                            data-type="1"
+                            style={{color: thisvid?.liked ? '#32aeec' : '#fff'}}
+                          >
+                            <span className="icon iconfont">&#xe61c;</span>
+                            <span className="icon-text-sp">点赞</span>
+                          </div>
+                          <div className="iconbox-a"
+                            data-type="2"
+                            style={{color: thisvid?.iconed ? '#32aeec' : '#fff'}}
+                          >
+                            <span className="icon iconfont">&#xe617;</span>
+                            <span className="icon-text-sp">投币</span>
+                          </div>
+                          <div className="iconbox-a"
+                            data-type="3"
+                            style={{color: thisvid?.faved ? '#32aeec' : '#fff'}}
+                          >
+                            <span className="icon iconfont">&#xe630;</span>
+                            <span className="icon-text-sp">收藏</span>
+                          </div>
+                          <div className="iconbox-a"
+                            data-type="4"
+                          >
+                            <span className="icon iconfont">&#xe633;</span>
+                            <span className="icon-text-sp">转发</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="recommend-box">
+                      <div className="remoccend-title">相关推荐</div>
+                      <div className="recom-videos">
+                        {
+                          recommendlist.map(item =>
+                            <div className="one-reco-video"
+                              key={item.vid}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                window.open(`/video/${item.vid}`, "_blank")
+                              }}
+                            >
+                              <img src={item.cover} alt="" className="recommend-cover" />
+                              <div className="vidoebox-mask"></div>
+                              <div className="reco-titlebox">{item.cover}</div>
+                            </div>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
               {
                 dmflag && dmlist.map((item, index) =>
                   item.type === 0 ?
-                    <div className="danmu-div" key={item.id}
+                    <div className="danmu-div"
+                      key={item.id}
                       style={{animationPlayState: playflag ? 'running' : 'paused',
                             color: (item.color) + '',
                             textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
                             top: (index % 20 * 25 + 10) + 'px',
-                            fontSize: '16px'
-                    }}>{item.text + " " +item.sendtime}</div>  
+                            fontSize: '16px',
+                            display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+                    }}
+                    onMouseEnter={(e) =>
+                      e.target.style.animationPlayState = 'paused'
+                    }
+                    onMouseLeave={(e) => 
+                      e.target.style.animationPlayState = 'running'                      
+                    }
+                    >{item.text}</div>
                   :
                     <div className="danmu-div" key={item.id}
                     style={{animationPlayState: playflag ? 'running' : 'paused',
@@ -942,13 +1194,19 @@ const videoloadedmated = () => {
                             textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
                             top: (index % 20 * 25 + 10) + 'px',
                             fontSize: '16px'
-                    }}>{item.text + " " +item.sendtime}</div> 
+                    }}>{item.text}</div> 
                 )
               }
           </div>
           {/* 视频控制 */}
+          {
+            !endflag &&
+            <div className="topmask"
+              style={{opacity: vidoopationflag ? '1' : '0'}}
+            ></div>
+          }
           <div className={fullfalg ? "videobottomcof videobottomcof-active" : "videobottomcof"}
-            // style={{opacity: vidoopationflag ? '1' : '0'}}
+            style={{opacity: vidoopationflag ? '1' : '0'}}
             onMouseEnter={entervop}
             onMouseLeave={leaveop}
             >
@@ -978,13 +1236,17 @@ const videoloadedmated = () => {
                 }
                 {
                   playflag ?
-                  <span className="icon iconfont" onClick={clickvideo}>&#xea81;</span>
+                  <span className="icon iconfont"
+                    onClick={clickvideo}
+                  >&#xea81;</span>
                   :
-                  <span className="icon iconfont" onClick={clickvideo}>&#xe60f;</span>
+                  <span className="icon iconfont"
+                    onClick={clickvideo}
+                  >&#xe60f;</span>
                 }
                 {
                   vlist.length > 0 && vlistindex < vlist.length &&
-                    <div className="icon iconfont"
+                    <div className="nextvideo icon iconfont"
                       onClick={nextvideo}
                     >&#xe609;</div>
                 }
@@ -1004,17 +1266,62 @@ const videoloadedmated = () => {
                         <div className="innericon2 icon iconfont">&#xe7b7;</div>
                       }
                     </div>
-                    <div className="danmuopen icon iconfont">&#xe60d;</div>
+                    <div className="danmuopen icon iconfont">
+                      <span className='icon iconfont'
+                        onMouseEnter={dmcontrolenter}
+                        onMouseLeave={dmcontrolleave}
+                      >&#xe60d;</span>
+                      {
+                        dmcontrolflag &&
+                        <div className="fontcontrol-box"
+                          onMouseEnter={dmcontrolenter}
+                          onMouseLeave={dmcontrolleave}
+                        >
+                          <div className="con-box-title1">弹幕字体大小</div>
+                          <input type="range" className="changfont" />
+                            <div className="con-box-title1">弹幕速度</div>
+                          <input type="range" className="changfont" />
+                            <div className="con-box-title1">弹幕行数</div>
+                          <input type="range" className="changfont" />
+                        </div> 
+                      }
+                    </div>
                     <div className="danmusnedbox">
                       {
                         dmflag &&
-                        <div className="leftfonts icon iconfont">&#xe64d;</div>
+                        <div className="leftfonts">
+                          <span className='icon iconfont'
+                            onMouseEnter={enterfont}
+                            onMouseLeave={leavefont}
+                          >&#xe64d;</span>
+                        </div>
+                      }
+                      {
+                        fontflag &&
+                        <div className="dmfontcontrol-box"
+                          onMouseEnter={enterfont}
+                          onMouseLeave={leavefont}
+                        >
+                          <div className="tit-line1">
+                            <span>颜色</span>
+                            <div className="colorbox"
+                              style={{backgroundColor: dmfontcolor + ""}}
+                            ></div>
+                          </div>
+                          <input type="text" className="inpcolor"
+                            value={dmfontcolor}
+                            onChange={(e) => setDmfontcolor(e.target.value)}
+                          />
+                        </div>
                       }
                       {
                         dmflag ?
                         <input type="text" className="inputdanmu"
                           value={dmtest}
-                          onChange={(e) => setDmtext(e.target.value)}
+                          onChange={(e) => {
+                            e.preventDefault()
+                            setDmtext(e.target.value)
+                          }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {tosendm()}
                           }}
@@ -1079,7 +1386,7 @@ const videoloadedmated = () => {
                       onMouseLeave={leave3}
                       onClick={() => {
                         setVolumeopen(true)
-                        videoref.current.volume = volumeheight
+                        videoref.current.volume = (volumeheight * 0.01)
                       }}
                       >&#xea0f;</span> 
                   }
@@ -1106,16 +1413,53 @@ const videoloadedmated = () => {
                   }
                 </div>
                 <div className='outtbox'>
-                  <span className='icon iconfont sp21'>&#xe602;</span>
+                  <span className='icon iconfont sp21'
+                    onMouseEnter={enter4}
+                    onMouseLeave={leave4}
+                  >&#xe602;</span>
+                  {
+                    settingflag &&
+                    <div className="appendbox4"
+                      onMouseEnter={enter4}
+                      onMouseLeave={leave4}
+                    >
+                      <div className="one-setting-line">
+                        <span className="settingtext">循环播放</span>
+                        <div className={setting1 ? "changebox changebox-active" : "changebox"}
+                          onClick={() => setSetting1(!setting1)}
+                        >
+                          <div className="one-switch-box"></div>
+                        </div>
+                      </div>
+                      <div className="one-setting-line">
+                        <span className="settingtext">连续播放</span>
+                        <div className={setting2 ? "changebox changebox-active" : "changebox"}
+                          onClick={() => setSetting2(!setting2)}
+                        >
+                          <div className="one-switch-box"></div>
+                        </div>
+                      </div>
+                      <div className="one-setting-line">
+                        <div className={setting3 ? "one-ssbox one-ssbox-active" : "one-ssbox"}
+                          onClick={() => setSetting3(!setting3)}
+                        >16:9</div>
+                        <div className={!setting3 ? "one-ssbox one-ssbox-active" : "one-ssbox"}
+                          onClick={() => setSetting3(!setting3)}
+                        >4:3</div>
+                      </div>
+                    </div>
+                  }
                 </div>
-                <div className='outtbox'>
-                  <span className='icon iconfont sp31'>&#xe61b;</span>
+                <div className='appnedtext1 outtbox'>
+                  <span className='icon iconfont sp31'
+                    onClick={() => setLittlewindow(!littlewindow)}
+                  >&#xe61b;</span>
                 </div>
-                <div className='outtbox'>
+                <div className='appnedtext2 outtbox'>
                   <div className='icon iconfont sp41'
                     onClick={props.onChnageWidth}>&#xe61a;</div>
                 </div>
-                <div className='outtbox'>
+                <div className='appnedtext3 outtbox'>
                   {
                     false ?
                     <div onClick={fullscreenfnc} className='icon iconfont sp51'>&#xe7bc;</div>
@@ -1139,11 +1483,53 @@ const videoloadedmated = () => {
                 <div className="innericon2 icon iconfont">&#xe7b7;</div>
               }
             </div>
-            <div className="danmuopen icon iconfont">&#xe60d;</div>
+            <div className="danmuopen icon iconfont">
+              <span className='icon iconfont'
+                onMouseEnter={dmcontrolenter}
+                onMouseLeave={dmcontrolleave}
+              >&#xe60d;</span>
+              {
+                dmcontrolflag &&
+                <div className="fontcontrol-box"
+                  onMouseEnter={dmcontrolenter}
+                  onMouseLeave={dmcontrolleave}
+                >
+                  <div className="con-box-title1">弹幕字体大小</div>
+                  <input type="range" className="changfont" />
+                    <div className="con-box-title1">弹幕速度</div>
+                  <input type="range" className="changfont" />
+                    <div className="con-box-title1">弹幕行数</div>
+                  <input type="range" className="changfont" />
+                </div> 
+              }
+            </div>
             <div className="danmusnedbox">
               {
                 dmflag &&
-                <div className="leftfonts icon iconfont">&#xe64d;</div>
+                <div className="leftfonts">
+                  <span className='icon iconfont'
+                    onMouseEnter={enterfont}
+                    onMouseLeave={leavefont}
+                  >&#xe64d;</span>
+                </div>
+              }
+              {
+                fontflag &&
+                <div className="dmfontcontrol-box"
+                  onMouseEnter={enterfont}
+                  onMouseLeave={leavefont}
+                >
+                  <div className="tit-line1">
+                    <span>颜色</span>
+                    <div className="colorbox"
+                      style={{backgroundColor: dmfontcolor + ""}}
+                    ></div>
+                  </div>
+                  <input type="text" className="inpcolor"
+                    value={dmfontcolor}
+                    onChange={(e) => setDmfontcolor(e.target.value)}
+                  />
+                </div>
               }
               {
                 dmflag ?
@@ -1162,20 +1548,32 @@ const videoloadedmated = () => {
           </div>
         </div>
       </div>
-      <div className="videoinfos" onClick={clickbtn}>
-        <div className="onepart" data-type="1" style={{color: thisvid.liked ? '#32AEEC' : '#61666D'}}>
-          <span className="icon iconfont"  style={{fontSize: '35px'}}>&#xe61c;</span>
+      <div className="videoinfos"
+        onClick={clickbtn}
+      >
+        <div className="onepart likeicon"
+          data-type="1"
+          style={{color: thisvid.liked ? '#32AEEC' : '#61666D'}}
+          >
+          <span className="icon iconfont" style={{fontSize: '35px'}}>&#xe61c;</span>
           <span className='optext'>{thisvid != null ? thisvid.likes : null}</span>
         </div>
-        <div className="onepart"  data-type="2" style={{color: thisvid.iconed ? '#32AEEC' : '#61666D'}}>
+        <div className="onepart iconicon"
+          data-type="2"
+          style={{color: thisvid.iconed ? '#32AEEC' : '#61666D'}}
+        >
           <span className="icon iconfont" style={{fontSize: '37px', translate: '0 3px'}}>&#xe617;</span>
           <span className='optext'>{thisvid != null ? thisvid.icons : null}</span>
         </div>
-        <div className="onepart"  data-type="3" style={{color: thisvid.faved ? '#32AEEC' : '#61666D'}}>
+        <div className="onepart subicon"
+          data-type="3"
+          style={{color: thisvid.faved ? '#32AEEC' : '#61666D'}}
+        >
           <span className="icon iconfont">&#xe630;</span>
           <span className='optext'>{thisvid != null ? thisvid.favorites : null}</span>
         </div>
-        <div className="onepart"  data-type="4"
+        <div className="onepart shareicon"
+          data-type="4"
           style={{width: 'fit-content'}}
           onMouseEnter={() => setShareflag(false)}
           onMouseLeave={() => setShareflag(true)}
@@ -1291,578 +1689,86 @@ const videoloadedmated = () => {
         </div>
       }
       {
-        thisvid.intro != null &&
-        <div className="vidintro">
-          <span className="text">{thisvid.intro}</span>
-          <div className="intromore">更多</div>
+        thisvid.aid !== -1 ?
+        <div className="intro-animation-box">
+          <img src={animationinfo?.cover} alt="" className="left-animation-civer" />
+          <div className="right-animation-iinfos">
+            <div className="ani-title">
+              <span className="ani-title-span">{animationinfo?.title}</span>
+              {
+                false ?
+                <div className="follow-ani-box">
+                  <span className="icon iconfont">&#xe644; 已追番</span>
+                </div>
+                :
+                <div className="follow-ani-box follow-tofollow">
+                  <span className='icon iconfont'>&#xe630; 追番</span>
+                </div>
+              }
+            </div>
+            <div className="ani-info">
+              <div className="one-info">12播放</div>
+              <div className="one-info">12弹幕</div>
+              <div className="one-info">12追番</div>
+            </div>
+            <div className="ani-taginfo">一共{animationinfo?.chapters}集</div>
+            <div className="ani-intro">简介:{animationinfo?.intro}</div>
+          </div>
         </div>
-      }
-      <div className="vid-tags" onClick={clicktag}>
-        {
-          taglist.map((item, index) =>
-            <div key={index} className="onetag"
-              data-index={index} data-word={item} onClick={tothiskeyword}>{item}
+        :
+        <div>
+          {
+            thisvid.intro != null &&
+            <div className="vidintro">
+              <span className="text">{thisvid.intro}</span>
+              <div className="intromore">更多</div>
+            </div>
+          }
+          <div className="vid-tags" onClick={clicktag}>
             {
-              index === 0 &&
-              <span className="icon iconfont mtagicon">&#xe632;</span>
-            }
-            </div>
-          )
-        }
-      </div>
-    </>
-  )
-}
-
-function CommentPart (props) {
-  const vid = props.vid
-  const [thisvid, setThisvid] = useState()
-  const userinfo = props.userinfo
-  const uid = parseInt(userinfo !== null && userinfo !== '' ? userinfo.uid : -1)
-
-  const [commentnums, setCommentnums] = useState(0)      // 评论个数
-  const [commentType, setCommentType] = useState(0)
-  const [commentlist, setCommentlist] = useState([])
-  const [commentArray, setCommentarray] = useState([])   // 回复消息时，flag===true，弹出回复框
-  const [secondnums, setSecondsnums] = useState([])      // 查看全部二级评论flag
-  const [commentflag, setCommentflag] = useState(false)    // 评论框flag
-  const sendpart = useRef()
-  const sendpart2 = useRef()
-  const [commentshowone ,setShowOne] = useState(false)  // 翻滚显示下面的评论
-  const [commentcontent, setContnet] = useState('')     // 一级回复内容
-  const [commentcontent2, setContnet2] = useState('')   // 二级回复内容
-
-  // 发送一级评论
-  const sendcomment = async () => {
-    if (userinfo === null) {
-      alert('请先登录')
-      return;
-    }
-    if (commentcontent.length > 0) {
-      const data = {
-        uid: userinfo.uid,
-        vid: vid,
-        content: commentcontent,
-        topid: 0,
-        fid: 0,
-        hisuid: thisvid.uid
-      }
-      const res = await addComment(data)
-      if (res) {
-        // 清除
-        setCommentflag(false)
-        setContnet('')                          // 清除输入框中内容
-        // 更新数据
-        const data2 = {
-          id: res,
-          uid: userinfo.uid,
-          vid: vid,
-          content: commentcontent,
-          topid: 0,
-          fid: 0,
-          time: '刚刚',
-          avatar: userinfo.avatar,
-          name: userinfo.name,
-          liked: false,
-          likes: 0,
-          lists: []  // 否则会报 找不到 slice 错误
-        }
-        setCommentlist([
-          ...commentlist,
-          data2
-        ])
-        setCommentnums(commentnums + 1)
-        alert('success')
-      }
-    } else {
-      alert('内容不能为空')
-    }
-  }
-
-  // 回复评论（一级）
-  const [replaydata, setReplaydata] = useState({})
-  const toreplaycomment = (e) => {
-    const index = parseInt(e.target.dataset.index)
-    const newarrya = commentArray.map((item, tindex) => {
-      if (tindex === index) {
-        return true
-      } 
-      return false
-    })    
-    setCommentarray(newarrya)
-    
-    const data = {
-      topid: e.target.dataset.topid,             // 一级评论的id
-      fid: e.target.dataset.fid,                 // 要回复评论的id
-      fname: e.target.dataset.name               // 要回复评论的人的名字
-    }
-    setReplaydata(data)
-  }
-
-  // 发送评论（二级）
-  const sendcomment2 = async () => {
-    if (commentcontent2.length > 0) {
-      const data = {
-        uid: userinfo.uid,
-        vid: vid,
-        content: commentcontent2,
-        topid: replaydata.topid,    // 最顶层， 一级id
-        fid: replaydata.fid,        // 二级id， 回复的评论的id
-        hisuid: thisvid.uid         // 回复对象的uid
-      }
-      const res = await addComment(data)
-      if (res) {
-        setCommentflag(false)
-        setContnet2('') 
-
-        const data2 = {
-          id: res,
-          uid: userinfo.uid,
-          vid: vid,
-          content: commentcontent2,
-          topid: 1,   // 最顶层， 一级id
-          fid: 2,        // 二级id， 回复的评论的id
-          name: userinfo.name,
-          avatar: userinfo.avatar,
-          time: '刚刚',
-          fname: replaydata.fname,
-          liked: false,
-          likes: 0
-        }
-        // 更新列表
-        const newArray = commentArray.map((item, ind) => {
-          if (item === true) {
-            commentlist[ind].lists.push(data2)
-          }
-          return commentlist[ind]
-        })
-        setCommentlist(commentlist)
-        // 更新commentArray（让二级回复框消失）
-        setCommentarray(new Array(commentlist.length).fill(false))
-        setCommentnums(commentnums + 1)
-        alert('replay success')
-      } else {
-        alert('replay failure')
-      }
-    } else {
-      alert('内容不能为空')
-    }
-  }
-
-  // 删除评论
-  const todeletecomment = async (e) => {
-    const id = parseInt(e.target.dataset.id)
-    const topid = parseInt(e.target.dataset.topid)
-    const index1 = parseInt(e.target.dataset.index1)      // 删除一级评论
-    const index21 = parseInt(e.target.dataset.index21)    // 二级评论的一级评论的index
-    const index22 = parseInt(e.target.dataset.index22)    // 二级评论的index
-
-    // 如果是一级评论
-    if (parseInt(e.target.dataset.topid) === 0) {
-      // ⭐ 直接删除，这样很快，但重新赋值会出错
-      // commentlist.splice(index1, 1)    // index未要删除位置的索引， 1 未删除个数，   改变数组
-      setCommentlist(
-        commentlist.filter(item =>
-          item.id !== id
-        )
-      )
-    } else {
-      // ⭐ 问题同上     
-      // const newlists = commentlist[index].lists.filter((item, i) => i !== sindex)
-      // commentlist[index].lists = newlists      
-      // setCommentlist(commentlist)
-      setCommentlist(
-        commentlist.map((item1, i) => {
-          if (i === index21) {
-            item1.lists = item1.lists.filter((item2, j) => j !== index22)
-          }
-          return item1
-        })
-      )
-    }
-    const res = await deleteComment(id, vid)
-    if (res === 200) {
-      setCommentnums(commentnums - 1)
-      alert('delete success')
-    } else {
-      alert('failure')
-    }
-  }
-
-  useEffect(() => {
-    const getData = async () => {      
-      const res = await getAllComment(vid, uid, 0)
-      setCommentlist(res)      
-      // console.log('all comment is:', res);
-      let tempsum = 0;
-      for (let i = 0; i < res.length; i++) {        
-        tempsum += (1 + res[i].lists.length)
-      }
-      setCommentnums(tempsum)
-      setCommentarray(new Array(res.length).fill(false))
-      setSecondsnums(new Array(res.length).fill(3))
-      const res2 = await getByVid(vid, uid)
-      setThisvid(res2)
-    }
-    getData()
-
-    window.addEventListener('scroll', scrollfnc)
-    return () => {
-      window.removeEventListener('scroll', scrollfnc)
-    }
-    },[])
-
-    const cilckfnc = (e) => {      
-      if (!(sendpart.current).contains(e.target)) {
-        setCommentflag(false)
-        window.removeEventListener('click', cilckfnc)        
-      }
-    }
-
-    const cilckfnc2 = (e) => {      
-      if (!(sendpart2.current).contains(e.target)) {
-        setCommentflag(false)
-        window.removeEventListener('click', cilckfnc2)        
-      }
-    }
-
-    const scrollfnc = (e) => {
-      const top = document.body.scrollTop || document.documentElement.scrollTop
-      const distance = sendpart.current.offsetTop
-      setShowOne(top > distance ? true : false);
-    }
-
-    // 评论排序
-    const changeCommentType = async (e) => {
-      const type = parseInt(e.target.dataset.type)
-      const res = await getAllComment(vid, uid, type)
-      setCommentlist(res) 
-    }
-
-    // 点赞评论
-    const likethiscomment = async (e) => {
-      if (uid === -1) {
-        alert("请先登录")
-        return
-      }      
-      const thisliked = e.target.dataset.liked || e.target.parentNode.dataset.liked
-      const cid = e.target.dataset.cid || e.target.parentNode.dataset.cid
-      const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)            // 0： 一级评论   1： 二级
-      const index1 = parseInt(e.target.dataset.index1 || e.target.parentNode.dataset.index1)       // 删除一级评论
-      const index21 = parseInt(e.target.dataset.index21 || e.target.parentNode.dataset.index21)    // 二级评论的一级评论的index
-      const index22 = parseInt(e.target.dataset.index22 || e.target.parentNode.dataset.index22)    // 二级评论的index
-      console.log(index21, index22);
-      
-      if (thisliked === 'true') {        
-        const res = deletelikeinfo(cid, uid)
-        if (res) {
-          if (type === 0) {
-            setCommentlist(
-              commentlist.map((item1, i) => {
-                if (i === index1) {
-                  item1.liked = false
-                  item1.likes -= 1
+              taglist.map((item, index) =>
+                <div key={index} className="onetag"
+                  data-index={index} data-word={item} onClick={tothiskeyword}>{item}
+                {
+                  index === 0 &&
+                  <span className="icon iconfont mtagicon">&#xe632;</span>
                 }
-                return item1
-              })
-            )
-          } else {
-            setCommentlist(
-              commentlist.map((item1, i) => {
-                if (i === index21) {
-                  item1.lists = item1.lists.map((item2, j) => {
-                    if (j === index22) {
-                      item2.liked = false
-                      item2.likes -= 1
-                    }
-                    return item2
-                  })
-                }
-                return item1
-              })
-            )
-          }
-        } 
-      } else {
-        const hisuid = e.target.dataset.hisuid || e.target.parentNode.dataset.hisuid
-        const data = {
-          type: 2,
-          hisuid: hisuid,
-          uid: uid,
-          cid: cid,
-          vid: thisvid.vid
-        }
-        const res = await addLikeinfo(data);
-        if (res) {
-          if (type === 0) {            
-            setCommentlist(
-              commentlist.map((item1, i) => {
-                if (i === index1) {
-                  item1.liked = true
-                  item1.likes += 1
-                }
-                return item1
-              })
-            )
-          } else {
-            setCommentlist(
-              commentlist.map((item1, i) => {
-                if (i === index21) {
-                  item1.lists = item1.lists.map((item2, j) => {
-                    if (j === index22) {
-                      item2.liked = true
-                      item2.likes += 1
-                    }
-                    return item2
-                  })
-                }
-                return item1
-              })
-            )
-          }
-        }
-      }
-    }
-  return (
-    <>
-    <div className="commetnbox">
-      <div className="commenttitle">
-        <div className="cmt1">
-          <h2>评论</h2>
-          <span style={{fontSize: '14px'}}>{commentnums}</span>
-        </div>
-        <div className="cmt2">
-          <span onClick={changeCommentType} data-type="0" style={{color: commentType === 0 ? '#18191C' : '#9499A0'}}>最热</span>
-          <div></div>
-          <span onClick={changeCommentType} data-type="1" style={{color: commentType === 1 ? '#18191C' : '#9499A0'}}>最新</span>
-        </div>
-      </div>
-      {/* 顶部一级评论 */}
-      <div className="vidsendbox" ref={sendpart}>
-        <div className="snetext">
-          <div className="avatarpart">
-            <img src={userinfo != null ? userinfo.avatar : null} alt="" className="useravatarcom" />
-          </div>
-          <div className="rightppp">
-            <div className="rightcommentpart" style={{backgroundColor: commentflag ? '#FFF' : '#F1F2F3'}}> 
-              <textarea name="" id="" className="comtextarea"
-                onFocus={() => {
-                  setCommentflag(true)
-                  window.addEventListener('click', cilckfnc)
-                }}
-                onChange={(e) => setContnet(e.target.value)}
-                value={commentcontent}
-                placeholder='写点什么吧~'
-              ></textarea>
-            </div>
-            { 
-              commentflag &&
-              <div className="sendbtn">
-                <div className="leftconfss">
-                  <span className="icon iconfont">标签</span>
                 </div>
-                <div className="rightsends"
-                onClick={sendcomment}
-                style={{backgroundColor: commentcontent.length > 0 ? '#32AEEC' : '#00AEEC80'}}
-                >发布</div>
-              </div>
+              )
             }
           </div>
         </div>
-      </div>
-      { 
-        commentlist.map((item, index) =>
-          <div className="oneusercomment" key={item.id}>
-            <div className="onecm">
-              <div className="ocmla">
-                <img src={item.avatar} alt=""  className='onecmavatar'/>
-              </div>
-              <div className="firsetcm">
-                {/* 一级评论 */}
-                <div className="onerpart">
-                  <span className="cmname">{item.name}</span>
-                </div>
-                <div className="commentcontent">
-                  <span className="firstcon">
-                  {item.content}
-                  </span>
-                </div>
-                <div className="eommentinfos">
-                  <span className='timesp1'>{() => item.time.slice(0, 10)}</span>
-                  <div className={item.liked ? "liseli lise-active" : 'liseli'}
-                    data-cid={item.id}
-                    data-hisuid={item.uid}
-                    data-liked={item.liked}
-                    data-index1={index}
-                    data-type="0"
-                    onClick={likethiscomment}
-                  >
-                    <span className='icon iconfont'>&#xe61c;</span>
-                    <span className='likenum'>{item.likes}</span>
-                  </div>
-                  {
-                    // 先要登录才能回复
-                    userinfo != null && item.uid === userinfo.uid ?
-                    <span className='cmback'
-                      data-id={item.id}
-                      data-topid={item.topid}
-                      data-index1={item.index}
-                      onClick={todeletecomment}>删除</span>
-                    :
-                    <span className='cmback'
-                      data-id={item.id}
-                      data-fid={item.uid}
-                      data-topid={item.id}
-                      data-name={item.name}
-                      data-index={index}
-                      onClick={toreplaycomment}
-                    >回复</span>
-                  }
-                </div>
-                { 
-                  item.lists.slice(0, secondnums[index]).map((item2, index2) =>
-                    <div className="secondcomments" key={item2.id}>
-                      <div className="onesecondcomment">
-                        <div className="leftpartsceavatar">
-                          <img src={item2.avatar} alt="" className="secondavatar" />
-                        </div>
-                        <div className="rightusercomment-a">
-                          <div className="rightcommentscrond">
-                            <span className="secondname">{item2.name}</span>
-                            <span className="secondcontent">
-                              <span className="text11" style={{color: '#9499A0'}}>
-                                回复{item2.fname} :
-                              </span>
-                              {item2.content}
-                            </span>
-                          </div>
-                          <div className="secondcommentinfos">
-                            <span className='timesp1'>{item2.time.slice(0, 10)}</span>
-                            <div className={item2.liked ? "liseli lise-active" : 'liseli'}
-                              data-cid={item2.id}
-                              data-hisuid={item2.uid}
-                              data-liked={item2.liked}
-                              data-index21={index}
-                              data-index22={index2}
-                              data-type="1"
-                              onClick={likethiscomment}
-                            >
-                              <span className='icon iconfont'>&#xe61c;</span>
-                              <span className='likenum'>{item2.likes}</span>
-                            </div>
-                            {
-                              userinfo != null && item2.uid === userinfo.uid ?
-                              <span className='cmback'
-                                data-id={item2.id}
-                                data-topid={item2.topid}       // topid != 0, 说明不是一级评论
-                                data-index21={index}
-                                data-index22={index2}
-                                onClick={todeletecomment}>删除</span>
-                              :
-                              <span className='cmback'
-                                data-id={item2.id}
-                                data-fid={item2.uid}
-                                data-topid={item.id}           // 设置父id
-                                data-name={item2.name}
-                                data-index={index}
-                                onClick={toreplaycomment}
-                              >回复</span>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                }
-                {
-                  item.lists.length > 3 && secondnums[index] < item.lists.length &&
-                  <div className="watchmore">
-                    <span>共{item.lists.length}条评论,</span>
-                    <span className='watchmoreclick'
-                      onClick={() =>
-                        setSecondsnums(item, i => {
-                          if (i === index) {
-                            return item.lists.length
-                          } else {
-                            return item
-                          }
-                        })
-                      }
-                    >点击查看</span>
-                  </div>
-                }
-                {
-                  // 二级评论
-                  // item.openflag &&
-                  commentArray[index] === true &&
-                  <div className="replaybox">
-                    <div className="snetext">
-                      <div className="avatarpart">
-                        <img src={userinfo != null ? userinfo.avatar : null} alt="" className="useravatarcom" />
-                      </div>
-                      <div className="rightppp">
-                        <div className="rightcommentpart"> 
-                          <textarea name="" id="" className="comtextarea"
-                            onChange={(e) => setContnet2(e.target.value)}
-                            value={commentcontent2}
-                            placeholder={'回复@ ' + replaydata.fname + ' :'}
-                          ></textarea>
-                        </div>
-                        <div className="sendbtn">
-                          <div className="leftconfss">
-                            <span className="icon iconfont">标签</span>
-                          </div>
-                          <div className="rightsends"
-                          onClick={sendcomment2}
-                          style={{backgroundColor: commentcontent2.length > 0 ? '#32AEEC' : '#00AEEC80'}}
-                          >发布</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        )
       }
-      </div>
       {
-        // 底部一级评论
-        commentshowone &&
-        <div className="sendbox2bottom"
-          ref={sendpart2}
-          style={{width: sendpart.current.clientWidth + "px"}}
-        >
-          <div className="snetext">
-              <div className="avatarpart">
-                <img src={userinfo != null ? userinfo.avatar : null} alt="" className="useravatarcom" />
-              </div>
-              <div className="rightppp">
-               <div className="rightcommentpart" style={{backgroundColor: commentflag ? '#FFF' : '#F1F2F3'}}> 
-                  <textarea name="" id="" className="comtextarea"
-                    onFocus={() => {
-                      setCommentflag(true)
-                      window.addEventListener('click', cilckfnc2)
-                    }}
-                    onChange={(e) => setContnet(e.target.value)}
-                    value={commentcontent}
-                    placeholder='写点什么吧~'
-                  ></textarea>
-                </div>
-                { commentflag &&
-                  <div className="sendbtn">
-                    <div className="leftconfss">
-                      <span className="icon iconfont">标签</span>
-                    </div>
-                    <div className="rightsends"
-                    onClick={sendcomment}
-                    style={{backgroundColor: sendcomment.length > 0 ? '#32AEEC' : '#00AEEC80'}}
-                    >发布</div>
-                  </div>
-                }
-              </div>
-            </div>
+        littlewindow &&
+        <div className="window-video">
+          <video className="video2"
+            src={thisvid != null ? thisvid.path : null}
+            ref={videoref}
+            onCanPlay={videoloaded}
+            onProgress={videoprogressfnc}
+            onTimeUpdate={videotimeupdate}
+            onPlaying={videoplating}
+            // onSeeking={videoseeking}
+            // onSeeked={videoseeked}
+            onWaiting={videowating}
+            onEnded={playend}
+            onPlay={videoplay}
+            onPause={videopause}
+            onError={videoerror}
+            onLoadedMetadata={videoloadedmated}
+          ></video>
+          <span className="closevspan icon iconfont">&#xe6bf;</span>
+          {
+            playflag ?
+            <span className="playvbtn icon iconfont"
+              onClick={clickvideo}
+            >&#xe6ab;</span>
+            :
+            <span className="playvbtn icon iconfont"
+              onClick={clickvideo}
+            >&#xe6ac;</span>
+          }
         </div>
       }
     </>
@@ -1871,13 +1777,14 @@ function CommentPart (props) {
 
 function RightPart (props) {
   const vid = +props.vid
-  const userinfo = props.userinfo
-  const uid = parseInt(userinfo != null ? userinfo.uid : -1)    // myuid
+  const userinfo = props.userinfo  // 我的个人信息
+  const uid = props.uid            // myuid
   
   const [thisvid, setThisvid] = useState({})
   const [videouser, setVideouser] = useState()
   const [recommendlist, setRecommendlist] = useState([])          // 推荐列表
-  const [upinfo, setUpinfo] = useState()                          // up主的信息
+  // const [upinfo, setUpinfo] = useState()                          // up主的信息
+  const upinfo = props.upinfo                                     // up主的信息
   const [videoinfo, setVideoinfo] = useState()                    // 视频信息
 
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
@@ -1885,10 +1792,16 @@ function RightPart (props) {
         [allplays, setAllpalys] = useState(0),                      // 列表视频总播放量
         [listname, setListname] = useState("")                       // 视频列表的信息
 
+  const [seasonlist, setSeasonlist] = useState([]),
+        [seasonindex, setSeasonindex] = useState(0),
+        [chapterlist, setChapterlist] = useState([]),
+        [chapterindex, setChapterindex] = useState(0)
+
   const rigtbox = useRef()
   const recommendref = useRef()
 
-  const [dmlist, setDmlist] = useState([])         // 弹幕列表
+  // const [dmlist, setDmlist] = useState([])         // 弹幕列表
+  const dmlist = props.dmlist
 
   const [playalongflag, setPlayaloneflag] = useState(false)   // 连续播放标志
   // 弹幕列表flag
@@ -1905,25 +1818,16 @@ function RightPart (props) {
   // }
 
   const [seasions, setSeasion] = useState([])   // 分季
-  const [chapters, setChapters] = useState([
-    {id: 1, title: '1'},
-    {id: 5, title: '1'},
-    {id: 4, title: '1'},
-    {id: 3, title: '1'},
-    {id: 2, title: '1'},
-    {id: 6, title: '1'},
-    {id: 7, title: '1'},
-  ])  // 分集
+  const [chapters, setChapters] = useState([])  // 分集
 
   useEffect(() => {
     const getData = async () => {
-      const res = await Promise.all([getByVid(vid, uid), getVideoLikely(vid), getDm(vid)])
-      console.log(res);
+      const res = await Promise.all([getByVid(vid, uid), getVideoLikely(vid)])
+      // console.log(res);
       setVideoinfo(res[0])
       const upuid = res[0].uid     // 作者的uid
 
       const res3 = await getVideoFormList(res[0].listid)
-      console.log("=============");
       let tempnums = 0
       for (let i = 0; i < res3.length; i++) {
         tempnums += res3[i].plays
@@ -1934,26 +1838,44 @@ function RightPart (props) {
       setAllpalys(tempnums)
       setVlist(res3)
 
-      if (res[0].listid !== -1) {
+      if (res[0].listid !== -1 && res[0].listid != null) {
         const res4 = await getUserListOne(res[0].listid)
         console.log(res4);
         setListname(res4.title)
       }
 
-      const res2 = await getByUidFollowed(upuid, uid)
+      // const res2 = await getByUidFollowed(upuid, uid)
       // console.log('作者信息:', res2);
-      setUpinfo(res2)
+      // setUpinfo(res2)
+
       // 弹幕
       setThisvid(res[0])
       setRecommendlist(res[1])
-      setDmlist(res[2])
+      // setDmlist(res[2])
+
+      if (res[0].aid !== -1 && res[0].aid != null) {
+        console.log('=====================');
+        const res5 = await getSeasons(res[0].aid)
+        setSeasonlist(res5)
+        console.log('=========res4: ', res5);
+        
+        for (let i = 0; i < res5.length; i++) {
+          for (let j = 0; j < res5[i].length; j++) {
+            if (res5[i][j].vid === vid) {
+              setSeasonindex(i)
+              setChapterindex(j)
+              setChapterlist(res5[i])
+            }
+          }
+        }
+      }
     }
     getData()
     // 不让数据变化
     // setDistance(recommendref.current.offsetTop - recommendref.current.clientHeight)
     if (recommendref != null) {
       document.addEventListener('scroll', () => {
-        let distance = recommendref.current.offsetTop
+        let distance = recommendref?.current.offsetTop
         const top = document.body.scrollTop || document.documentElement.scrollTop
         // console.log(recommendref.current.offsetTop,"   ",top);
         // console.log('scrolling....');
@@ -1970,45 +1892,63 @@ function RightPart (props) {
   // 发私信
   const towhisper = (e) => {
     if (uid === -1) {
-      alert('login please')
+      message.open({ type: 'error', content: '请先登录'})
       return
     }
-    const uid1 = uid
-    const uid2 = e.target.dataset.uid
+    const uid1 = parseInt(uid)
+    const uid2 = parseInt(e.target.dataset.uid)
+    if (uid1 === uid2) {
+      message.open({type: 'error', content: '不能给自己发私信'})
+      return
+    }
     // navigator(`/${uid1}/whisper/uid2`)
     window.open(`/${uid1}/whisper/${uid2}`, '_blank')
   }
 
+  // 关注
   const tofollowuser = async (e) => {
     const uid2 = parseInt(e.target.dataset.uid2)
-    console.log('xxx', uid, uid2);
-    
     if (uid === -1 || uid === null) {
-      alert('请先登录')
+      message.open({ type: 'error', content: '请先登录'})
       return
     }
     if (uid === uid2) {
-      alert('不能关注自己')
+      message.open({ type: 'info', content: '已经关注了自己'})
       return
     }
     const res = await toFollow(uid2, uid)
-    setUpinfo({
+    props.setUpinfo({
       ...upinfo,
       followed: true
     })
+    props.setUserinfo({
+      ...props.userinfo,
+      follows: props.userinfo.follows + 1
+    })
+    props.userinfo.follows = props.userinfo.follows + 1
+    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    message.open({type: 'info', content: '已关注', flag: true})
   }
 
+  // 取消关注
   const canclefollowuser = async (e) => {
     if (uid === -1) {
+      message.open({ type: 'error', content: '请先登录'})
       return
-      alert('请先登录')
     }
     const uid2 = e.target.dataset.uid2
     const res = await toUnfollow(uid2, uid)
-    setUpinfo({
+    props.setUpinfo({
       ...upinfo,
-      followed: false
+      followed: false,
     })
+    props.setUserinfo({
+      ...props.userinfo,
+      follows: props.userinfo.follows - 1
+    })
+    props.userinfo.follows = props.userinfo.follows - 1
+    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    message.open({type: 'info', content: '取消关注', flag: true})
   }
 
   const navigate = useNavigate()
@@ -2022,21 +1962,34 @@ function RightPart (props) {
     <>
     <div className="upinfosbox">
       <div className="leftuserinfoavatar">
-        <img src={upinfo != null ? upinfo.avatar : null} alt="" className="upsavatar" />
+        <img src={upinfo != null ? upinfo.avatar : null} alt="" className="upsavatar" 
+          data-uid={upinfo != null ? upinfo.uid : -1}
+          onClick={touserspace}
+        />
       </div>
       <div className="irghtupinfos">
         <div className="upname">
-          <span className="namespan">{upinfo != null ? upinfo.name : null}</span>
-          <span className="messafespan icon iconfont" data-uid={upinfo != null ? upinfo.uid : null} onClick={towhisper}>&#xe6b9; 发消息</span>
+          <span className="namespan"
+            data-uid={upinfo != null ? upinfo.uid : -1}
+            onClick={touserspace}
+          >{upinfo != null ? upinfo.name : null}</span>
+          <span className="messafespan icon iconfont"
+            data-uid={upinfo != null ? upinfo.uid : null}
+            onClick={towhisper}
+          >&#xe6b9; 发消息</span>
         </div>
         <div className="upintro">{upinfo != null ? upinfo.userintro : null}</div>
         <div className="uprotate">
           <div className="donate">充电</div>
           { 
             (upinfo != null ? upinfo.followed : false) ?
-            <div className="hadsuni iconfont icon" data-uid2={upinfo != null ? upinfo.uid : null} onClick={canclefollowuser}>&#xe976; 已关注</div>
+            <div className="hadsuni iconfont icon"
+              data-uid2={upinfo != null ? upinfo.uid : null}
+              onClick={canclefollowuser}>&#xe976; 已关注</div>
             :
-            <div className="sunthisup icon iconfont" data-uid2={upinfo != null ? upinfo.uid : null} onClick={tofollowuser}>&#xe643; 关注</div>
+            <div className="sunthisup icon iconfont"
+              data-uid2={upinfo != null ? upinfo.uid : null}
+              onClick={tofollowuser}>&#xe643; 关注</div>
           }
         </div>
       </div>
@@ -2061,7 +2014,7 @@ function RightPart (props) {
           <div className="onedanmu"
             key={item.id}
           >
-            <div className="times">{item.sendtime}</div>
+            <div className="times">{item.typetime}</div>
             <div className="contents">{item.text}</div>
             <div className="sendtimes">{item.time.slice(0, 10)}</div>
           </div>
@@ -2094,7 +2047,7 @@ function RightPart (props) {
           <div className="videolist-content">
             {
               vlist.map((item, index) =>
-                <div key={item.id}
+                <div key={item.vid}
                   className={ vlistindex === index + 1 ? "one-videolist-vide vc-active" : "one-videolist-vide" }
                   data-vid={item.vid}
                   onClick={tothisvideo}
@@ -2109,7 +2062,7 @@ function RightPart (props) {
     }
     {
       // 选集  番剧 电视剧。。。
-      false &&
+      videoinfo != null && videoinfo.aid !== -1 &&
       <div className="seasionlist">
         <div className="anima-title">
           <div>
@@ -2117,14 +2070,24 @@ function RightPart (props) {
           </div>
         </div>
         <div className="anima-line2">
-            <div className="one-seasion">第一季</div>
+          {
+            seasonlist.map((item, index) => 
+              <div className={seasonindex === index ? "one-seasion season-active" : "one-seasion"}
+                key={item.id}
+                onClick={() => {
+                  setSeasonindex(index)
+                  setChapterlist(seasonlist[index])
+                }}
+              >第{index + 1}季</div>
+            )
+          }
         </div>
         <div className="seasion-nums">
           {
-            chapters.map((item, index) => 
-              <div className="one-div-chapter"
-                key={item.id}
-              >{index + 1}</div>
+            chapterlist.map((item, index) =>
+                <div className={chapterindex === index ? "one-div-chapter chapter-active" : "one-div-chapter"}
+                  key={item.id}
+                >{index + 1}</div>
             )
           }
         </div>
@@ -2138,7 +2101,9 @@ function RightPart (props) {
         }}>
         {
           recommendlist.map(item =>
-            <div className="onevideo" key={item.vid}>
+            <div className="onevideo"
+              key={item.vid}
+            >
               <div className="recom-video-box">
                 <div className="timebox">{item.vidlong}</div>
                 <img src={item.cover} alt="" className="leftvideoimg"
@@ -2182,13 +2147,30 @@ function Video () {
   const params = useParams()
   const vid = params.vid
   const userinfos = JSON.parse(localStorage.getItem('userinfo'))
-  const [userinfo, setUserinfo] = useState(() => userinfos)  // 未登录时null
+  const [userinfo, setUserinfo] = useState(() => userinfos)         // 未登录时null, 用户的信息
   const uid = parseInt(userinfo != null ? userinfo.uid : -1)
-
   const [widthscreen, setWidth] = useState(false)
+  const [recommendlist, setRecommendlist] = useState([])            // 相关推荐视频
   const changwidth = () => {    
     setWidth(!widthscreen)
   }
+
+  const [thisvid, setThisvid] = useState({})                        // 视频信息
+  const [dmlist, setDmlist] = useState([])                          // 弹幕列表, 视频部分和右侧列表要用
+  const [upinfo, setUpinfo] = useState()                            // up主的信息
+  useEffect(() => {
+    const getData = async () => {
+      const res = await Promise.all([getByVid(vid, uid), getDm(vid), getVideoLikely(vid)])
+      // console.log('1: ', res[0]);
+      const res2 = await getByUidFollowed(res[0].uid, uid)
+      setUpinfo(res2)                          // up主的信息
+      setThisvid(res[0])
+      document.title = `${res[0].title}`
+      setDmlist(res[1])
+      setRecommendlist(res[2])
+    }
+    getData()
+  }, [])
 
   const updateuser = async () => {
     console.log('硬币减一');
@@ -2203,21 +2185,37 @@ function Video () {
         <div className="vid-leftp">
           <VideoPart
             vid={vid}
+            uid={uid}
             userinfo={userinfo}
+            setUserinfo={setUserinfo}
             onChnageWidth={changwidth}
             widthscreen={widthscreen}
             updateuser={updateuser}
+            thisvid={thisvid}
+            setThisvid={setThisvid}
+            dmlist={dmlist}
+            setDmlist={setDmlist}
+            recommendlist={recommendlist}
+            upinfo={upinfo}
+            setUpinfo={setUpinfo}
           />
-          <CommentPart
+          <Comments
             vid={vid}
+            uid={uid}
+            hisuid={thisvid != null ? thisvid.uid : null}
             userinfo={userinfo}
           />
         </div>
         <div className="vid-rightpp">
             <RightPart
               vid={vid}
+              uid={uid}
+              dmlist={dmlist}
               userinfo={userinfo}
+              setUserinfo={setUserinfo}
               widthscreen={widthscreen}
+              upinfo={upinfo}
+              setUpinfo={setUpinfo}
             />
         </div>
       </div>

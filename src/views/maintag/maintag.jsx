@@ -14,7 +14,7 @@ function Maintag() {
     const getData = async () => {
       const res = await getByMaintag(maintag)
       console.log(res);
-      setVideolist(res)
+      setVideolist(res.slice(0, 10))
       
     }
     getData()

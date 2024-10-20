@@ -5,8 +5,8 @@ import { getAllVideo, getRandom } from '../../api/video.js';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { touserspace, tovideo } from '../../util/fnc.js';
-import { SassColor } from 'sass';
 import { baseurl } from '../../api/index.js';
+import message from '../../components/notice/notice.jsx';
 
 function Bnaaer () {
   const [nindex, setNindex] = useState(0)
@@ -19,21 +19,19 @@ function Bnaaer () {
     {id: 5, src: baseurl + '/sys/b5.jpg'},
   ])
   
-  let timer = null
-  
-  const initialSettimeout = () => {
-    timer = setTimeout(() => {
-      toright()
-    }, 3000)
+  let timerindex = 0
+  const timer = useRef(null)
+
+  // 图片加载完成
+  const imgonload = () => {
+    if (timerindex === 0) {
+      timer.current = setTimeout(() => {
+        toright()
+      }, 3000)
+    }
+    timerindex++
   }
 
-  useEffect(() => {
-    initialSettimeout()
-
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [])
   const toleft = () => {
     if (nindex === 0) {
       setNindex(bannerlist.length - 1);
@@ -61,15 +59,14 @@ function Bnaaer () {
 
   //
   const menter = () => {
-    console.log('enter');    
     clearTimeout(timer)
-    timer = null
+    timer.current = null
   }
 
   const mleave = () => {
-    console.log('leave');
-    clearTimeout(timer)
-    initialSettimeout()
+    timer.current = setTimeout(() => {
+      toright()
+    }, 3000)
   }
 
   return (
@@ -83,7 +80,9 @@ function Bnaaer () {
             style={{translate: -100 * movex + '% 0px'}}>
             {
               bannerlist.map((item, index) =>
-                <img key={index}  src={item.src} alt="" className="thisbannerimg" />
+                <img key={index}  src={item.src} alt="" className="thisbannerimg"
+                  onLoad={imgonload}
+                />
               )
             }
             </div>
@@ -120,11 +119,11 @@ function Bnaaer () {
 
 function Nav2 () {
   const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = parseInt(userinfo != null && userinfo != "" ? userinfo.uid : -1)
+  const uid = parseInt(userinfo != null && userinfo !== "" ? userinfo.uid : -1)
 
   const todynamicview = () => {
     if (uid === -1) {
-      alert('请先登录')
+      message.open({ type: 'warning', content: '请先登录'})
       return
     }
     window.open(`dynamicM/${uid}`, '_blank')
@@ -192,34 +191,55 @@ function Nav2 () {
 }
 function Video (props) {
   // 用户uid
-  const uid = 1
+  // const uid = props.userinfo.uid
   const data = props.data
   const videoref = useRef()
   const [nowtime ,setNowTime] = useState('00:00')   // 视频进度时间  
   const [videoindex, setVideoindex] = useState(-1)   // 悬浮播放index
 
-  // 悬浮鼠标，播放视频
-  let timer = null
-  const hangtoplayvideo = (path, e) => {
-    const index = +(e.target.dataset.index || e.target.parentNode.dataset.index)
-    const thisvideo = e.target.parentNode.querySelector(".hangtoplay") || e.target.querySelector(".hangtoplay")
-    delayDeal(index, path, thisvideo)
+  // // 悬浮鼠标，播放视频
+  // const timer = useRef(null)
+  // const hangtoplayvideo = (path, e) => {
+  //   const index = +(e.target.dataset.index || e.target.parentNode.dataset.index)
+  //   const thisvideo = e.target.parentNode.querySelector(".hangtoplay") || e.target.querySelector(".hangtoplay")
+  //   delayDeal(index, path, thisvideo)
+  // }
+
+  // const delayDeal = (index, path, video) => {
+  //   // 闭包环境
+  //   timer.current = setTimeout(() => {      
+  //     setVideoindex(index)
+  //     video.src = path
+  //   })
+  // }
+  // // 离开视频，停止播放
+  // const leavetostop = (e) => {
+  //   console.log('leaving...');
+    
+  //   clearTimeout(timer)
+  //   timer.current = null
+    
+  //   setVideoindex(-1)
+  //   const thisvideo = e.target.parentNode.querySelector(".hangtoplay") || e.target.querySelector(".hangtoplay")
+  //   if (thisvideo !== undefined && thisvideo !== null) {
+  //     thisvideo.src = ""
+  //   }
+  // }
+  const timer = useRef(null)
+  const hangtoplayvideo = (index) => {
+    setVideoindex(index)
   }
 
-  const delayDeal = (index, path, video) => {
-    // 闭包环境
-    timer = setTimeout(() => {      
-      setVideoindex(index)
-      video.src = path
-    },1500)
+  const leavetostop = (e) => {
+    setVideoindex(-1)
   }
 
   // 视频可以播放, 总是出错  ⭐ 用 autoplay就没问题了
-  const canlplayfnc = (thisvideo) => {
-    timer = setTimeout(() => {
-      // thisvideo.play()
-    }, 1500);
-  }
+  // const canlplayfnc = (thisvideo) => {
+  //   // timer = setTimeout(() => {
+  //     // thisvideo.play()
+  //   // }, 1500);
+  // }
 
   const playing  = () => {
     const duration = Math.floor(videoref.current.duration)
@@ -231,17 +251,6 @@ function Video (props) {
       setNowTime(hh + ":" + mm + ":" + ss)
     } else {
       setNowTime(+ mm + ":" + ss)
-    }
-  }
-
-  // 离开视频，停止播放
-  const leavetostop = (e) => {
-    clearTimeout(timer)
-    timer = null
-    setVideoindex(-1)
-    const thisvideo = e.target.parentNode.querySelector(".hangtoplay") || e.target.querySelector(".hangtoplay")
-    if (thisvideo !== undefined && thisvideo !== null) {
-      thisvideo.src = ""
     }
   }
 
@@ -258,7 +267,8 @@ function Video (props) {
       <div className="videoimg"
         data-path={data.path}
         data-index={props.index}
-        onMouseEnter={(e) => hangtoplayvideo(data.path, e)}
+        // onMouseEnter={(e) => hangtoplayvideo(data.path, e)}
+        onMouseEnter={() => hangtoplayvideo(props.index)}
         onMouseLeave={leavetostop}
         data-vid={data.vid}
         onClick={tovideo}>
@@ -271,19 +281,22 @@ function Video (props) {
             <div className="moreleft">添加至稍后再看</div>
           </div>
         }
-        <video
-          src=""
-          autoplay="autoplay"
-          data-src={data.path}
-          preload="auto"
-          muted
-          className="hangtoplay" 
-          ref={videoref}
-          style={{zIndex: videoindex === props.index ? '1' : '0'}}
-          data-vid={data.vid}
-          onTimeUpdate={playing}
-          onClick={tovideo}
-        ></video>
+        {
+          videoindex === props.index &&
+          <video
+            src={data.path}
+            autoplay="autoplay"
+            data-src={data.path}
+            preload="auto"
+            muted
+            className="hangtoplay" 
+            ref={videoref}
+            style={{zIndex: videoindex === props.index ? '1' : '0'}}
+            data-vid={data.vid}
+            onTimeUpdate={playing}
+            onClick={tovideo}
+          ></video>
+        }
         <img src={data.cover} alt="" data-vid={data.vid} className="vidimg load1"
           style={{zIndex: videoindex === props.index ? '0' : '1'}}
           onClick={tovideo}
@@ -325,7 +338,6 @@ function Home() {
 
   // 在父组件中定义， 子组件也可以是使用
   const navigate = useNavigate()
-
   // 要赋值为数组形式， 否则没有map方法，会报错
   const [recommendlist, setRecommend] = useState([])
   const [videolist, setVideolist] = useState([])
@@ -353,6 +365,12 @@ function Home() {
       })
     })
   }
+
+  // 换一换
+  const changapart = async () => {
+    const res = await getRandom()
+    setRecommend(res)
+  }
   return (
     <div className="conbox">
       <Topnav></Topnav>
@@ -361,12 +379,15 @@ function Home() {
         <div className="innerbox">
           <div className="changpart">
             <div className="icon iconfont" style={{fontSize: '15px'}}>&#xe614;</div>
-            <span className="changspan2">换一换</span>
+            <span className="changspan2"
+              onClick={changapart}
+            >换一换</span>
             </div>
           <div className="bottompart">
             <div className="bbox1 icon iconfont b1">&#xe646;</div>
             <div className="bbox1 icon iconfont b2">&#xe615;</div>
-            <div className="bbox1 bx2" onClick={totopmove}>
+            <div className="bbox1 bx2"
+              onClick={totopmove}>
               <div className='icon iconfont'>&#xe628;</div>
               <div className='totoptext'>顶部</div>
             </div>
@@ -387,7 +408,8 @@ function Home() {
           </div>
           {
             videolist.map((item, index) => 
-              <Video key={item.vid} 
+              <Video
+              key={item.vid} 
               data={item}
               index={index}
               style1="yes"/>

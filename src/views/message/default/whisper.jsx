@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './index.scss'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getWhisperList, sendImg, sendMessage, getWhisperConent } from '../../../api/message'
+import { getWhisperList, sendImg, sendMessage, getWhisperConent, updateWhisperList } from '../../../api/message'
 import { type } from '@testing-library/user-event/dist/type'
 import { getByUid } from '../../../api/user'
 
@@ -35,7 +35,6 @@ function Whisper () {
           }
         }
         console.log('exit flag', exitFlag);
-        
         if (exitFlag === -1) {
           // 不存在这个聊天
           const userinfo = await getByUid(hisuid)
@@ -52,6 +51,11 @@ function Whisper () {
           ])
           setNowuser(data)    // 新添加的
           setContentlist([])
+
+          const res3 = await getWhisperConent(uid, userinfo.uid)
+          if (res3.length > 0) {
+            setContentlist(res3)
+          }
         } else {
           // 存在这个聊天
           setNowuser(res[exitFlag])
@@ -203,6 +207,15 @@ function Whisper () {
     //   ])
     // }
   }
+
+  // 关闭对话框
+  const toclosethislist = async (wid) => {
+    const res = await updateWhisperList(wid, 1);
+    if (res) {
+      const res2 = await getWhisperList(uid)
+      setWhisperlist(res2)
+    }
+  }
   return (
     <div className="totalpage">
       <div className="toptitle">我的消息</div>
@@ -212,17 +225,31 @@ function Whisper () {
           <div className="message-list">
             {
               whisperlist.map((item, index) => 
-                <div className={nowindex === index ? 'one-message active' : 'one-message'} key={item.id}
-                  data-index={index} data-uid2={item.uid2}
-                  onClick={tothiswhsper}
+                <div className={nowindex === index ? 'one-message active' : 'one-message'} key={item.id}>
+                  <div className="close-btn-box">
+                    <span className="icon iconfont"
+                      onClick={() => toclosethislist(item.wid)}
+                    >&#xe643;</span>
+                  </div>
+                  <div className="list-rigthinfo"
+                    data-index={index}
+                    data-uid2={item.uid2}
+                    onClick={tothiswhsper}
                   >
-                  <img src={item.avatar} alt="" className="user-avatar" />
-                  <div className="user-infos" data-index={index} data-uid2={item.uid2}>
-                    <div className="user-username">{item.name}</div>
-                    <div className="last-message">{item.lastContent}</div>
+                    <img src={item.avatar} alt="" className="user-avatar" />
+                    <div className="user-infos"
+                      data-index={index}
+                      data-uid2={item.uid2}>
+                      <div className="user-username">{item.name}</div>
+                      <div className="last-message">{item.lastContent}</div>
+                    </div>
                   </div>
                 </div>
               )
+            }
+            {
+              whisperlist.length === 0 &&
+              <div className='nowhisperinfo'>没有私信消息~</div>
             }
           </div>
         </div>

@@ -193,8 +193,315 @@
         }
       }
     }
+    .one-up-mg {
+      width: 100%;
+      height: 200px;
+      box-sizing: border-box;
+      padding: 10px 0;
+      display: flex;
+      .left-up-cover {
+        height: 180px;
+        width: 135px;
+        position: relative;
+        .luc-img {
+          width: 100%;
+          height: 100%;
+          border-radius: 6px;
+        }
+        .time-long {
+          position: absolute;
+          right: 5px;
+          bottom: 5px;
+          padding: 0 10px;
+          line-height: 20px;
+          height: 20px;
+          background-color: #00000080;
+          color: #fff;
+          border-radius: 4px;
+          font-size: 12px;
+        }
+      }
+      .mid-up-infos {
+        flex: 1;
+        height: 100px;
+        padding: 10px 20px 0;
+        box-sizing: border-box;
+        .video-title {
+          width: 100%;
+          height: 40px;
+          line-height: 20px;
+          overflow: hidden;
+          word-break: break-all;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+
+          font-size: 14px;
+          color: #222;
+        }
+        .mg-author {
+          margin-bottom: 5px;
+          width: 100%;
+          height: 20px;
+          line-height: 20px;
+          font-size: 12px;
+          color: #9499a0;
+          display: flex;
+          align-items: center;
+          .onetag {
+            display: block;
+            height: 20px;
+            padding: 0 10px;
+            border-radius: 10px;
+            background-color: #32aeec;
+            color: #fff;
+            margin-right: 10px;
+          }
+        }
+        .video-uptime {
+          margin-top: 6px;
+          width: 100%;
+          height: 15px;
+          line-height: 15px;
+          font-size: 12px;
+          color: #9499A0;
+        }
+        .mg-intro {
+          width: 100%;
+          height: 60px;
+          font-size: 12px;
+          color: #9499a0;
+
+          word-break: break-all;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+        }
+      }
+      .change-suit-videoinfo {
+        width: 50px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        .icon {
+          cursor: pointer;
+          user-select: none;
+        }
+        .change-part-two {
+          position: absolute;
+          right: -60px;
+          bottom: 0px;
+          width: 80px;
+          height: 70px;
+          background-color: red;
+          box-sizing: border-box;
+          background-color: #fff;
+          border-radius: 4px;
+          border: 1px solid #e3e5e7;
+          padding: 5px 0;
+          .cpt-d1 {
+            width: 100%;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #212121;
+            cursor: pointer;
+            user-select: none;
+            box-sizing: border-box;
+            border-bottom: 1px solid #e3e5e7;
+            &:hover {
+              background-color: #32aeec;
+              color: #fff;
+            }
+          }
+          .cpt-d2 {
+            width: 100%;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #212121;
+            cursor: pointer;
+            user-select: none;
+            box-sizing: border-box;
+            &:hover {
+              background-color: #32aeec;
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
   }
   .editor-viewo-manager {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: fixed;
+    background-color: #00000080;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .evm-mamager {
+      width: 500px;
+      height: fit-content;
+      background-color: #fff;
+      box-sizing: border-box;
+      padding: 10px 20px 30px;
+      border-radius: 6px;
+      .ed-title {
+        width: 100%;
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+        font-size: 16px;
+        position: relative;
+        .clsebtn-man2 {
+          position: absolute;
+          top: 0;
+          // translate: 0 -50%;
+          right: 20px;
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+          user-select: none;
+          rotate: 45deg;
+        }
+      }
+      .deiter-video-info {
+        width: 100%;
+        margin: 20px 0;
+        height: fit-content;
+        .div-chang-line {
+          width: 100%;
+          height: 20px;
+          line-height: 20px;
+          font-size: 14px;
+          color: #212121;
+          margin: 10px 0 10px;
+        }
+        .div-chang-box {
+          width: 100%;
+          height: 40px;
+          box-sizing: border-box;
+          border: 1px solid #e3e5e7;
+          padding: 0 10px;
+          display: flex;
+          align-items: center;
+          border-radius: 6px;
+          margin-bottom: 20px;
+          .changtitle {
+            height: 20px;
+            flex: 1;
+            border: 0;
+            outline: none;
+          }
+          .num-edi {
+            height: 40px;
+            width: 50px;
+            text-align: center;
+            line-height: 40px;
+            font-size: 12px;
+            color: #9499A0;
+          }
+        }
+        .div-chang-box2 {
+          width: 100%;
+          height: 80px;
+          box-sizing: border-box;
+          border: 1px solid #e3e5e7;
+          padding: 10px;
+          display: flex;
+          align-items: center;
+          border-radius: 6px;
+          .changintro {
+            width: 100%;
+            height: 100%;
+            outline: none;
+            resize: none;
+            border: 0;
+            background-color: transparent;
+          }
+        }
+      }
+      .send-change-btn {
+        width: 92px;
+        height: 40px;
+        border-radius: 4px;
+        text-align: center;
+        line-height: 40px;
+        background-color: #32aeec;
+        color: #FFF;
+        cursor: pointer;
+        user-select: none;
+        margin: 20px auto;
+      }
+    }
+    .evm-delete {
+      width: 500px;
+      height: fit-content;
+      background-color: #fff;
+      box-sizing: border-box;
+      padding: 10px 0 30px;
+      border-radius: 6px;
+      .ed-title {
+        width: 100%;
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+        font-size: 16px;
+        position: relative;
+        .clsebtn-man2 {
+          position: absolute;
+          top: 0;
+          // translate: 0 -50%;
+          right: 20px;
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+          user-select: none;
+          rotate: 45deg;
+        }
+      }
+      .ed-two-line {
+        margin-top: 30px;
+        width: 100%;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        .edtl-b1 {
+          width: 96px;
+          height: 40px;
+          border-radius: 4px;
+          background-color: #e3e5e7;
+          color: #9499A0;
+          cursor: pointer;
+          user-select: none;
+          margin-right: 30px;
+          text-align: center;
+          line-height: 40px;
+        }
+        .edtl-b2 {
+          width: 96px;
+          height: 40px;
+          border-radius: 4px;
+          background-color: #32aeec;
+          color: #fff;
+          cursor: pointer;
+          user-select: none;
+          text-align: center;
+          line-height: 40px;
+        }
+      }
+    }
+  }
+  .editor-viewo-manager2 {
     width: 100%;
     height: 100%;
     top: 0;

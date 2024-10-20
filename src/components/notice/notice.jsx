@@ -69,23 +69,33 @@ const MessageItem = ({ children, onRemove }) => {
 // const MyInput = forwardRef(function MyInput(props, ref) {
    // ...
 // });
-const MessageContainer = forwardRef((props, ref) => {
-  const { messageList, setMessageList } = props;
-
-  // useImperativeHandle 是 React 中的一个 Hook，它能让你自定义由 ref 暴露出来的句柄
+const MessageContainer = forwardRef((props, ref) => {  
+  const { messageList, setMessageList } = props;  
+  // useImperativeHandle是react官方为了简便我们的ref操作，同时还可以让子组件返回给父组件自身的状态和方法去调用
+  // useRef将ref绑定到某个子组件标签上，用以获取整个子组件的方法和参数
+  // useImperativeHandle: 可以自定义暴露给父组件的方法或者变量
   useImperativeHandle(ref, () => {
     return {
       info: text => {
+        // 插入一条消息
         const id = uuid();
-        setMessageList(list => [...list, { id, text }]);
+        const type = 'info'
+        setMessageList(list => [...list, { id, text, type }]);
       },
       error: text => {
+        // 插入一条消息
         const id = uuid();
-        setMessageList(list => [...list, { id, text }]);
+        const type = 'error'
+        setMessageList(list => [...list, { id, text, type }]);
+      },
+      warning: text => {
+        // 插入一条消息
+        const id = uuid();
+        const type = 'warning'
+        setMessageList(list => [...list, { id, text, type }]);
       },
     };
   });
-
   return (
     <>
       {
@@ -94,8 +104,27 @@ const MessageContainer = forwardRef((props, ref) => {
             key={msg.id}
             onRemove={() => setMessageList(list => list.filter(item => item.id !== msg.id))}
           >
-            <span className="icon iconfont">&#xe69e;</span>
-            <span>{msg.text}</span>
+            {
+              msg.type === 'info' &&
+              <div className='d1info'>
+                <span className="icon iconfont">&#xe69e;</span>
+                <span>{msg.text}</span>
+              </div>
+            }
+            {
+              msg.type === 'warning' &&
+              <div className='d2warning'>
+                <span className="icon iconfont">&#xe7f4;</span>
+                <span>{msg.text}</span>
+              </div>            
+            }
+            {
+              msg.type === 'error' &&
+              <div className='d3error'>
+                <span className="icon iconfont">&#xe7b7;</span>
+                <span>{msg.text}</span>
+              </div>
+            }
           </MessageItem>
         ))
       }
@@ -113,6 +142,9 @@ function MessageManager() {
     message.current = msgRef.current;
     message.info = msgRef.current.info;
     message.error = msgRef.current.error;
+    message.warning = msgRef.current.warning;
+
+    console.log(message); // 查看 message 对象的值
   }, []);
 
   return <MessageContainer ref={msgRef} messageList={messageList} setMessageList={setMessageList} />;
@@ -120,17 +152,29 @@ function MessageManager() {
 
 const message = {
   current: null,
-  open: ({ type = 'info', content }) => {
+  info: null,
+  error: null,
+  warning: null,
+  open: ({ type, content, flag }) => {
     if (containerRoot) {
-      // 如果存在消息
+      // 如果存在消息(初始化完成， // 派发即时任务)
       message[type](content);
-    } else {
+    } else {      
+      // 未完成初始化， 创建容器， 派发延时任务
       renderMessageRoot();
+      if (flag) {
+        setTimeout(() => {
+          nextTick(() => {
+            message[type](content);        
+          });
+        }, 100)
+        return
+      }
       nextTick(() => {
-        message[type](content);
+        message[type](content);        
       });
-    }
-  },
+  }
+  }
 };
 
 export default message;

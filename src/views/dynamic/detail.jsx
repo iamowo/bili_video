@@ -1,30 +1,62 @@
 import "./index2.scss"
 import Topnav from "../../components/Topnav/Topnav"
 import { useParams } from "react-router-dom"
-import { getDynamic } from "../../api/dynamic"
+import { getDynamic, addDynamicLike } from "../../api/dynamic"
 import { useEffect, useState } from "react"
 import { baseurl } from "../../api"
+import Comments from "../../components/comments/comments"
 
 function Dydetail () {
   const params = useParams()
-  const uid = parseInt(params.uid != null ? params.uid : -1)
+  const userinfo = JSON.parse(localStorage.getItem('userinfo'))
+  const uid = parseInt(userinfo !== null ? userinfo.uid: -1)
   const did = parseInt(params.did)
-  const [dynamicinfo, setInfo] = useState()
+  const [dynamicinfo, setDynamicinfo] = useState()
   const [imgs, setImgs] = useState([])
+
+  const [likes, setLikes] = useState(0),
+        [ourcomments, OutComments] = useState(0)
 
   useEffect(() => {
     document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
-    const getData = async () => {
-      const res = await getDynamic(did)
-      console.log(res);
-      setInfo(res)
+    const getData = async () => {      
+      const res = await getDynamic(did, uid)
+      console.log('dynamic:', res);
+      setDynamicinfo(res)
       document.title = res.name + '动态'      
-
       setImgs(res.imgs)
       console.log(res.imgs);
+      setLikes(res.likes)
     }
     getData()
   }, [])
+
+  const clickLikeDynamic = async () => {
+    const data = {
+      did: did,
+      uid: uid,
+      hisuid: dynamicinfo.uid,
+      type: 1
+    }
+    const res = await addDynamicLike(data);
+    if (dynamicinfo.liked) {
+      // 取消点赞
+      setLikes(likes - 1)
+      setDynamicinfo({
+        ...dynamicinfo,
+        liked: false
+      })
+    } else {
+      // 点赞
+      if (res) {
+        setLikes(likes + 1)
+        setDynamicinfo({
+          ...dynamicinfo,
+          liked: true
+        })
+      }
+    }
+  }
   return (
     <div className="dyout">
       <Topnav />
@@ -62,38 +94,29 @@ function Dydetail () {
               }
             </div>
             <div className="bt-line1">
-              <div className="one-select-box">
-                <span>评论{1}</span>
-              </div>
-              <div className="one-select-box">
-                <span>点赞{1}</span>
-              </div>
             </div>
-            <div className="show-content">
-              <div className="line-select-type">
-                <span className="sp-s1">最新</span>
-                <span className="line-sp1"></span>
-                <span className="sp-s1">最热</span>
-              </div>
-              <div className="send-box1">
-                <img src="" alt="" className="left-sbimg" />
-                <div className="right-sb"></div>
-              </div>
-              <div className="comments-box">
-
-              </div>
+            <div className="dynamic-detail-comments">
+              <Comments
+                did={did}
+                uid={uid}
+                hisuid={dynamicinfo?.uid}
+                userinfo={userinfo}
+                OutComments={OutComments}
+              />
             </div>
           </div>
         </div>
       </div>
       <div className="right-con1">
-        <div className="one-right1">
+        <div className={dynamicinfo?.liked ? "one-right1 right-active" : "one-right1"}
+          onClick={clickLikeDynamic}
+        >
           <span className="icon iconfont">&#xe61c;</span>
-          <span className="bt-infos">{12}</span>
+          <span className="bt-infos">{likes}</span>
         </div>
-        <div className="one-right1">
+        <div className="one-right2">
           <span className="icon iconfont">&#xe648;</span>
-          <span className="bt-infos">{12}</span>
+          <span className="bt-infos">{ourcomments}</span>
         </div>
       </div>
       <div className="right-con2"></div>

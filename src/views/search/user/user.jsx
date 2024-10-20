@@ -3,6 +3,7 @@ import './index.scss'
 import { searchUser, toFollow, toUnfollow } from '../../../api/user'
 import { useParams } from 'react-router-dom'
 import { touserspace } from '../../../util/fnc'
+import Noresult from '../../../components/NoResult/Noresult'
 
 function UserS () {
   const params = useParams()
@@ -108,6 +109,10 @@ function UserS () {
             )
           }
         </div>
+        {
+          userlist.length === 0 &&
+          <Noresult />
+        }
     </div>
   )
 }

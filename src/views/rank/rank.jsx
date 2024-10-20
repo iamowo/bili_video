@@ -14,7 +14,7 @@ function Rank() {
   useEffect(() => {
     const getData = async () => {
       const res = await getRank(0)
-      console.log(res);
+      console.log('rank list:', res);
       
       setVidelist(res)
     }
@@ -53,7 +53,10 @@ function Rank() {
       <div className="rank-outbox">
         <div className="ranktitle">
           <Link to="/rank/hot">
-            <div className="onerank" data-index={0} onClick={tothisonernak}>
+            <div className="onerank" 
+              ata-index={0}
+              onClick={tothisonernak}
+            >
               <div className="cccont" data-index={0}>
                 <div className="iconbox" style={{backgroundColor: '#fd7070'}}>
                   <span className='icon iconfont' style={{color: '#fff', fontSize: '15'}}>&#xe6c0;</span>
@@ -67,7 +70,10 @@ function Rank() {
             </div>
           </Link>
           <Link to="/rank/history">
-            <div className="onerank" data-index={1} onClick={tothisonernak}>
+            <div className="onerank"
+              data-index={1} 
+              onClick={tothisonernak}
+            >
               <div className="cccont"  data-index={1}>
                 <div className="iconbox" style={{backgroundColor: '#ef8f24'}}>
                   <span className='icon iconfont'>&#xe639;</span>
@@ -81,7 +87,10 @@ function Rank() {
             </div>
           </Link>
           <Link to="/rank/all">
-            <div className="onerank" data-index={2} onClick={tothisonernak}>
+            <div className="onerank"
+              data-index={2} 
+              onClick={tothisonernak}
+            >
               <div className="cccont"  data-index={2}>
                 <div className="iconbox" style={{backgroundColor: '#fa719a'}}>
                   <span className='icon iconfont'>&#xe756;</span>

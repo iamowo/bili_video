@@ -83,6 +83,9 @@ import Audit from "../views/audit/audit";
 import Maintag from "../views/maintag/maintag";
 import AllMaintag from "../views/maintag/moreview";
 
+// topical
+import Topical from "../views/toplical/topical";
+
 // error
 import Error from "../views/404/error"
 
@@ -345,6 +348,10 @@ const router = createBrowserRouter([
   {
     path: 'audit',
     element: <Audit />
+  },
+  {
+    path: 'topical/:topical',
+    element: <Topical />
   },
   {
     path: 'test',

@@ -83,3 +83,26 @@ export function uuid() {
   const uuid = window.crypto.getRandomValues(new Uint8Array(8));
   return uuid.toString().split(',').join('');
 }
+
+// 关键字高亮
+export function HeightLightKw (content, keyword, tagName, type, uid) {
+  let color = '#F25D8E';
+  if (type === 1) {
+    color = '#32aeec';
+  }
+  if (content === "") {
+    return content
+  }
+  const a = content.toLowerCase()
+  const b = keyword.toLowerCase()
+
+  const indexof = a.indexOf(b)
+  const c = indexof > -1 ? content.substr(indexof, keyword.length) : ''
+  let val = `<${tagName} style="color:${color};">${c}</${tagName}>`
+  if (type === 1) {
+      val = `<${tagName} style="color:${color}; cursor: pointer"
+              >${c}</${tagName}>`
+  }
+  const regS = new RegExp(keyword, 'gi')
+  return content.replace(regS, val)
+}

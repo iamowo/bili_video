@@ -12,13 +12,13 @@ function Upvideo2 () {
 
   const [title, setTitle] = useState()
   const [intro, setIntro] = useState()
-  const [cpttitle, setCpttitle] = useState()
+  const [season, setSeason] = useState()         // 第几季
+  const [cpttitle, setCpttitle] = useState()     
   const [chapter, setChapter] = useState()
   const [coverimg, setCoverimg] = useState()
   const [coverfile, setCoverfile] = useState()
   const [covertype, setCovertype] = useState()
   const [videofile, setVideofile] = useState()
-  const [videotype, setVideotype] = useState()
 
   useState(() => {
     const getData = async () => {
@@ -35,19 +35,25 @@ function Upvideo2 () {
   }
 
   const addvideo = (e) => {
-    const file = e.target.files[0]
-    setVideofile(file)
+    const filedata = e.target.files[0]
+    if (!filedata.type.includes('video/')) {
+      alert('此文件不是视频类型')
+      return
+    }
+    setVideofile(filedata)
   }
 
+  // 首次上传
   const toupload = async () => {
     const data = {
       title: title,
+      uid: uid,
       intro: intro,
       chaptertitle: cpttitle,
       coverimg: coverimg,
       covertype: covertype,
       videofile: videofile,
-      videotype: videotype
+      type: 1
     }
     if (topidnex === 0) {
     } else if (topidnex === 1) {
@@ -239,6 +245,12 @@ function Upvideo2 () {
           </div>
         </div>
         <div className="up2-infos-box">
+          <div className="up2-one-line">
+              <input type="text" className="inp1" placeholder="第几季"
+                value={season} onChange={(e) => setSeason(e.target.value)}
+              />
+              <span className="numsspan">请填写阿拉伯数字</span>
+            </div>
           <div className="up2-one-line">
             <input type="text" className="inp1" placeholder="章节标题"
               value={cpttitle} onChange={(e) => setCpttitle(e.target.value)}

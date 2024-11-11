@@ -3,19 +3,28 @@ import { useEffect, useState } from 'react'
 import { getFollow, getFans } from '../../api/user'
 
 function At(props) {
+
   const uid = parseInt(props.uid)
+  
   const [ulist, setUlist] = useState([])
 
   useEffect(() => {
     const getData = async () => {
-      console.log('uid is:', uid);
-      const res = await Promise.all([getFollow(uid), getFans(uid)])
-      const temp = res[0].concat(res[1])
-      console.log(temp);
-      setUlist(temp.filter((item, index, self) => self.indexOf(item) === index))
+      const res = await Promise.all([getFollow(uid, 0, 0, ''), getFans(uid, 0, 0, '')])
+      const temp = res[0].list.concat(res[1].list)
+      
+      let map = new Map();
+      for (let item of temp) {
+          if (!map.has(item.uid)) {
+              map.set(item.uid, item);
+          };
+      };
+      let arr = [...map.values()];
+      setUlist(arr)
     }
     getData()
-  },[])
+  }, [])
+
   return (
     <div className="at-box-view">
       <div className="at-title">选择你想@的人</div>

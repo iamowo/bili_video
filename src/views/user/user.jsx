@@ -1,6 +1,6 @@
 import './user.scss'
 import Topnav from '../../components/Topnav/Topnav'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { Outlet, Link, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { setuserinfo } from '../../store/modules/userStore'
 import { getByUid, getByUidFollowed, toFollow, toUnfollow, updateUserinfo, getSetting } from '../../api/user'
@@ -10,18 +10,41 @@ import { getVideoByUid } from "../../api/video"
 import { getUserVideoList } from "../../api/videolist"
 import { baseurl } from '../../api'
 
+// 顶部nav
+function navReducer (state, action) {
+  switch(action.type) {
+    case 'DYNAMIC':
+      return state = 1
+    case 'VIDEOS':
+      return state = 2
+    case 'FAVLIST':
+      return state = 3
+    case 'CHANNEL':
+      return state = 4
+    case 'ANIMA':
+      return state = 5
+    case 'SETTING':
+      return state = 6
+    default:
+      return state = 0
+  }
+}
+
 function User() {
-  const localinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = parseInt(localinfo != null ? localinfo.uid : -1)      // myuid
+  // 用reducer 来代替state的topindex
+  const [topind, dispatch] = useReducer(navReducer, 0)
+
+  const localinfo = JSON.parse(localStorage.getItem('userinfo'))      // 用户的信息
+  const myuid = parseInt(localinfo != null ? localinfo.uid : -1)      // myuid
   const params = useParams()
   const hisuid = parseInt(params.uid)                               // 空间主的uid
-  const isme = hisuid === uid
-  const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)   // 空间作者的信息
-  const [famouswork, setFamouw] = useState([])
+  const isme = hisuid === myuid
+  const [userinfo, setUserinfo] = useState()                        // 空间作者的信息
+  console.log('userinfo, ', userinfo);
+  
   const [newintro, setNewintro] = useState("")
-  const [newGonggao, setNewgonggao] = useState("")
-  const [keyword, setKeyword] = useState()         // 搜索视频，动态
-  const [usersetting, setUsersetting] = useState()
+  const [keyword, setKeyword] = useState()                          // 搜索视频，动态
+  const [usersetting, setUsersetting] = useState()                  // 设置
 
   const link0 = useRef(),
         link1 = useRef(),
@@ -32,7 +55,21 @@ function User() {
         link6 = useRef()
 
   const location = useLocation()
-  // console.log(location.pathname);
+
+  const [topindex2 , setTopindex2] = useState(() => {
+    if(location.pathname.includes('/fans/follow')) {
+      return 1
+    } else if(location.pathname.includes('/fans/fan')) {
+      return 2
+    } else {
+      return 0
+    }
+  })
+
+  const [introfalg, setIntroflag] = useState(false),  // 修改intro
+        [upnums, setUpnums] = useState(0),   // 上传视频个数
+        [favnums, setFavnums] = useState(0), // 收藏夹个数
+        [vlist ,setVlist] = useState(0)   // 视频合计个数
   
   // 顶部导航，主页  动态 。。。。
   const [topindex, setTopindex] = useState(() => {
@@ -53,53 +90,39 @@ function User() {
     }
   })
 
-  const [topindex2 , setTopindex2] = useState(() => {
-    if(location.pathname.includes('/fans/follow')) {
-      return 1
-    } else if(location.pathname.includes('/fans/fan')) {
-      return 2
-    } else {
-      return 0
-    }
-  })
-
-  const [introfalg, setIntroflag] = useState(false)  // 修改intro
-
-  const [upnums, setUpnums] = useState(0)   // 上传视频个数
-  const [favnums, setFavnums] = useState(0) // 收藏夹个数
-  const [vlist ,setVlist] = useState(0)   // 视频合计个数
-  useEffect(() => {
-    choiseone2(topindex)   // 底部蓝条跳转
-    document.body.style.overflowY = 'scroll'   // 防治页面抖动
-    const getData = async () => {
-      // const res = await getByUid(hisuid, uid)
-      const res = await getByUidFollowed(hisuid, uid)
-      document.title = `${res.name}的个人空间`
-      setUserinfo(res);
-    }
-    if (!isme) {
-      getData()
-    } else {
-      document.title = `${userinfo.name}的个人空间`
-      setNewintro(userinfo.intro)
-      setNewgonggao(userinfo.gonggao)
-    }
-  },[])
-
   useEffect(() => {
     const getData = async () => {
-      const nres = await Promise.all([getFavlist(hisuid, -1), getDyanmciListWidthImg(hisuid), getVideoByUid(hisuid, 0), getUserVideoList(hisuid), getSetting(uid)])
+      const nres = await Promise.all([getFavlist(hisuid, -1), getDyanmciListWidthImg(hisuid), getVideoByUid(hisuid, 0), getUserVideoList(hisuid), getSetting(hisuid)])
       setUpnums(nres[1].length + nres[2].length)
       setFavnums(nres[0].length)
       setVlist(nres[3].length)
       setUsersetting(nres[4])
     }
     getData()
+
+    choiseone2(topindex)   // 底部蓝条跳转
+
+    document.body.style.overflowY = 'scroll'   // 防治页面抖动
+
+    const getData2 = async () => {
+      const res = await getByUidFollowed(hisuid, myuid)
+      console.log('followed info:', res);
+      document.title = `${res.name}的个人空间`
+      setUserinfo(res);
+    }
+    if (!isme) {
+      getData2()
+    } else {
+      document.title = `${localinfo.name}的个人空间`
+      setUserinfo(localinfo)
+      setNewintro(localinfo.intro)
+    }
   },[])
 
+  // 更新简介
   const blur1 = async () => {
     const data = new FormData()
-    data.append('uid', uid)
+    data.append('uid', hisuid)
     data.append('intro', newintro)
     const res = await updateUserinfo(data)
     if (res) {
@@ -139,21 +162,6 @@ function User() {
     setTopindex2(0)
   }, [topindex])
 
-  // const choicethisone = (e) => {
-  //   const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
-  //   setTopindex(index)
-  //   setTopindex2(0)   // 关注 粉丝 index
-  //   let tar = null
-  //   if (e.target.className === 'onebotinfos') {
-  //     tar = e.target
-  //   } else {
-  //     tar = e.target.parentNode
-  //   }
-  //   // console.log(tar);
-  //   slider.current.style.width = tar.clientWidth * 0.5 + 'px'
-  //   slider.current.style.left = tar.offsetLeft + tar.clientWidth * 0.1 + 'px'
-  // }
-
   const choiseone2 = (ind) => {
     const index = parseInt(ind)
     setTopindex(index)
@@ -186,9 +194,7 @@ function User() {
 
   // 加关注
   const toaddfollow = async () => {
-    console.log('xxx222asdas asdua dasdas');
-
-    const res = await toFollow(hisuid, uid)    
+    const res = await toFollow(hisuid, myuid)    
     if (res === 200) {
       setUserinfo({
         ...userinfo,
@@ -199,7 +205,7 @@ function User() {
 
   // 取消关注
   const tounfollowhim = async () => {
-    const res = await toUnfollow(hisuid, uid)
+    const res = await toUnfollow(hisuid, myuid)
     if (res === 200) {
       setUserinfo({
         ...userinfo,
@@ -211,7 +217,7 @@ function User() {
   // 搜索视频动态
   const navigate = useNavigate()
   const tosearch = () => {
-    navigate(`/${uid}/search/video/${keyword}`)
+    navigate(`/${hisuid}/search/video/${keyword}`)
   }
   
   const entertosearch = (e) => {
@@ -225,12 +231,14 @@ function User() {
       <Topnav />
       <div className="userspace">
         <div className="usertopinfos">
-          <div className="topinfos" style={{background: `url(${baseurl}/sys/user_space1.jpg)`}}>
-            <div className="detail-userinfos" style={{background: `url(${baseurl}/sys/userpsace_b2.jpg)`}}>
-              <img src={userinfo != null ? userinfo.avatar : null} alt="" className="user-avatar" />
+          <div className="topinfos"
+            style={{background: `url(${baseurl}/sys/user_space1.jpg)`}}>
+            <div className="detail-userinfos"
+              style={{background: `url(${baseurl}/sys/userpsace_b2.jpg)`}}>
+              <img src={userinfo?.avatar} alt="" className="user-avatar" />
               <div className="user-tighy-infos">
                 <div className="uti-username">
-                  <span className="namespan">{userinfo != null ? userinfo.name : null}</span>
+                  <span className="namespan">{userinfo?.name}</span>
                 </div>
                 {
                   isme ?
@@ -247,19 +255,25 @@ function User() {
                       placeholder={newintro}/>
                   </div>
                   :
-                  <div className="showintro">{userinfo != null ? userinfo.intro : null}</div>
+                  <div className="showintro">{userinfo?.intro}</div>
                 }
               </div>
               {
                 !isme &&
                 <div className="right-three-box">
                   {
-                    (userinfo != null ? userinfo.followed : false) ?
-                    <div className='d1-box-rigtb' onClick={tounfollowhim}>已关注</div>
+                    userinfo?.followed ?
+                    <div className='d1-box-rigtb'
+                      onClick={tounfollowhim}
+                    >已关注</div>
                     :
-                    <div className='d2-box-rigtb' onClick={toaddfollow}>加关注</div>
+                    <div className='d2-box-rigtb'
+                      onClick={toaddfollow}
+                    >加关注</div>
                   }
-                  <div className='d1-box-rigtb' onClick={() => window.open(`${uid}/whisper/${hisuid}`, "target")}>发消息</div>
+                  <div className='d1-box-rigtb'
+                    onClick={() => window.open(`${myuid}/whisper/${hisuid}`, "target")}
+                  >发消息</div>
                   <div className="more-right-div">
                     <span className='icon iconfont'>&#xe653;</span>
                   </div>
@@ -278,7 +292,8 @@ function User() {
                 onMouseEnter={ment}
                 onMouseLeave={mleav}
               >
-                <div className={topindex === 0 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={0}>
+                <div className={topindex === 0 ?"onebotinfos onebot-active" : "onebotinfos"}
+                  data-index={0}>
                   <span className="icon iconfont"
                     style={{color: '#16c092'}}
                   >&#xe64e;</span>
@@ -317,22 +332,25 @@ function User() {
                   <div className="bottomflag"></div>
                 </div>
               </Link>
-              <Link to={`/${hisuid}/favlist`}
-                ref={link3}
-                onClick={() => setTopindex(3)}
-                data-index={3}
-                onMouseEnter={ment}
-                onMouseLeave={mleav}
-              >
-                <div className={topindex === 3 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={3}>
-                  <span className="icon iconfont"
-                    style={{color: '#f29f3f'}}
-                  >&#xe630;</span>
-                  <span>收藏</span>
-                  <span style={{color: '#99a2aa', fontSize: '12px', marginLeft: '3px'}}>{favnums}</span>
-                  <div className="bottomflag"></div>
-                </div>
-              </Link>
+              {
+                (isme || usersetting?.favlist === 0) &&
+                <Link to={`/${hisuid}/favlist`}
+                  ref={link3}
+                  onClick={() => setTopindex(3)}
+                  data-index={3}
+                  onMouseEnter={ment}
+                  onMouseLeave={mleav}
+                >
+                  <div className={topindex === 3 ?"onebotinfos onebot-active" : "onebotinfos"} data-index={3}>
+                    <span className="icon iconfont"
+                      style={{color: '#f29f3f'}}
+                    >&#xe630;</span>
+                    <span>收藏</span>
+                    <span style={{color: '#99a2aa', fontSize: '12px', marginLeft: '3px'}}>{favnums}</span>
+                    <div className="bottomflag"></div>
+                  </div>
+                </Link>
+              }
               <Link to={`/${hisuid}/channel`}
                 ref={link4}
                 onClick={() => setTopindex(4)}
@@ -397,18 +415,34 @@ function User() {
               </div>
             </div>
             <div className="top-right-opadiv">
-              <div className={topindex2 === 1 ? 'tro-div tro-div-active' : 'tro-div'} onClick={() => setTopindex2(1)}>
-                <Link to={`/${hisuid}/fans/follow`}>
-                  <span className="sp1">关注数</span>
-                  <span className="sp2">{userinfo != null ? userinfo.follows : null}</span>
-                </Link>
-              </div>
-              <div className={topindex2 === 2 ? 'tro-div tro-div-active' : 'tro-div'} onClick={() => setTopindex2(2)}>
-                <Link to={`/${hisuid}/fans/fan`}>
+              {
+                (isme || usersetting?.followlist === 0) ?
+                <div className={topindex2 === 1 ? 'tro-div tro-div-active' : 'tro-div'} onClick={() => setTopindex2(1)}>
+                  <Link to={`/${hisuid}/fans/follow`}>
+                    <span className="sp1">关注数</span>
+                    <span className="sp2">{userinfo?.follows}</span>
+                  </Link>
+                </div>
+                :
+                <div className='tro-div'>
+                    <span className="sp1">关注数</span>
+                    <span className="sp2">{userinfo?.follows}</span>
+                </div>
+              }
+              {
+                (isme || usersetting?.fanslist === 0) ?
+                <div className={topindex2 === 2 ? 'tro-div tro-div-active' : 'tro-div'} onClick={() => setTopindex2(2)}>
+                  <Link to={`/${hisuid}/fans/fan`}>
+                    <span className="sp1">粉丝数</span>
+                    <span className="sp2">{userinfo != null ? userinfo.fans : null}</span>
+                  </Link>
+                </div>
+                :
+                <div className='tro-div'>
                   <span className="sp1">粉丝数</span>
-                  <span className="sp2">{userinfo != null ? userinfo.fans : null}</span>
-                </Link>
+                  <span className="sp2">{userinfo?.follows}</span>
               </div>
+              }
               <div className='tro-div'>
                 <span className="sp1">获赞数</span>
                 <span className="sp2">{userinfo != null ? userinfo.likes : null}</span>
@@ -422,7 +456,14 @@ function User() {
         </div>
         <div className="suerspace22">
             <Outlet 
-              context={{"isme": isme, "usersetting": usersetting}}
+              context={{"isme": isme,
+                        "usersetting": usersetting,
+                        "hisuid": hisuid,
+                        "hisinfo": userinfo,
+                        "myuid": myuid,
+                        "myinfo": localinfo,
+                        "setUserinfo": setUserinfo
+                      }}
               // 也可以传递数组
             />
         </div>

@@ -2,12 +2,14 @@
   width: 100%;
   min-height: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  // justify-content: center;
 }
 
 .up-content-box {
   margin-top: 80px;
-  width: 1100px;
+  width: 1000px;
   height: fit-content;
   border-radius: 4px;
   background-color: #fff;
@@ -17,13 +19,96 @@
     height: 60px;
     line-height: 40px;
     box-sizing: border-box;
-    padding: 10px 20px;
+    padding: 10px 30px;
     font-size: 16px;
     color: #212121;
+    display: flex;
+    justify-content: space-between;
+    .lp {
+      display: flex;
+      align-items: center;
+      font-weight: 550;
+      span {
+        margin-left: 5px;
+        font-size: 22px;
+        color: #ff6699;
+        font-weight: 570;
+      }
+    }
+    .rp {
+      font-size: 13px;
+      color: #9499a0;
+      display: flex;
+      align-items: center;
+      .timespan {
+        height: 15px;
+        line-height: 15px;
+        padding-right: 10px;
+        border-right: 1px solid #9499a0;
+      }
+      .nowstyle {
+        margin-left: 10px;
+        padding: 0 10px;
+        height: 26px;
+        border-radius: 4px;
+        box-sizing: border-box;
+        border: 1px solid #9499a0;
+        text-align: center;
+        line-height: 26px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        .sp1 {
+          font-size: 14px;
+          font-weight: 540;
+          color: #222;
+          margin-right: 5px;
+        }
+        .icon {
+          rotate: 0;
+          transition: rotate 0.3s ease;
+          margin: 0;
+        }
+        .fontactive {
+          rotate: 180deg;
+        }
+        .append-day-select {
+          top: 30px;
+          position: absolute;
+          width: 104px;
+          height: 208px;
+          background-color: #fff;
+          border-radius: 8px;
+          box-shadow: 0 2px 16px rgba(0, 0, 0, .1);
+          overflow: hidden;
+          font-size: 14px;
+          color: #18191C;
+          .day1 {
+            height: 44px;
+            line-height: 44px;
+          }
+          .day2 {
+            height: 40px;
+            line-height: 40px;
+          }
+          div {
+            cursor: pointer;
+            text-align: center;
+            &:hover {
+              background-color: #F5F5F5;
+            }
+          }
+        }
+      }
+    }
   }
   .data-content {
     box-sizing: border-box;
-    padding: 0 20px;
+    padding: 0 30px;
     width: 100%;
     height: 200px;
     background-color: #fff;
@@ -37,7 +122,7 @@
       box-sizing: border-box;
       padding: 16px 16px 20px;
       border-radius: 6px;
-      background-color: #cbebf0;
+      background-color: #00aeec;
       .icon {
         margin-right: 10px;
       }
@@ -45,15 +130,91 @@
         font-size: 14px;
         height: 20px;
         line-height: 20px;
-        color: #6A666D;
+        color: #fff;
       }
       .oiv-line2 {
+        margin-top: 5px;
         font-size: 22px;
         font-weight: 550;
-        color: #32aeec;
-        height: 30px;
-        line-height: 30px;
+        color: #fff;
+        height: 25px;
+        line-height: 25px;
       }
     }
   }
+  .data-content2 {
+    box-sizing: border-box;
+    padding: 0 30px;
+    width: 100%;
+    height: fit-content;
+    background-color: #fff;
+    row-gap: 10px;
+    .inncontact {
+      height: 88px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      column-gap: 10px;
+      .one-infos-video2 {
+        width: 100%;
+        height: 88px;
+        box-sizing: border-box;
+        padding: 16px 16px 20px;
+        border-radius: 6px;
+        background-color: #fafafa;
+        color: #666;
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          background-color: #f69;
+          color: #fff;
+          .oiv-line2 {
+            color: #fff;
+          }
+        }
+        .oiv-line1 {
+          .icon {
+            margin-right: 10px;
+          }
+          .oiv-line1 {
+            font-size: 14px;
+            height: 20px;
+            line-height: 20px;
+            color: #6A666D;
+          }
+        }
+        .oiv-line2 {
+          margin-top: 5px;
+          font-size: 22px;
+          font-weight: 550;
+          color: #32aeec;
+          height: 25px;
+          line-height: 25px;
+        }
+      }
+      .v2-active {
+        background-color: #f69;
+        color: #fff;
+        .oiv-line2 {
+          color: #fff;
+        }
+      }
+    }
+    .tubaopart {
+      margin-top: 30px;
+      width: 100%;
+      height: 200px;
+      background-color: red;
+    }
+  }
+}
+
+.sendmessag {
+  height: 20px;
+  padding: 30px;
+  line-height: 20px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  background-color: blue;
+  margin-bottom: 10px;
 }

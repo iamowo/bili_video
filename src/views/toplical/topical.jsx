@@ -1,6 +1,6 @@
 import './topical.scss'
 import Topnav from '../../components/Topnav/Topnav'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import DynamicCom from '../../components/dynamic/dynamicCom'
 import { useParams } from 'react-router-dom'
 import { getDynamicByTopical, getOneTopical } from '../../api/dynamic'
@@ -18,6 +18,9 @@ function Topical () {
         [topicalinfo, setTopicalinfo] = useState({}),
         [styleindex, setStyleindex] = useState(0)
 
+  const selectline = useRef()
+  let topdistance = 0
+  let [show, setShow] = useState(false)
   useEffect(() => {
     const getData = async () => {
       const res = await Promise.all([getDynamicByTopical(topical, uid, 0), getOneTopical(topical)])
@@ -27,11 +30,39 @@ function Topical () {
       
     }
     getData()
+    topdistance = selectline.current.offsetTop
+    document.title=topicalinfo?.name
+    window.addEventListener('scroll', scrollfnc)
   }, [])
 
+  const scrollfnc = (e) => {
+    const h = document.body.scrollTop || document.documentElement.scrollTop
+    console.log(h, topdistance);
+    
+    if (h > topdistance) {
+      setShow(true)
+    } else {
+      setShow(false)
+    }
+    
+    
+  }
   return (
     <div className="topilca-view">
       <Topnav />
+      <div className="topical-top-bg"></div>
+      <div className="gptoptop"
+        style={{visibility: show ? 'visible' : 'hidden'}}
+        onClick={() => {
+          window.scroll({
+            top: 0,
+            behavior: "smooth" 
+          })
+        }}
+      >
+        <span className="icon iconfont">&#xe637;</span>
+        <span>TOP</span>
+      </div>
       <div className="topical-mid-content">
         <div className="topintro">
           <div className="intro-user-line">
@@ -48,7 +79,7 @@ function Topical () {
           </div>
           <div className="topical-intro">{topicalinfo?.intro}</div>
         </div>
-        <div className="two-tyep-line">
+        <div className="two-tyep-line" ref={selectline}>
           <div
             className={styleindex === 0 ? "ttl-btn1 ttl-btn1-active" : "ttl-btn1"}
             onClick={async () => {

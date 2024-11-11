@@ -1,0 +1,148 @@
+.con-top {
+  width: 100vw;
+  height: 56px;
+  background-color: #fff;
+  border-radius: 0 0 6px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  z-index: 2;
+  box-shadow: 0 2px 4px #00000014;
+  .top-icon {
+    margin-left: 10px;
+    width: 256px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    img {
+      height: 56px;
+      margin-right: 5px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    span {
+      font-size: 22px;
+      font-weight: 570;
+      color: #32aeec;
+    }
+  }
+}
+
+.btm-content {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 56px 20px 30px;
+  display: flex;
+  overflow-y: scroll;
+  .con-leftmenu {
+    width: 246px;
+    height: 100%;
+    padding: 20px 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+    .menubox-sc {
+      position: fixed;
+      width: 226px;
+      height: fit-content;
+      background: #fff;
+      border-radius: 6px;
+      box-sizing: border-box;
+      padding-bottom: 10px;
+      // 高度固定 才可以用overscroll
+      // overflow-y: scroll;
+    }
+  }
+  .con-rightcont {
+    min-height: 100%;
+    flex: 1;
+    box-sizing: border-box;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    .filter-box {
+      width: 100%;
+      height: fit-content;
+      background-color: #fff;
+      border-radius: 6px;
+      box-sizing: border-box;
+      padding: 15px 15px 20px;
+      position: relative;
+      .searchline {
+        width: 400px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        .search-box-o {
+          width: 80%;
+          height: 40px;
+        }
+        .filter-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: 20px;
+          width: fit-content;
+          height: 40px;
+        }
+      }
+      .filter-line {
+        width: 100%;
+        height: fit-content;
+        box-sizing: border-box;
+        .ckbox-l {
+          transition: height 0.3s ease;
+        }
+        .one-filter-line {
+          margin-top: 10px;
+          height: 30px;
+          width: 100%;
+          display: flex;
+          .ofl-text {
+            height: 30px;
+            width: 70px;
+            line-height: 30px;
+            font-size: 13px;
+            color: #9499a0;
+            text-align: left;
+          }
+          .ofl-con {
+            margin-left: 20px;
+            height: 30px;
+            flex: 1;
+            display: flex;
+            .sorf-flag {
+              height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 100px;
+            }
+            .ofl-status-box {
+              height: 30px;
+              width: 460px;
+            }
+            .ofl-sortbox {
+              height: 30px;
+              width: 800px;
+            }
+          }
+        }
+      }
+    }
+    .con-box {
+      position: relative;
+      margin-top: 20px;
+      width: 100%;
+      height: fit-content;
+      background-color: #fff;
+      border-radius: 6px;
+      box-sizing: border-box;
+      padding: 15px;
+      margin-bottom: 30px;
+    }
+  }
+}

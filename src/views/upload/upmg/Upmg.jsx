@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 import "./Upmg.scss"
 import { uploadMgInfo, uploadMgImg, getByTitle, updateMg } from "../../../api/mg"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
+import message from "../../../components/notice/notice"
+import { baseurl2 } from "../../../api"
 
 function Upmg() {
-  const params = useParams()
-  const uid = parseInt(params.uid)
-  
+  const navigate = useNavigate()
+  const params = useParams(),
+        uid = parseInt(params.uid)
   const mgsref = useRef()
   const coverref = useRef()
   const [imgfile, setImgfile] = useState([])             // 要上传的图片
@@ -26,14 +28,16 @@ function Upmg() {
   const [coverurl, setCoverurl] = useState(null)
   const [oldmid, setOldmid] = useState(-1)            // 上传续集，漫画的mid
 
-  const [uploading, setUploading] = useState(false),   // 是否在上传
+  const [uploadstatus, setUploadstatus] = useState(0),   // 0 upload  1 uploading  2 uploaded
         [upprogress, setUpprogress] = useState(0)
 
   // 上传漫画图片
   const addImg = (e) => {
     const files1 = e.target.files
+    console.log('xxxx:', files1);
+    
     if (files1.length === 0) {
-      alert('文件夹为空')
+      message.open({type: 'warning', content: '文件夹为空'})
       return
     }
     console.log(files1);
@@ -45,10 +49,11 @@ function Upmg() {
       }
     }
     // 对files排序
-    console.log(files);
+    console.log('all img files:', files);
     
     if (files.length === 0) {
-      alert('请确认，该文件夹中没有图片格式')
+      message.open({type: 'warning', content: '请确认，该文件夹中没有图片格式'})
+      return
     }
     setImgfile(files.sort())
   }
@@ -60,11 +65,9 @@ function Upmg() {
   const changetitle = async (e) => {
     const kw = e.target.value
     setTitleinp(kw)
-    if (kw.length > 0) {
-      console.log(kw);
-      
+    if (kw.length > 0) {      
       const res = await getByTitle(kw)
-      console.log("res:", res);
+      // console.log("res:", res);
       setTitleres(res)
       // kw 和 搜索标题完全一致
       for (let i = 0 ; i < res.length; i++) {
@@ -117,12 +120,12 @@ function Upmg() {
   // 上传信息 or 更新
   const toupload = async () => {
     if (imgfile.length === 0) {
-      alert("待上传文件为空")
+      message.open({type: 'warning', content: '待上传文件为空'})
       return
     }
     if (oldmid === -1) {
       if (titleinp === "" || coverbase === "") {
-        alert("缺少必要信息")
+        message.open({type: 'warning', content: '缺少必要信息'})
         return
       }
       const tags1 = tags.trim().split(" ").filter(item => item !== " ")
@@ -147,7 +150,6 @@ function Upmg() {
         name: chapternameinp,
         done: doneflag ? 1 : 0
       }
-      console.log(data);
       const res = await updateMg(data)
       uploadimg(oldmid)
     }
@@ -155,6 +157,8 @@ function Upmg() {
 
   // 上传图片
   const uploadimg = (mid) => {
+    // 不让弹窗
+    console.log('上传图片中...');
     imgfile.forEach((item, index) => {
       setTimeout(async () => {
         const data = new FormData()
@@ -162,13 +166,13 @@ function Upmg() {
         data.append('title', titleinp)      
         data.append('imgfile', item)
         data.append('type', item.name.split(".")[1])
-        data.append("number", chapterindexinp === "" ? 1 : chapterindexinp)
+        data.append("number", chapterindexinp === "" ? 1 : parseInt(chapterindexinp))
         data.append("name", chapternameinp)
         data.append("uploadindex", index + 1)
         data.append("ind", index)
         const res = await uploadMgImg(data)
         if (index === 0) {
-          setUploading(true)
+          setUploadstatus(1)
         }
         if (res) {
           const progress = (index / imgfile.length * 100).toFixed(2)
@@ -183,7 +187,8 @@ function Upmg() {
 
   useEffect(() => {
     if (upprogress === 100) {
-      alert("上传成功")
+      message.open({type: 'info', content: '上传成功', flag: true})
+      setUploadstatus(2)
     }
   }, [upprogress])
   return (
@@ -407,7 +412,11 @@ function Upmg() {
         </div>
         <div className="btn-line-upload">
           {
-            uploading ?
+            uploadstatus === 0 &&
+            <div className="done-btn" onClick={toupload}>上传</div>
+          }
+          {
+            uploadstatus === 1 &&
             <div className="uploadline">
               <div className="numbersp">上传中</div>
               <div className="upload-progress-line">
@@ -417,8 +426,17 @@ function Upmg() {
               </div>
               <div className="numbersp2">{upprogress + '%'}</div>
             </div>
-            :
-            <div className="done-btn" onClick={toupload}>上传</div>
+          }
+          {
+            uploadstatus === 2 &&
+            <div className="done-btn2">
+              <div className="doneb1"
+                onClick={() => navigate(`/`)}
+              >返回主页</div>
+              <div className="doneb2"
+                onClick={() => document.location.reload()}
+              >继续上传</div>
+            </div>
           }
         </div>
       </div>

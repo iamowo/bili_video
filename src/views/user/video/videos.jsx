@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useOutletContext, useParams } from "react-router-dom"
 import { getVideoByUid } from "../../../api/video"
 import { baseurl } from "../../../api/index"
 
 function Videos () {
-  const params = useParams()
-  const uid = params.uid  
+  const context = useOutletContext()
+  const hisuid = context.hisuid
   const [videolist, setVideolist] = useState([])
   const [videostyle, setVideostyle] = useState(0)
   const [videostyle2, setVideostyle2] = useState(0)
 
   useEffect(() => {
     const getData = async () => {
-      const res = await getVideoByUid(uid, 0)
+      const res = await getVideoByUid(hisuid, 0)
       console.log(res);
       setVideolist(res)
     }

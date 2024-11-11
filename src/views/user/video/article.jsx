@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { getDyanmciListWidthImg } from "../../../api/dynamic"
-import { useParams } from "react-router-dom"
+import { useOutletContext, useParams } from "react-router-dom"
 import { baseurl } from "../../../api/index"
 
 function Artical () {
-  const params = useParams()
-  const uid = params.uid  
+  const context = useOutletContext()
+  const hisuid = context.hisuid
   const [imgslist, setImglist] = useState([])
 
   // const [imgslist1, setImglist1] = useState([])
@@ -20,7 +20,7 @@ function Artical () {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await getDyanmciListWidthImg(uid)
+      const res = await getDyanmciListWidthImg(hisuid)
       setImglist(res)
       // console.log(res);
       

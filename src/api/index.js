@@ -3,15 +3,12 @@ import axios from 'axios'
 
 const baseUrl = 'http://127.0.0.1:8082'
 const baseUrl2 = 'http://127.0.0.1:3000'
-const mgUrl = "http://127.0.0.1:3001"
 
 // const baseUrl = 'http://49.235.146.19:8082'
 // const baseUrl2 = 'http://49.235.146.19:3000'
-// const mgUrl = "http://49.235.146.19:3001"
 
 export const baseurl = baseUrl
 export const baseurl2 = baseUrl2
-export const mgurl = mgUrl
 
 const http = axios.create({
   baseURL: baseUrl,
@@ -60,7 +57,7 @@ http.interceptors.response.use(
   },
   error => {
     if (error.response.status === 401) {
-      console.log('=token失效=');
+      console.log('==token失效==');
       localStorage.removeItem('userinfo')
       localStorage.removeItem('token')
       window.open(baseUrl2 + "/")

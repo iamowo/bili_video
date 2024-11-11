@@ -1,40 +1,69 @@
-import './dynamic.scss'
-import { useState } from 'react'
-import { todynamic, touserspace, tovideo } from '../../util/fnc'
-import { addDynamicLike, addTopicalWatchs } from '../../api/dynamic'
+import "./dynamic.scss";
+import { useState, useEffect, memo } from "react";
+import { todynamic, touserspace, tovideo } from "../../util/fnc";
+import {
+  addDynamicLike,
+  addTopicalWatchs,
+  sendDynamic,
+  getDyanmciList,
+} from "../../api/dynamic";
+import Comments from "../comments/comments";
+import At from "../At/at";
+import Emoji from "../emoji/emoji";
+import message from "../notice/notice";
+import { HeightLightKw } from "../../util/fnc";
 
 // 动态组件
-function DynamicCom (props) {
-  const item = props.item
-  const index = props.index
-  const userinfo = props.userinfo
-  const uid = userinfo.uid
+const DynamicCom = memo((props) => {
+  const { item, index, userinfo, keyword } = props;
+  const did = item.id;
+  const uid = userinfo.uid; // 搜索关键字
+  const [opationfalg, setOPationfalg] = useState(0); // 1 转发   2 评论
+  const [nowdyindex, setNowdyindex] = useState(-1); // 当前所点击的，一次之打开一个
+  const [controlflag, setControlflag] = useState(false);
+  const [ourcomments, OutComments] = useState(0); // 评论数量
 
-  const [opationfalg , setOPationfalg] = useState(0)  // 1 转发   2 评论
-  const [nowdyindex, setNowdyindex] = useState(-1)    // 当前所点击的，一次之打开一个
-  const [controlflag, setControlflag] = useState(false)
+  const [inpshare, setInpshare] = useState("");
+
+  const [oneemoji, setOneemoji] = useState(""),
+    [emojiflag, setEmojiflag] = useState(false);
 
   // 转发
-  const handleShare = (e) => {    
-    const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
-    console.log(index);
-    setNowdyindex(index)
-    setOPationfalg(1)
-  }
+  const handleShare = (e) => {
+    const index = parseInt(
+      e.target.dataset.index || e.target.parentNode.dataset.index
+    );
+    if (opationfalg === 1) {
+      setNowdyindex(-1);
+      setOPationfalg(0);
+      setInpshare("");
+      return;
+    }
+    setNowdyindex(index);
+    setOPationfalg(1);
+  };
 
   // 评论
   const handleComment = (e) => {
-    const index = parseInt(e.target.dataset.index || e.target.parentNode.dataset.index)
-    setNowdyindex(index)                            
-    setOPationfalg(2)
-  }
+    const index = parseInt(
+      e.target.dataset.index || e.target.parentNode.dataset.index
+    );
+    if (opationfalg === 2) {
+      setNowdyindex(-1);
+      setOPationfalg(0);
+      setInpshare("");
+      return;
+    }
+    setNowdyindex(index);
+    setOPationfalg(2);
+  };
 
-  // 方法一张图片
+  // 放大一张图片
   const openimg = (e) => {
     // 阻止事件冒泡
-    e.stopPropagation()
-    e.preventDefault()
-  }
+    e.stopPropagation();
+    e.preventDefault();
+  };
 
   // 点赞
   const likethisdynamic = async (did) => {
@@ -43,116 +72,189 @@ function DynamicCom (props) {
       did: did,
       uid: uid,
       hisuid: item.uid,
-      type: 1
-    }
-    const res = await addDynamicLike(data)
+      type: 1,
+    };
+    const res = await addDynamicLike(data);
     // 更新列表
     if (item.liked) {
       // 取消收藏
       if (res && props.setDylist !== undefined && props.setDylist !== null) {
-        props.setDylist(props.dylist.map(dy => {
+        props.setDylist(
+          props.dylist.map((dy) => {
             if (dy.id === did) {
-              dy.liked = false
-              dy.likes -= 1
+              dy.liked = false;
+              dy.likes -= 1;
             }
-            return dy
-          }
-        ))
+            return dy;
+          })
+        );
       }
     } else {
       if (res && props.setDylist !== undefined && props.setDylist !== null) {
-        props.setDylist(props.dylist.map(dy => {
+        props.setDylist(
+          props.dylist.map((dy) => {
             if (dy.id === did) {
-              dy.liked = true
-              dy.likes += 1
+              dy.liked = true;
+              dy.likes += 1;
             }
-            return dy
-          }
-        ))
+            return dy;
+          })
+        );
       }
     }
-  }
+  };
+
+  // 发送emoji
+  useEffect(() => {
+    if (oneemoji !== "") {
+      setInpshare(inpshare + oneemoji);
+      setOneemoji("");
+    }
+  }, [oneemoji]);
+
+  // 发送动态
+  const senddynamic = async (dytype) => {
+    if (inpshare.length === 0) {
+      message.open({ type: "error", content: "内容不能为空" });
+      return;
+    }
+    // dytype === 0 动态（图文类型的）
+    // dytype === 1 是转发的视频
+    // dytype === 2 是转发的动态
+    // dytype === 3 是发视频是后自动发送的动态
+    const data = {
+      uid: uid,
+      type: dytype === 0 || dytype === 2 ? 2 : 1,
+      content: inpshare,
+      vordid: did,
+    };
+    const thisdid = await sendDynamic(data);
+    if (thisdid) {
+      message.open({ type: "info", content: "转发动态成功", flag: true });
+    }
+    const newlist = await getDyanmciList(uid, 1);
+    props.setDylist(newlist);
+
+    setNowdyindex(-1);
+    setOPationfalg(0);
+  };
+
   return (
     <div key={item.id} className="one-dynamic-box">
-      <div className='TTP'>
+      <div className="TTP">
         <img src={item.avatar} alt="" className="left-user-avatar" />
         <div className="right-user-conetnt">
           <div className="right-infod1">
             <div className="boxinfo1">
-                <div className="dy-ibe-name">{item.name}</div>
-                <div className="data-infos">
-                  <span className="time-span">{item.time.slice(0, 10)}</span>
-                  {
-                    item.type === 3 &&
-                    <span className="ts-right-sp">投稿了视频</span>
-                  }
-                </div>
-                {
-                  item.topical !== null &&
-                  <div className="topical-line">
-                    <div className="this-topical-box"
-                      onClick={async () => {
-                        await addTopicalWatchs(-1, item.topical)
-                        window.open(`/topical/${item.topical}`, "blank")
-                      }}
-                    ># {item.topical}</div>
+              <div className="dy-ibe-name-line">{item.name}</div>
+              <div className="data-infos">
+                <span className="time-span">{item.time.slice(0, 10)}</span>
+                {item.type === 3 && (
+                  <span className="ts-right-sp">投稿了视频</span>
+                )}
+              </div>
+              {item.topical !== null && (
+                <div className="topical-line">
+                  <div
+                    className="this-topical-box"
+                    onClick={async () => {
+                      await addTopicalWatchs(-1, item.topical);
+                      window.open(`/topical/${item.topical}`, "blank");
+                    }}
+                  >
+                    <div className="icon iconfont">
+                      &#xe63d;
+                      <span>#</span>
+                    </div>{" "}
+                    {item.topical}
                   </div>
-                }
+                </div>
+              )}
             </div>
             <div className="boxinfo2">
-              <span className="icon iconfont"
+              <span
+                className="icon iconfont"
                 onClick={() => setControlflag(true)}
-              >&#xe653;</span>
-              {
-                controlflag &&
+              >
+                &#xe653;
+              </span>
+              {controlflag && (
                 <div className="controlbox">
-                  {
-                    uid === item.uid ?
-                    <span className="consp1"
+                  {uid === item.uid ? (
+                    <span
+                      className="consp1"
                       onClick={() => {
-                        setControlflag(false)
-                        props.setDeletaflag(true)
-                        props.setDeletedid(item.id)
+                        setControlflag(false);
+                        props.setDeletaflag(true);
+                        props.setDeletedid(item.id);
                       }}
-                    >删除动态</span>
-                    :
+                    >
+                      删除动态
+                    </span>
+                  ) : (
                     <span className="consp1">举报</span>
-                  }
+                  )}
                 </div>
-              }
+              )}
             </div>
           </div>
           <div className="content-out-box">
-            <div className="user-dy-contnet"
+            <div
+              className="user-dy-contnet"
               data-did={item.id}
               onClick={todynamic}
-            >{item.content}</div>
-            {
-              item.type === 0 && item.imgs[0] != null &&
-              <div className="user-send-img-box"
+            >
+              {keyword !== undefined &&
+              keyword !== null &&
+              keyword?.length > 0 ? (
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: HeightLightKw(item.content, keyword, "span", 0),
+                  }}
+                ></span>
+              ) : (
+                <span>{item.content}</span>
+              )}
+            </div>
+            {item.type === 0 && item.imgs[0] != null && (
+              <div
+                className="user-send-img-box"
                 data-did={item.id}
                 onClick={todynamic}
               >
                 {
-                  item.imgs.map(item2 =>
-                    <img src={item2} alt="" className="one-sss-img"
-                      data-did={item.id}
-                      onClick={todynamic}/>
-                  )
-                }
+                item.imgs.map((item2) => (
+                  <img
+                    key={item2}
+                    src={item2}
+                    alt=""
+                    className="one-sss-img"
+                    data-did={item.id}
+                    onClick={todynamic}
+                  />
+                ))}
               </div>
-            }
+            )}
           </div>
-          {
-            item.type === 1 &&
+          {item.type === 1 && (
             <div className="video-type-box">
               <div className="vtb-inner-video-box">
                 <div className="vtb-title-line">
                   <div className="left-userinfo">
-                    <img src={item.video.avatar} alt="" className="vtb-lu-cover"
-                      data-uid={item.video.uid} onClick={touserspace}/>
-                    <span className="vtb-lu-name"
-                      data-uid={item.video.uid} onClick={touserspace}>{item.video.name}</span>
+                    <img
+                      src={item.video.avatar}
+                      alt=""
+                      className="vtb-lu-cover"
+                      data-uid={item.video.uid}
+                      onClick={touserspace}
+                    />
+                    <span
+                      className="vtb-lu-name"
+                      data-uid={item.video.uid}
+                      onClick={touserspace}
+                    >
+                      {item.video.name}
+                    </span>
                     <span className="vtb-lu-text">投稿的视频</span>
                   </div>
                   <div className="right-sub-info">
@@ -160,17 +262,29 @@ function DynamicCom (props) {
                     <span className="rbi-addsub">关注</span>
                   </div>
                 </div>
-                <div className="vtb-video-box1">
+                <div
+                  className="vtb-video-box1"
+                  onClick={() => {
+                    window.open(`/video/${item.vid}`, "_blank");
+                  }}
+                >
                   <div className="left-img-vtb-img">
-                    <img src={item.video.cover} alt="" className="livu-img"
-                    data-vid={item.video.vid}
-                    onClick={tovideo}/>
-                  </div>
-                  <div className="left-info-vtb">
-                    <div className="liv-title"
+                    <img
+                      src={item.video.cover}
+                      alt=""
+                      className="livu-img"
                       data-vid={item.video.vid}
                       onClick={tovideo}
-                    >{item.video.vid}</div>
+                    />
+                  </div>
+                  <div className="left-info-vtb">
+                    <div
+                      className="liv-title"
+                      data-vid={item.video.vid}
+                      onClick={tovideo}
+                    >
+                      {item.video.vid}
+                    </div>
                     <div className="liv-intro">{item.video.intro}</div>
                     <div className="liv-infos-d">
                       <div className="one-info-livbox">
@@ -186,17 +300,35 @@ function DynamicCom (props) {
                 </div>
               </div>
             </div>
-          }
-          {
-            item.type === 2 &&
-            <div className="dynamic-type-box">
+          )}
+          {item.type === 2 && (
+            <div
+              className="dynamic-type-box"
+              onClick={() => window.open(`/dydetail/${item.dy2.id}`, "_blank")}
+            >
               <div className="dtb-inner-box">
                 <div className="vtb-title-line">
                   <div className="left-userinfo">
-                    <img src={item.dy2.avatar} alt="" className="vtb-lu-cover"
-                      data-uid={item.dy2.uid}/>
-                    <span className="vtb-lu-name"
-                      data-uid={item.dy2.uid}>{item.dy2.name}</span>
+                    <img
+                      src={item.dy2.avatar}
+                      alt=""
+                      className="vtb-lu-cover"
+                      data-uid={item.dy2.uid}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`/${item.dy2.uid}`, "_blank");
+                      }}
+                    />
+                    <span
+                      className="vtb-lu-name"
+                      data-uid={item.dy2.uid}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`/${item.dy2.uid}`, "_blank");
+                      }}
+                    >
+                      {item.dy2.name}
+                    </span>
                     <span className="vtb-lu-text">的动态</span>
                   </div>
                   <div className="right-sub-info">
@@ -206,33 +338,37 @@ function DynamicCom (props) {
                 </div>
                 <div className="dtb-content-box">{item.dy2.content}</div>
                 <div className="dtb-imgs">
-                  {
-                    item.dy2.imgs.map(oneimg =>
-                      <img src={oneimg} alt="" className="oneimg-dy2" />
-                    )
-                  }
+                  {item.dy2.imgs.map((oneimg) => (
+                    <img 
+                      key={oneimg}
+                      src={oneimg}
+                      alt="" className="oneimg-dy2" />
+                  ))}
                 </div>
               </div>
             </div>
-          }
-          {
-            item.type === 3 &&
-            <div className="my-send-video">
+          )}
+          {item.type === 3 && (
+            <div
+              className="my-send-video"
+              onClick={() => {
+                window.open(`/video/${item.vid}`, "_blank");
+              }}
+            >
               <div className="left-send-my-avatr">
-                <img src={item.video.cover} alt="" className="lsma-avatar"
-                  data-vid={item.video.vid}
-                  onClick={tovideo}
-                />
+                <img src={item.video.cover} alt="" className="lsma-avatar" />
               </div>
               <div className="right-send-my-info">
-                <div className="rsyi-title"
-                  data-vid={item.video.vid}
-                  onClick={tovideo}
-                >{item.video.title}</div>
+                <div className="rsyi-title">{item.video.title}</div>
                 <div className="rsyi-intro">{item.video.intro}</div>
                 <div className="rsyi-infos">
                   <div className="rsyi-div">
-                    <span className="icon iconfont" style={{fontSize: '13px'}}>&#xe6b8;</span>
+                    <span
+                      className="icon iconfont"
+                      style={{ fontSize: "13px" }}
+                    >
+                      &#xe6b8;
+                    </span>
                     <span className="rsyi-text">{item.video.plays}</span>
                   </div>
                   <div className="rsyi-div">
@@ -242,118 +378,153 @@ function DynamicCom (props) {
                 </div>
               </div>
             </div>
-          }
+          )}
           <div className="dy-opation-b">
-            <div className="one-opation-a"
+            <div
+              className="one-opation-a"
               data-index={index}
               onClick={handleShare}
-              style={{color: (opationfalg === 1 && nowdyindex === index) ? '#32AEEC' : '#9499A0'}}>
+              style={{
+                color:
+                  opationfalg === 1 && nowdyindex === index
+                    ? "#32AEEC"
+                    : "#9499A0",
+              }}
+            >
               <span className="icon iconfont">&#xe633;</span>
-              {
-                item.shares > 0 ?
+              {item.shares > 0 ? (
                 <span className="iconnum">{item.shares}</span>
-                :
+              ) : (
                 <span className="iconnum">转发</span>
-              }
+              )}
             </div>
-            <div className="one-opation-a"
+            <div
+              className="one-opation-a"
               data-index={index}
               onClick={handleComment}
-              style={{color: (opationfalg === 2 && nowdyindex === index) ? '#32AEEC' : '#9499A0'}}>
-              <span className="icon iconfont"
-                >&#xe648;</span>
-              {
-                item.comments > 0 ?
+              style={{
+                color:
+                  opationfalg === 2 && nowdyindex === index
+                    ? "#32AEEC"
+                    : "#9499A0",
+              }}
+            >
+              <span className="icon iconfont">&#xe648;</span>
+              {item.comments > 0 ? (
                 <span className="iconnum">{item.comments}</span>
-                :
-                <span className="iconnum"
-                  data-index={index}
-                >
-                  {
-                    item.comments > 0 ?
+              ) : (
+                <span className="iconnum" data-index={index}>
+                  {item.comments > 0 ? (
                     <span>{item.comments}</span>
-                    :
+                  ) : (
                     <span>评论</span>
-                  }
+                  )}
                 </span>
-              }
+              )}
             </div>
-            <div className={item.liked ? "one-opation-a one-active" : "one-opation-a"}
+            <div
+              className={
+                item.liked ? "one-opation-a one-active" : "one-opation-a"
+              }
               onClick={() => likethisdynamic(item.id)}
             >
               <span className="icon iconfont">&#xe61c;</span>
-              {
-                item.likes > 0 ?
+              {item.likes > 0 ? (
                 <span className="iconnum">{item.likes}</span>
-                :
+              ) : (
                 <span className="iconnum">
-                  {
-                    item.likes > 0 ?
+                  {item.likes > 0 ? (
                     <span>{item.likes}</span>
-                    :
+                  ) : (
                     <span>点赞</span>
-                  }
+                  )}
                 </span>
-              }
+              )}
             </div>
           </div>
           {
             // 转发
-            (opationfalg === 1 && nowdyindex === index) &&
-            <div className="share-box">
-              <img src={userinfo.avatar} alt="" className="left-share-avatar" />
-              <div className="right-share-box">
-                <div className="send-part">
-                  <div className="titleline">转发{item.name}的动态~</div>
-                  <textarea className='texta2'></textarea>
-                </div>
-                <div className="bottom-opation-part">
-                  <div className="emog-icon icon iconfont" style={{fontSize: '22px', color: '#9499A0'}}>&#xe667;</div>
-                  <div className="right-numandsend">
-                    <div className="numspan">400</div>
-                    <div className="snedspan">发送</div>
+            opationfalg === 1 && nowdyindex === index && (
+              <div className="share-box">
+                <img
+                  src={userinfo.avatar}
+                  alt=""
+                  className="left-share-avatar"
+                />
+                <div className="right-share-box">
+                  <div className="send-part">
+                    <div className="titleline">转发{item.name}的动态~</div>
+                    <textarea
+                      className="texta2"
+                      value={inpshare}
+                      onChange={(e) => setInpshare(e.target.value)}
+                      maxLength={400}
+                    ></textarea>
+                  </div>
+                  <div
+                    className="bottom-opation-part"
+                    style={{
+                      translate: inpshare.length > 0 ? "0 0" : "0 -50px",
+                    }}
+                  >
+                    <div className="left-con-box">
+                      <div className="at-box1">
+                        <span
+                          className="icon iconfont"
+                          onClick={() => {
+                            setEmojiflag(!emojiflag);
+                            console.log("????");
+                          }}
+                        >
+                          &#xe667;
+                        </span>
+                        {emojiflag && (
+                          <div className="emojibox">
+                            <Emoji
+                              oneemoji={oneemoji}
+                              setOneemoji={setOneemoji}
+                              setEmojiflag={setEmojiflag}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="right-numandsend">
+                      <div className="numspan">{inpshare.length}/400</div>
+                      <div
+                        className="snedspan"
+                        onClick={() => senddynamic(item.type)}
+                      >
+                        发送
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )
           }
         </div>
       </div>
       {
         // 评论
-        (opationfalg === 2 && nowdyindex === index) &&
-        <div className="comment-box">
-          <div className="toptitleline">
-            <div className="lbox">
-              <span className="lbox-sp11">评论</span>
-              <span className="lbox-sp12">{item.comments}</span>
+        opationfalg === 2 && nowdyindex === index && (
+          <div className="comment-box">
+            <div className="commentbox-dy">
+              <Comments
+                did={item.id}
+                uid={uid}
+                hisuid={item.uid}
+                userinfo={userinfo}
+                commentType = {1}
+                OutComments={OutComments}
+              />
             </div>
-            <div className="rbox">
-              <span className="rbox-spp">最热</span>
-              <span className="rbox-line1"></span>
-              <span className="rbox-spp">最新</span>
-            </div>
+            <div className="bottom-line">没有更多了~</div>
           </div>
-          <div className="send-dy-sendbox">
-            <img src={userinfo.avatar} alt="" className="useravatar2-dy" />
-            <div className="send-r-outbox">
-            <div className="send-dy-innerbox">
-              <textarea name="" id="" className="inp333-dy"></textarea>
-            </div>
-            <div className="send-dy-bottom-opation">
-              <div className="sdbp-left">
-                <span className="icon iconfont" style={{fontSize: '22px', color: '#9499A0'}}>&#xe667;</span>
-              </div>
-              <div className="sdbp-right">
-                <div className="sdbp-r-send">发布</div>
-              </div>
-            </div>
-            </div>
-          </div>
-        </div>
+        )
       }
     </div>
-  )
-}
+  );
+});
 
-export default DynamicCom
+export default DynamicCom;

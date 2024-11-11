@@ -1,201 +1,88 @@
 import './HomePage.scss'
 import Topnav from '../../components/Topnav/Topnav.jsx'
-import { useRef, useState, useEffect } from 'react';
-import { getAllVideo, getRandom } from '../../api/video.js';
+import { useRef, useState, useEffect, memo } from 'react';
+import { getSomeVideos, getRandom, getAllClassify } from '../../api/video.js';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { touserspace, tovideo } from '../../util/fnc.js';
 import { baseurl } from '../../api/index.js';
 import message from '../../components/notice/notice.jsx';
+import { throttle } from '../../util/fnc.js';
+import Banner from '../../components/Banner/Banner.jsx';
 
-function Bnaaer () {
-  const [nindex, setNindex] = useState(0)
-  const [movex, setMovex] = useState(0)
-  const [bannerlist, setBanner] = useState([
-    {id: 1, src: baseurl + '/sys/b1.jpg'},
-    {id: 2, src: baseurl + '/sys/b2.jpg'},
-    {id: 3, src: baseurl + '/sys/b3.jpg'},
-    {id: 4, src: baseurl + '/sys/b4.jpg'},
-    {id: 5, src: baseurl + '/sys/b5.jpg'},
-  ])
+const MemoNav2 = memo(
+  function Nav2 (props) {    
+    const uid = props.uid
+    const [classifys, setClassify] = useState([])
+    const todynamicview = () => {
+      if (uid === -1) {
+        message.open({ type: 'warning', content: '请先登录'})
+        return
+      }
+      window.open(`dynamicM/${uid}`, '_blank')
+    }
   
-  let timerindex = 0
-  const timer = useRef(null)
-
-  // 图片加载完成
-  const imgonload = () => {
-    if (timerindex === 0) {
-      timer.current = setTimeout(() => {
-        toright()
-      }, 3000)
+    const tothisone = (e) => {
+      if (e.target.className === "item") {
+        const tag = e.target.textContent
+        window.open(`/channels/${tag}`, '_blank')
+      } else if (e.target.className === "item icon iconfont") {
+        window.open('/alltag', "_blank")
+      }
     }
-    timerindex++
-  }
 
-  const toleft = () => {
-    if (nindex === 0) {
-      setNindex(bannerlist.length - 1);
-      setMovex(bannerlist.length - 1)
-    } else {
-      setNindex(nindex - 1)
-      setMovex(nindex - 1)
-    }
-  }
-  const toright = () => {
-    if (nindex === bannerlist.length - 1) {
-      setNindex(0);
-      setMovex(0)
-    } else {
-      setNindex(nindex + 1)
-      setMovex(nindex + 1)
-    }
-  }
-
-  const tothispoint = (e) => {
-    const now = parseInt(e.target.dataset.ind || e.target.parentNode.dataset.ind)    
-    setNindex(now)
-    setMovex(now)
-  }
-
-  //
-  const menter = () => {
-    clearTimeout(timer)
-    timer.current = null
-  }
-
-  const mleave = () => {
-    timer.current = setTimeout(() => {
-      toright()
-    }, 3000)
-  }
-
-  return (
-    <div className="bannerout">
-      <div className="bannerinner"
-        onMouseEnter={menter}
-        onMouseLeave={mleave}>
-        <div className="onebannerimg">
-          <div className="imgpart">
-            <div className="imgs-out-box"
-            style={{translate: -100 * movex + '% 0px'}}>
-            {
-              bannerlist.map((item, index) =>
-                <img key={index}  src={item.src} alt="" className="thisbannerimg"
-                  onLoad={imgonload}
-                />
-              )
-            }
+    useEffect(() => {
+      const getData = async () => {
+        const res = await getAllClassify()
+        setClassify(res)
+      }
+      getData()
+    }, [])
+    return (
+      <div className="nav2">
+        <div className="navleft">
+            <div className="nl1"
+              onClick={todynamicview}>
+              <div className="topn2 icon iconfont">&#xe608;</div>
+              <span>动态</span>
             </div>
-          </div>
-          <div className="btinfo">
-            <div className="infosline">
-              <div className="lp">
-                <div className="tp">一个视频{movex}</div>
-              </div>
+          <Link to="/rank/hot">
+            <div className="nl1">
+            <div className="topnl icon iconfont">&#xe6c0;</div>
+              <span>热门</span>
             </div>
-          </div>
+          </Link>
         </div>
-        <div className="lipart">
-          <ul className="ul-a">
-            {
-              bannerlist.map((item, index) =>
-                <li key={index} className={index === nindex ? 'oneli li-active' : 'oneli'}
-                  data-ind={index}
-                  onClick={tothispoint}>
-                  <div className='li-innerbox'></div>
-                </li>
-              )
-            }
-          </ul>
+        <div className="navmid"
+          onClick={tothisone}>
+          {
+            classifys.map(item =>
+              <div className="item">{item.value}</div>
+            )
+          }
+          <div className="item iconfont">更多 &#xe624;</div>
         </div>
-        <div className="rp">
-          <div className="tol icon iconfont" onClick={toleft} style={{rotate: '-180deg'}}>&#xe775;</div>
-          <div className="tor icon iconfont" onClick={toright}>&#xe775;</div>
+        <div className="navright">
+          <div className="oneitem">专栏</div>
+          <div className="oneitem">活动</div>
+          <div className="oneitem">社区中心</div>
+          <div className="oneitem">直播</div>
+          <div className="oneitem">音乐</div>
+          <div className="oneitem">课堂</div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function Nav2 () {
-  const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = parseInt(userinfo != null && userinfo !== "" ? userinfo.uid : -1)
-
-  const todynamicview = () => {
-    if (uid === -1) {
-      message.open({ type: 'warning', content: '请先登录'})
-      return
-    }
-    window.open(`dynamicM/${uid}`, '_blank')
+    )
   }
-
-  const tothisone = (e) => {
-    if (e.target.className === "item") {
-      const tag = e.target.textContent
-      window.open(`/channels/${tag}`, '_blank')
-    } else if (e.target.className === "item icon iconfont") {
-      window.open('/alltag', "_blank")
-    }
-    
-  }
-  return (
-    <div className="nav2">
-      <div className="navleft">
-          <div className="nl1" onClick={todynamicview}>
-            <div className="topn2 icon iconfont">&#xe608;</div>
-            <span>动态</span>
-          </div>
-        <Link to="/rank/hot">
-          <div className="nl1">
-          <div className="topnl icon iconfont">&#xe6c0;</div>
-            <span>热门</span>
-          </div>
-        </Link>
-      </div>
-      <div className="navmid" onClick={tothisone}>
-        <div className="item">番剧</div>
-        <div className="item">国创</div>
-        <div className="item">综艺</div>
-        <div className="item">动画</div>
-        <div className="item">鬼畜</div>
-        <div className="item">舞蹈</div>
-        <div className="item">娱乐</div>
-        <div className="item">科技</div>
-        <div className="item">美食</div>
-        <div className="item">汽车</div>
-        <div className="item">运动</div>
-        <div className="item">VLOG</div>
-        <div className="item">电影</div>
-        <div className="item">电视剧</div>
-        <div className="item">纪录片</div>
-        <div className="item">游戏</div>
-        <div className="item">音乐</div>
-        <div className="item">影视</div>
-        <div className="item">知识</div>
-        <div className="item">资讯</div>
-        <div className="item">生活</div>
-        <div className="item">搞笑</div>
-        <div className="item">动物圈</div>
-        <div className="item icon iconfont">更多 &#xe624;</div>
-      </div>
-      <div className="navright">
-        <div className="oneitem">专栏</div>
-        <div className="oneitem">活动</div>
-        <div className="oneitem">社区中心</div>
-        <div className="oneitem">直播</div>
-        <div className="oneitem">音乐</div>
-        <div className="oneitem">课堂</div>
-      </div>
-    </div>
-  )
-}
-function Video (props) {
+)
+function Video (props) {  
   // 用户uid
   // const uid = props.userinfo.uid
   const data = props.data
   const videoref = useRef()
   const [nowtime ,setNowTime] = useState('00:00')   // 视频进度时间  
   const [videoindex, setVideoindex] = useState(-1)   // 悬浮播放index
+  const [thislocaded1, setThisloaded1] = useState(false)          // 封面加载完毕
+
 
   // // 悬浮鼠标，播放视频
   // const timer = useRef(null)
@@ -259,8 +146,9 @@ function Video (props) {
     const vid = e.target.dataset.vid
   }
 
-  const imgloaded = () => {
-    // console.log('图片加载完成');
+  const imgloaded = (e) => {
+    // console.log('==图片加载完成==', e.target);
+    setThisloaded1(true)
   }
   return (
     <div className="onevideo" style={{marginTop: props.style1 === 'yes' ? '40px' : '0'}}>
@@ -297,11 +185,16 @@ function Video (props) {
             onClick={tovideo}
           ></video>
         }
-        <img src={data.cover} alt="" data-vid={data.vid} className="vidimg load1"
+        <img
+          src={data.cover}
+          alt=""
+          data-vid={data.vid}
+          className="vidimg"
           style={{zIndex: videoindex === props.index ? '0' : '1'}}
           onClick={tovideo}
           onLoad={imgloaded}
         />
+        <div className={thislocaded1 ? "load1 loaded1" : "load1"}></div>
         <div className="infos" data-vid={data.vid}
           style={{justifyContent: videoindex === props.index ? 'end' : 'space-between'}}
         >
@@ -321,10 +214,20 @@ function Video (props) {
           </div>
         </div>
       </div>
-      <div className="title" data-vid={data.vid} onClick={tovideo}>{data.title}</div>
-      <div className="author">
-        <div className="lspan1" data-uid={data.uid} onClick={touserspace}>
-          <span className="icon iconfont" style={{marginTop: '2px'}}>&#xe665;</span>
+      <div className={thislocaded1 ? "title" : 'load2'}
+        data-vid={data.vid}
+        onClick={tovideo}
+      >{data.title}</div>
+      {
+        !thislocaded1 &&
+        <div className='load2 load22'></div>
+      }
+      <div className={thislocaded1 ? "author" : "load3"}>
+        <div className="lspan1"
+          data-uid={data.uid}
+          onClick={touserspace}>
+          <span className="icon iconfont"
+            style={{marginTop: '2px'}}>&#xe665;</span>
           <span>{data.name}</span>
         </div>
         <span className='icon iconfont point'>&#xec1e;</span>
@@ -335,28 +238,59 @@ function Video (props) {
 }
 
 function Home() {
+  document.title="啤哩啤哩 (゜-゜)つロ 干杯~-pilipili"
 
+  const userinfo = JSON.parse(localStorage.getItem('userinfo')),
+        uid = userinfo ? userinfo.uid : -1
   // 在父组件中定义， 子组件也可以是使用
   const navigate = useNavigate()
   // 要赋值为数组形式， 否则没有map方法，会报错
-  const [recommendlist, setRecommend] = useState([])
-  const [videolist, setVideolist] = useState([])
+  const [recommendlist, setRecommend] = useState([]),
+        [videolist, setVideolist] = useState([]),
+        [vids, setVids] = useState([])
+
   // 获取数据
   useEffect(() => {
     document.title = 'pilipili'
     const getData = async() => {      
-      const result = await Promise.all([getAllVideo(), getRandom()])
-      console.log(result);
-      for (let i = 0; i < result[0].length; i++) {        
-        // let blob = new Blob(result[0][i].path, 'video/' + result[0][i].path.split('.')[1])
-        // result[0][i].path = URL.createObjectURL(blob)
-      }
+      const result = await Promise.all([getRandom(5), getRandom(6)])
       setVideolist(result[0])
+      for(let i = 0; i < result[0].length; i++) {
+        console.log(result[0][i].vid)
+        setVids([
+          ...vids,
+          result[0][i].vid
+        ])
+      }
       setRecommend(result[1])
     }
     getData();
+    window.addEventListener("scroll", lazyloadfnc)
   },[])
   
+  
+  const lazyloadfnc = async (e) => {
+    var a = document.body.clientHeight || document.documentElement.clientHeight
+    var b = document.body.scrollTop || document.documentElement.scrollTop
+    var c = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    // console.log(a, Math.ceil(b + c));
+    
+    if(a <= Math.ceil(b + c) && b > 0 ){
+      console.log(vids);
+      const res = await getSomeVideos(vids, 5);
+      setVideolist([
+        ...videolist,
+        res
+      ])
+      for(let i = 0; i < res[0].length; i++) {
+        setVids([
+          ...vids,
+          res[0][i].vid
+        ])
+      }
+    }
+  }
+
   const totopmove = () => {
     setTimeout(() => {
       window.scrollTo({
@@ -367,21 +301,35 @@ function Home() {
   }
 
   // 换一换
-  const changapart = async () => {
-    const res = await getRandom()
-    setRecommend(res)
+  let temp1 = false
+  const [iconflag, setIconflag] = useState(false)
+  const changapart = (e) => {
+    // 节流
+    if (temp1) {
+      return
+    }
+    setIconflag(true)
+    temp1 = true
+    setTimeout(async() => {
+      const res = await getRandom(6)
+      setRecommend(res)
+      setIconflag(false)
+      temp1 = false
+    }, 1200)
   }
   return (
     <div className="conbox">
-      <Topnav></Topnav>
+      <Topnav />
       <div className="mainbox">
-      <Nav2 />
+      <MemoNav2
+        uid={uid}
+      />
         <div className="innerbox">
-          <div className="changpart">
-            <div className="icon iconfont" style={{fontSize: '15px'}}>&#xe614;</div>
-            <span className="changspan2"
-              onClick={changapart}
-            >换一换</span>
+          <div className="changpart"
+            onClick={changapart}
+          >
+            <div className={iconflag ? "iconani icon iconfont" : "icon iconfont"}>&#xe614;</div>
+            <span className="changspan2">换一换</span>
             </div>
           <div className="bottompart">
             <div className="bbox1 icon iconfont b1">&#xe646;</div>
@@ -393,7 +341,9 @@ function Home() {
             </div>
           </div>
           <div className="bannerpart">
-            <Bnaaer />
+            <Banner
+              playflag={true}
+            />
           </div>
           <div className="toprecbox">
           {
@@ -402,7 +352,6 @@ function Home() {
               data={item}
               index={index}
               />
-              // <div key={item.vid} className="onevideo">{item.vid}</div>
             )
           }
           </div>
@@ -417,6 +366,16 @@ function Home() {
             )
           }
         </div>
+        {
+          <div className="loadmore-line">
+            <span>加载更多</span>
+            <div>
+              <span className='iconfont sp1'>&#xec1e;</span>
+              <span className='iconfont sp2'>&#xec1e;</span>
+              <span className='iconfont sp3'>&#xec1e;</span>
+            </div>
+          </div>
+        }
       </div>
     </div>
   )

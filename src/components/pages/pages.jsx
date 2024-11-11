@@ -1,13 +1,20 @@
-import { getDefaultNormalizer } from '@testing-library/react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import './pages.scss'
 import { useEffect, useState } from "react"
 
 function Pages (props) {
+  const navigate = useNavigate()
   const [index, setIndex] = useState(0)
   const [enterpage, setEnterpage] = useState("")
-
-  const pagelength = props.pagelength
+  const pagelength = props.pagelength  
   const pages = []
+  const getDataFnc = props.getDataFnc,
+        uid = props.uid,
+        num = props.num,
+        setList = props.setList,
+        pathname = props.pathname,
+        keyword = props.keyword
+        
   for (let i = 0; i < pagelength; i++) {
     pages.push({id: `${i}`})
   }
@@ -24,17 +31,20 @@ function Pages (props) {
     }
   }
 
-  useEffect(() => {
+  useEffect(() => {    
     const getData = async () => {
-      const res = await props.getDataFnc(props.uid, index, props.num)
-      props.setList(res)
+      const res = await getDataFnc(uid, index + 1, num, keyword)
+      setList(res.list)
+      navigate(`${pathname}?page=${index + 1}&num=${num}`)
+      window.scroll({
+        top: 0
+      })
     }
     getData()
   }, [index])
   return (
     <div>
       {
-        // pages !== null && pages.length > 1 &&
         <div className="page-out">
           {
             index > 0 &&

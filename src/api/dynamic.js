@@ -1,5 +1,13 @@
 import http from ".";
 
+
+export function getAllDynamic () {
+  return http({
+    method: 'GET',
+    url: '/dynamic/getAllDynamic',
+  })
+}
+
 // 只获得一个人的 flag === 1 的话，还会获取关注的人的动态
 export function getDyanmciList (uid, flag) {
   return http({
@@ -114,5 +122,17 @@ export function getDynamicByTopical (topical, uid, sort) {
   return http({
     method: 'GET',
     url: `/dynamic/getDynamicByTopical/${topical}/${uid}/${sort}`
+  })
+}
+
+// 根据关键词搜索某人动态
+export function getDynamicByKeyword (uid, keyword) {
+  return http({
+    method: 'GET',
+    url: '/dynamic/getDynamicByKeyword',
+    params: {
+      uid: uid,
+      keyword: keyword
+    }
   })
 }

@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import './audit.scss'
 import { getAuditList, oneResult } from '../../api/audit'
 import { Link } from 'react-router-dom'
+import message from '../../components/notice/notice'
 
 function Audit () {
+  document.title='pili-审核'
   const [videolist, setVideolist] = useState([])
   const [onevideo, setOnevideo] = useState()
 
@@ -13,9 +15,7 @@ function Audit () {
   useEffect(() => {
     const getData = async() => {
       const res = await getAuditList()
-      setOnevideo(res[0])
-      console.log(res);
-      
+      setOnevideo(res[0])      
       setVideolist(res)
     }
     getData()
@@ -23,11 +23,10 @@ function Audit () {
 
   const toauditthis = (e) => {
     const index = (e.target.dataset.index || e.target.parentNode.dataset.index)
-    setOnevideo(videolist[index])
-    console.log(videolist[index]);
-    
+    setOnevideo(videolist[index])    
   }
 
+  // 播放
   const playclick = () => {
     const ref = videoref.current    
     if (ref.paused) {
@@ -37,7 +36,12 @@ function Audit () {
     }
   }
 
+  // 不通过
   const passbtn = async () => {
+    if (videolist.length === 0) {
+      message.open({type: 'warning', content: '没有待审核内容~'})
+      return
+    }
     if (nopass === true) {
       alert('nope')
       return
@@ -52,12 +56,22 @@ function Audit () {
 
     const res = await oneResult(data)
     if (res) {
-      setVideolist(res)
-      setOnevideo(res[0])
+      const res2 = await getAuditList()
+      setVideolist(res2)
+      if (res2.length > 0) {
+        setOnevideo(res2[0])
+      } else {
+        setOnevideo(null)
+      }
     }
   }
 
+  // 通过审核
   const nopassbtn = async () => {
+    if (videolist.length === 0) {
+      message.open({type: 'warning', content: '没有待审核内容~'})
+      return
+    }
     const data = {
       vid: onevideo.vid,
       uid: onevideo.uid,
@@ -67,13 +81,18 @@ function Audit () {
     }
     const res = await oneResult(data)
     if (res) {
-      setVideolist(res)
-      setOnevideo(res[0])
-
+      const res2 = await getAuditList()
+      setVideolist(res2)
+      if (res2.length > 0) {
+        setOnevideo(res2[0])
+      } else {
+        setOnevideo(null)
+      }
       canclebtn()
     }
   }
 
+  // 取消不通过
   const canclebtn = () => {
     setText('')
     setNopass(false)
@@ -101,11 +120,18 @@ function Audit () {
           <div className="lc-content-box">
             {
               videolist.map((item, index) =>
-                <div className="one-audit-video" data-index={index} onClick={toauditthis}>
+                <div className="one-audit-video"
+                  data-index={index}
+                  onClick={toauditthis}
+                >
                   <img src={item.cover} alt="" className="oav-left-avatar" />
-                  <div className="oav-right-info" data-index={index}>
+                  <div className="oav-right-info"
+                    data-index={index}
+                  >
                     <div className="toptitle-oav">{item.title}</div>
-                    <div className="bottomname" data-index={index}>
+                    <div className="bottomname"
+                      data-index={index}
+                    >
                       <div className="btm-box1">{item.name}</div>
                       <div className="btm-box1">{item.time.slice(0, 10)}</div>
                     </div>
@@ -120,8 +146,8 @@ function Audit () {
             <div className="mask-video-ip"
               onClick={playclick}
             ></div>
-            <video ref={videoref} src={onevideo != null ? onevideo.path : null} className="vidres"
-              
+            <video ref={videoref} 
+              src={onevideo != null ? onevideo.path : null} className="vidres"
             ></video>
           </div>
           <div className="control-box"></div>

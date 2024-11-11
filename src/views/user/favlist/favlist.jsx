@@ -7,9 +7,11 @@ import { getByUid } from '../../../api/user'
 import { useOutletContext } from 'react-router-dom'   // 获取父传给子的数据
 import { searchKw } from '../../../api/video'
 
-function Favlist () {
-  const isme = useOutletContext()        // 是不是本人空间
+function Favlist (props) {
+  const context = useOutletContext()
   
+  const isme = context.isme        // 是不是本人空间
+  const hisuid = parseInt(context.hisuid)  // up 的uid
   const [favlist, setFavlist] = useState([])
   const [favindex, setFavindex] = useState(-1)  // 左侧index，用于修改列表信息用
   const [hoverfid, setHoverfid] = useState(-1)  // 鼠标悬浮式的fid
@@ -36,7 +38,6 @@ function Favlist () {
   const [pubtype, setPubstyle] = useState(false)      // 是否为私有
 
   const params = useParams()
-  const uid = parseInt(params.uid)  // up 的uid
   let fid = parseInt(params.fid)
   const [defaultfid, setDefaid] = useState()        // 默认收藏夹id
 
@@ -50,7 +51,7 @@ function Favlist () {
 
   useEffect(() => {
     const getData = async() => {
-      const res = await Promise.all([getFavlist(uid, -1), getByUid(uid)])
+      const res = await Promise.all([getFavlist(hisuid, -1), getByUid(hisuid)])
       setFavlist(res[0])        // 左侧列表
 
       setDefaid(res[1].defaultfid)
@@ -104,7 +105,7 @@ function Favlist () {
 
   const tocreateone = async () => {
     if (createtitle.length > 0) {
-      const res = await addOneFavlist(uid, createtitle, pubtype ? 1 : 0)
+      const res = await addOneFavlist(hisuid, createtitle, pubtype ? 1 : 0)
       setFavlist(res)  // 更新列表
       toclosecreate()
     } else {
@@ -147,7 +148,7 @@ function Favlist () {
   // update
   const toupdate = async () => {
     if (newtitle.length > 0) {
-      const res = await updateFav(uid, hoverfid, newtitle, newpub === true ? 1 : 0)
+      const res = await updateFav(hisuid, hoverfid, newtitle, newpub === true ? 1 : 0)
       if (res) {
         setFavlist(res)
         tocloseeditor()
@@ -174,7 +175,7 @@ function Favlist () {
 
   // delete
   const suretodelete = async () => {
-    const res = await deleteFav(hoverfid, uid)
+    const res = await deleteFav(hoverfid, hisuid)
     if (res) {
       setFavlist(res)
     }
@@ -337,7 +338,7 @@ function Favlist () {
         </div>
         {
           favlist.map((item, index) =>
-            <Link to={`/${uid}/favlist/` + item.fid} key={item.id}
+            <Link to={`/${hisuid}/favlist/` + item.fid} key={item.id}
               data-index={index}
               data-fid={item.fid}
               onClick={tothisfav}>

@@ -1,7 +1,7 @@
 import './index.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import Dynamic from '../user/dynamic/dynamic'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { getDyanmciList, sendDynamic, sendDyimgs, updateDyinfo, getAllTopical,  addTopical ,addTopicalWatchs, addTopicalCount } from '../../api/dynamic'
 import { getHomeDynamic } from '../../api/video'
 import Totop from '../../components/toTop/totop'
@@ -13,12 +13,12 @@ import { useParams } from 'react-router-dom'
 import At from '../../components/At/at'
 import Emoji from '../../components/emoji/emoji'
 
-function DynamicM () {
+function DynamicM () {  
   const params = useParams()
   const [userinfo, setUserinfo] = useState(() => JSON.parse(localStorage.getItem('userinfo')))
   const uid = parseInt(params.uid)
 
-  document.title = "动态首页"
+  document.title = "动态首页-pilipili"
   document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
 
   const [dylist, setDylist] = useState([])
@@ -90,12 +90,10 @@ function DynamicM () {
   const senddy = async () => {
     console.log(textcontent === "");
     console.log(imgs.length === 0);
-    
     if (textcontent === "" && imgs.length === 0) {
       message.open({type: 'error', content: '内容不能为空'})
-      return -1
+      return
     }
-
     const data = {
       uid: uid,
       content: textcontent,
@@ -107,6 +105,8 @@ function DynamicM () {
       setTopical({})
     }
     const did = await sendDynamic(data)
+    console.log('res idi is:', did);
+    
     updateuserinfos(1)
     // 本地更新
     if (did !== -1 && imgs.length > 0) {
@@ -130,7 +130,6 @@ function DynamicM () {
     }
     const newlist = await getDyanmciList(uid, 1)
     setDylist(newlist)
-    return 0
   }
 
   // 上传图片
@@ -230,7 +229,7 @@ function DynamicM () {
   }, [topicalflag])
 
   const cliclkCloseTopical = (e) => {
-    console.log(topicalBox.current, '   ',e.target);
+    // console.log(topicalBox.current, '   ',e.target);
     if (!topicalBox?.current?.contains(e.target)) {
       setTopicalflag(false)
     }
@@ -252,11 +251,26 @@ function DynamicM () {
       const res2 = await getAllTopical()
       setToplicalist(res2)
     }
+    setTopicaltitle("")
+    setTopicalintro("")
+    setNewtopicalflag(false)
   }
   return (
     <div className="dynamic-box">
       <Topnav />
       <Totop/>
+      <div className="toptop"
+        style={{visibility: postionfalg ? 'visible' : 'hidden'}}
+        onClick={() => {
+          window.scroll({
+            top: 0,
+            behavior: 'smooth'
+          })
+        }}
+      >
+        <span className='icon iconfont'>&#xe637;</span>
+        <span>top</span>
+      </div>
       <div className="dy-conbox">
         <div className="dy-left">
           <div className="leftuserinfo">
@@ -355,7 +369,7 @@ function DynamicM () {
                       <textarea name="" id="" className='nb-intro'
                         onChange={(e) => setTopicalintro(e.target.value)}
                         value={topicalintro}
-                        placeholder='话题标题'
+                        placeholder='话题简介'
                       ></textarea>
                       <div className="nb-btn-line">
                         <div className="nb-cancle-btn"
@@ -443,7 +457,7 @@ function DynamicM () {
                       setEmojiflag(false)
                       setTopicalflag(false)
                     }}
-                  >&#xe667;</span>
+                  >&#xe626;</span>
                   {
                       atfalg &&
                       <div className="at-box">
@@ -469,7 +483,7 @@ function DynamicM () {
                       setTopicalflag(false)
                       setEmojiflag(!emojiflag)
                     }}
-                  >&#xe626;</span>
+                  >&#xe667;</span>
                     {
                       emojiflag &&
                       <div className="emoji-box">
@@ -538,8 +552,9 @@ function DynamicM () {
           }
           <div className="dy-contemtnbox">
             {
-              dylist.map((item, index) => 
-                <DynamicCom 
+              dylist.map((item, index) =>
+                <DynamicCom
+                  key={item.id}
                   item={item}
                   index={index}
                   userinfo={userinfo}
@@ -585,6 +600,9 @@ function DynamicM () {
           </div>
         </div>
         <div className="dy-right">
+          <div className="rank-img">
+            <img src={`${baseurl}/sys/trbg.png`} alt="" />
+          </div>
           <div className="dy-rnak">
             <div className="rank-title">话题</div>
             <div className="one-rank-b">
@@ -597,7 +615,10 @@ function DynamicM () {
                       window.open(`/topical/${item.topical}`, "_blank")
                     }}
                   >
-                    <div className="orb-left">#</div>
+                    <div className="orb-left">
+                      <span className="icon iconfont">&#xe63d;</span>
+                      <span className='sp'>#</span>
+                    </div>
                     <div className="orb-right">
                       <div className="orb-r-top">
                         <span>{item.topical}</span>

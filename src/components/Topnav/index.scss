@@ -36,6 +36,29 @@
   box-sizing: border-box;
   position: relative;
   height: fit-content;
+  .vip-view {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    .vip-blank-part {
+      width: 100%;
+      height: 100%;
+      background-color: #00000080;
+    }
+    .vip-center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      translate: -50% -50%;
+      width: 300px;
+      height: 430px;
+      background-color: #fff;
+      border-radius: 4px;
+    }
+  }
   .topbg {
     width: 100%;
     height: 180px;
@@ -405,6 +428,7 @@
         margin-bottom: 3px;
         font-size: 18px;
         font-weight: 560;
+        color: #000;
       }
       .text {
         font-size: 13px;
@@ -956,7 +980,6 @@
         width: 38px;
         height: 38px;
         border-radius: 20px;
-        background-color: red;
         cursor: pointer;
         transition: scale 0.2s ease-in-out,
                     translate 0.2s ease-in-out;
@@ -1018,6 +1041,18 @@
         box-sizing: border-box;
         padding: 0 20px;
         margin-bottom: 20px;
+        .onediv {
+          cursor: pointer;
+          user-select: none;
+          &:hover {
+            .number {
+              color: #32aeec;
+            }
+            .text {
+              color: #32aeec;
+            }
+          }
+        }
         .number {
           font-size: 18px;
           color: #18191c;
@@ -1025,6 +1060,39 @@
         .text {
           font-size: 12px;
           color: #9499A0;
+        }
+      }
+      .vipbox1 {
+        width: 100%;
+        height: 66px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        background-position: 0%;
+        cursor: pointer;
+        user-select: none;
+        text-align: center;
+        line-height: 56px;
+        font-family: 'Micosoft';
+        .vipb1 {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          .sp1-vip {
+            color: #FB7299;
+            font-size: 18px;
+            height: 20px;
+            line-height: 20px;
+          }
+          .sp2-vip {
+            margin-top: 5px;
+            color: #9499a0;
+            font-size: 14px;
+            height: 20px;
+            line-height: 20px;
+          }
         }
       }
       .otherdiv {
@@ -1135,6 +1203,11 @@
     color: #FFF;
     a {
       color: #fff;
+    }
+    .iteminner {
+      .icon {
+        color: #fff;
+      }
     }
   }
 }

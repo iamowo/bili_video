@@ -5,6 +5,27 @@
   box-sizing: border-box;
 }
 
+.toptop {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  translate: 500px 0;
+  width: 50px;
+  height: 50px;
+  background-color: #fff;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  .icon {
+    margin: 0;
+  }
+}
+
 .dy-conbox {
   height: fit-content;
   display: flex;
@@ -1399,8 +1420,21 @@
 .dy-right {
   width: 318px;
   height: fit-content;
+  .rank-img {
+    width: 318px;
+    height: 166px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    position: fixed;
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+    }
+  }
   .dy-rnak {
     position: fixed;
+    top: 270px;
     // width: 100%;
     width: 318px;
     height: fit-content;
@@ -1441,6 +1475,18 @@
           color: #00aeec;
           line-height: 30px;
           text-align: center;
+          position: relative;
+          .icon {
+            margin: 0;
+          }
+          .sp {
+            position: absolute;
+            font-size: 11px;
+            color: #fff;
+            left: 50%;
+            translate: -50% 0;
+            top: 0px;
+          }
         }
         .orb-right {
           flex: 1;

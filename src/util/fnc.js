@@ -1,5 +1,8 @@
+import { baseurl2 } from "../api"
 
 // 防抖函数
+// 延时执行， 再次出发会重新开始延迟
+// 搜索框实时显示结果，resize， 表单验证
 export function debounce (fn, delay) {
   let timer = null
   return function (e) {
@@ -11,15 +14,18 @@ export function debounce (fn, delay) {
 }
 
 // 节流
+// (按照一定时间间隔执行， 而不是每次触发都执行)
+// 页面滚动， 点击按钮
 export function throttle(fn, delay) {
-  let canRun = true
-  return function () {
-    if (!canRun) {
-      canRun = false
+  let canRun = false
+  return async function () {
+    if (canRun) {
+      return
     }
+    canRun = true
     setTimeout(() => {
       fn.apply(this, arguments)
-      canRun = true
+      canRun = false
     }, delay)
   }
 }
@@ -105,4 +111,15 @@ export function HeightLightKw (content, keyword, tagName, type, uid) {
   }
   const regS = new RegExp(keyword, 'gi')
   return content.replace(regS, val)
+}
+
+// 打开漫画
+export function tothismg (mid) {
+  console.log('mid is:', mid);
+  
+  window.open(`${baseurl2}/chapter/${mid}`, '_blank')
+}
+
+export function tothiskeyword (keyword) {
+  window.open(`${baseurl2}/searchmg/${keyword}`, '_blank')
 }

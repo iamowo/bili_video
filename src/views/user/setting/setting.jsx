@@ -4,15 +4,15 @@ import { changeSetting, getSetting } from '../../../api/user'
 import { useOutletContext, useParams } from 'react-router-dom'
 
 function Setting () {
-  const params = useParams()
-  const uid = params.uid
+  const context = useOutletContext()
+  const hisuid = context.hisuid
   // ⭐ context 中的信息刷新之后会丢失
   // const fatherdata = useOutletContext()
   // const isme = fatherdata.isme
   // const usersetting = fatherdata.usersetting
   useEffect(() => {
     const getData = async () => {
-      const res = await getSetting(uid)
+      const res = await getSetting(hisuid)
       console.log(res);
       setSet11([
         res.favlist,
@@ -52,7 +52,7 @@ function Setting () {
     })
     setSet11(newset)
     const data = {
-      uid: uid,
+      uid: hisuid,
       favlist: newset[0],
       followlist: newset[1],
       likerecently: newset[2],
@@ -60,7 +60,7 @@ function Setting () {
     }
     const res = await changeSetting(data)
     if (res) {
-      const res2 = await getSetting(uid)
+      const res2 = await getSetting(hisuid)
       setSet11([
         res2.favlist,
         res2.followlist,
@@ -81,13 +81,13 @@ function Setting () {
     })
     setSet12(newset)
     const data = {
-      uid: uid,
+      uid: hisuid,
       birthday: newset[0],
       donate: newset[1]
     }
     const res = await changeSetting(data)
     if (res) {
-      const res2 = await getSetting(uid)
+      const res2 = await getSetting(hisuid)
       setSet12([
         res2.birthday,
         res2.donate

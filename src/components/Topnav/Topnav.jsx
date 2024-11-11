@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import './index.scss'
 import { useLocation } from 'react-router-dom'
 import { debounce } from '../../util/fnc'
@@ -11,16 +11,19 @@ import { getByUid, login } from '../../api/user'
 import { getHistory, getHomeHistory, searchKw, getHomeDynamic } from '../../api/video'
 import { tovideo } from '../../util/fnc'
 import { getFavlist, getOneList } from '../../api/favlist'
-import { baseurl, mgurl } from '../../api'
+import { baseurl, baseurl2 } from '../../api'
 import message from '../notice/notice'
 import { getAllKeyword, addKeyword, deleteKeyword, deleteAllKeyword, getHotRanking } from '../../api/search'
+import VIP from '../vip/VIP'
 
 // 类形式的组件
 // class Topnav extends Component {
 
 // }
 
-const Topnav = (props) => {
+const Topnav = memo((props) => {
+  // console.log('重现渲染了TOPNAV');
+  
   // 路由跳转之后数据 消失
   // const dispatch = useDispatch()   // 更待store需要用到
   //const { userinfo } = useSelector(state => state.userinfo)
@@ -83,6 +86,8 @@ const Topnav = (props) => {
 
   const [hisList, setHislist] = useState([])            // 历史记录
   const [hisindex, setHisindex] = useState(0)  // 0 视频  1 直播
+
+  const [vipbuyflag, setVipblyflag] = useState(false)
   useEffect(() => {
     // 本地有数据
     const getData = async () => {      
@@ -131,7 +136,7 @@ const Topnav = (props) => {
     // searchboxref 刚加载出来直接使用会报错
     setTimeout(() => {
       const tar = e.target
-      if (!searchboxref.current.contains(tar)) {
+      if (!searchboxref?.current?.contains(tar)) {
         setFocusflag(false)
       }
     },100)
@@ -459,7 +464,7 @@ const Topnav = (props) => {
             </div>
             <div className="oneitem moveanimation">直播</div>
             <div className="oneitem moveanimation"
-              onClick={() => window.open(mgurl + '/' + uid, "_balnk")}
+              onClick={() => window.open(baseurl2 + '/manga', "_balnk")}
             >
               漫画
             </div>
@@ -569,25 +574,48 @@ const Topnav = (props) => {
               {
                 appendflag && userinfo !== null &&
                 <div className="avatarappend" onMouseEnter={menter} onMouseLeave={mleave}>
-                  <div className="namediv">kuron</div>
-                  <span className="lvdiv">lv1</span>
+                  <div className="namediv">{userinfo.name}</div>
+                  <span className="lvdiv">lv{userinfo.lv}</span>
                   <div className="icons">
                       <span>硬币:</span>
                       <span>{userinfo.icons}</span>
                   </div>
                   <div className="infodiv">
-                    <div className="onediv">
+                    <div className="onediv"
+                      onClick={() => window.open(`/${uid}/fans/follow`, "_blank")}
+                    >
                       <div className="number">{userinfo.follows}</div>
                       <div className="text">关注</div>
                     </div>
-                    <div className="onediv">
+                    <div className="onediv"
+                      onClick={() => window.open(`/${uid}/fans/fan`, "_blank")}
+                    >
                       <div className="number">{userinfo.fans}</div>
                       <div className="text">粉丝</div>
                     </div>
-                    <div className="onediv">
+                    <div className="onediv"
+                      onClick={() => window.open(`/dynamicM/${uid}`, "_blank")}
+                    >
                       <div className="number">{userinfo.dynamics}</div>
                       <div className="text">动态</div>
                     </div>
+                  </div>
+                  <div className="vipbox1"
+                    style={{backgroundImage: `url(${baseurl}/sys/month-grade-bg.png)`}}
+                  >
+                    {
+                      true ?
+                      <div className='vipb1'
+                        onClick={() => setVipblyflag(true)}
+                      >
+                        <span className='sp1-vip'>购买会员</span>
+                        <span className='sp2-vip'>解锁更多服务</span>
+                      </div>
+                      :
+                      <div>
+                        233
+                      </div>
+                    }
                   </div>
                   <div className="otherdiv">
                     <Link to={`/${uid}/account/home`} target='_blank'>
@@ -614,6 +642,18 @@ const Topnav = (props) => {
                         <div className="othleftp">
                           <span className="icon iconfont" style={{color: '#FB7299'}}>&#xe604;</span>
                           <span className='text'>审核中心</span>
+                        </div>
+                        <div className="spinicon iconfont icon">&#xe637;</div>
+                      </Link>
+                    </div>
+                  }
+                  {
+                    userinfo.permissions >= 1 &&
+                      <div className="otherdiv">
+                      <Link to={`/control`} target='_blank'>
+                        <div className="othleftp">
+                          <span className="icon iconfont" style={{fontSize: '18px'}}>&#xe602;</span>
+                          <span className='text'>系统后台</span>
                         </div>
                         <div className="spinicon iconfont icon">&#xe637;</div>
                       </Link>
@@ -821,8 +861,20 @@ const Topnav = (props) => {
             </div>
           </div>
         }
+        {
+          vipbuyflag &&
+          <div className="vip-view">
+            <div className="vip-blank-part"
+              onClick={() => setVipblyflag(false)}
+            ></div>
+              <VIP
+                uid={uid}
+                setVipblyflag={setVipblyflag}
+              />
+          </div>
+        }
     </div>
   );
-}
+})
 
 export default Topnav

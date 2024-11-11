@@ -166,6 +166,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
         .onecmavatar {
           width: 48px;
           height: 48px;
@@ -320,6 +321,7 @@
           .cmname {
             font-size: 14px;
             color: #61666D;
+            position: relative;
           }
         }
         .commentcontent {
@@ -383,8 +385,11 @@
           padding: 8px 0;
           display: flex;
           .leftpartsceavatar {
-            width: 34px;
+            width: 24px;
             height: 24px;
+            border-radius: 50%;
+            position: relative;
+            margin-right: 10px;
             .secondavatar {
               width: 24px;
               height: 24px;
@@ -407,6 +412,7 @@
                 font-size: 14px;
                 color: #61666D;
                 line-height: 30px;
+                position: relative;
               }
               .secondcontent {
                 margin-left: 15px;

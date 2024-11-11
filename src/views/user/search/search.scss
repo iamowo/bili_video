@@ -180,17 +180,23 @@
 .sls-out1 {
   width: 100%;
   height: fit-content;
+  .dynamic-content-search {
+    width: 100%;
+    height: fit-content;
+    margin-top: 20px;
+    .one-dynamic-se {
+      width: 100%;
+      height: fit-content;
+      box-sizing: border-box;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #d8dbdf;
+    }
+  }
 }
 
 .sls-out2 {
   width: 100%;
   height: fit-content;
-  // dynamic
-  .dynamic-content-search {
-    width: 100%;
-    height: 200px;
-    margin-top: 20px;
-  }
   .ssp2-nores {
     height: 20px;
     width: 100%;

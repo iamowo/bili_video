@@ -70,18 +70,30 @@ export function toUnfollow(uid1, uid2) {
 }
 
 // 获取关注
-export function getFollow(uid) {
+export function getFollow(uid, page, nums, keyword) {
   return http({
-    method: 'GET',
-    url: `/user/getFollow/${uid}`
+    method: 'POST',
+    url: '/user/getFollow',
+    data: {
+      uid: uid,
+      page: page,
+      nums: nums,
+      keyword: keyword
+    }
   })
 }
 
 // 获取粉丝
-export function getFans(uid) {
+export function getFans(uid, page, nums, keyword) {
   return http({
-    method: 'GET',
-    url: `/user/getFans/${uid}`
+    method: 'POST',
+    url: '/user/getFans',
+    data: {
+      uid: uid,
+      page: page,
+      nums: nums,
+      keyword: keyword
+    }
   })
 }
 
@@ -101,5 +113,15 @@ export function changeSetting(data) {
   })
 }
 
+// 用户数据
+export function getUserData(uid) {
+  return http({
+    method: 'GET',
+    url: '/user/getUserData',
+    params: {
+      uid: uid
+    }
+  })
+}
 
 

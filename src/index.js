@@ -14,12 +14,16 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 // 严格模式（Strict Mode）,在开发模式下，React 的严格模式会故意使组件重新渲染两次
 
 root.render(
-  <React.StrictMode>
-    {/* <App /> */}
+  // <React.StrictMode>
+  //   {/* <App /> */}
+  //   <Provider store={store}>
+  //     <RouterProvider router={router} />
+  //   </Provider>
+  // </React.StrictMode>
+  
     <Provider store={store}>
       <RouterProvider router={router} />
     </Provider>
-  </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

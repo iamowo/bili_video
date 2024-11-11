@@ -6,7 +6,7 @@ import { uploadVideoInfos, uploadChunks, mergeChunks, getAlready } from '../../.
 import SparkMD5 from 'spark-md5' // 切片用
 import { getUserVideoList, addVideoList } from '../../../api/videolist'
 import { baseurl } from '../../../api'
-import { getAnimationList } from '../../../api/animation'
+import { getUploadAniList } from '../../../api/animation'
 import message from '../../../components/notice/notice'
 
 function Upcenter () {
@@ -20,7 +20,7 @@ function Upcenter () {
   const [upprogress, setProgress] = useState('ready'),    //' ready uploading infos done
         [videofile, setVideoFile] = useState(null),   
         [seasonflag, setSeasonflag] = useState(false),     // 连续剧？
-        [vidcover, setCover] = useState(null),            // cover url(默认时第一帧)
+        [vidcover, setCover] = useState(null),            // cover url(默认时第一帧) （base64文件）
         [coverhw, setCoverHw] = useState(true),           // true 宽 >= 高    flase 高 > 宽
         [coverfile, setCoverfile] = useState(''),         // 封面的file，还要尽心截取
         [upcovertype, setUpcovertype] = useState(0),      // 0 使用视频抽帧做封面   1 使用自定义图片
@@ -64,7 +64,7 @@ function Upcenter () {
 
   useEffect(() => {
       const getData = async () => {
-        const res = await Promise.all([getUserVideoList(uid), getAnimationList()])
+        const res = await Promise.all([getUserVideoList(uid), getUploadAniList(uid)])
         console.log('res is:', res);
         setVideotoselect(res[0])
         setAnimationlist(res[1])
@@ -94,7 +94,6 @@ function Upcenter () {
   // 拖拽上传
   const dropfile1 = (e) => {   
     e.preventDefault()
-    console.log('drop'); 
     const thisfile = e.dataTransfer.files[0]
     changevideoinp(thisfile)
   }
@@ -109,7 +108,7 @@ function Upcenter () {
       filedata = e.target.files[0]
     }
     if (!filedata.type.includes('video/')) {
-      alert('此文件不是视频类型')
+      message.open({type: 'warning', content: '此文件不是视频类型'})
       return
     }
     setOldtitle(filedata.name.split(".")[0])
@@ -128,11 +127,34 @@ function Upcenter () {
     setProgress('infos')  // 下一步
   }
 
-  // 添加封面
+
+  // 图片转base64
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      // 创建一个新的 FileReader 对象
+      const reader = new FileReader();
+      // 读取 File 对象
+      reader.readAsDataURL(file);
+      // 加载完成后
+      reader.onload = function () {
+        // 将读取的数据转换为 base64 编码的字符串
+        const base64String = reader.result.split(",")[1];
+        // 解析为 Promise 对象，并返回 base64 编码的字符串
+        resolve(base64String);
+      };
+   
+      // 加载失败时
+      reader.onerror = function () {
+        reject(new Error("Failed to load file"));
+      };
+    });
+  }
+
+  // 自己添加封面（将图片转化为base64格式）
   const addcover = (e) => {
     let cover = e.target.files[0]
     if (!cover.type.includes('image/')) {
-      alert('此文件不是图片类型')
+      message.open({type: 'warning', content: '此文件不是图片类型'})
       return
     }
 
@@ -141,26 +163,32 @@ function Upcenter () {
     newimg.src = newurl    
 
     newimg.onload = function () {
-      
       const h = parseInt(newimg.height)
       const w = parseInt(newimg.width)
-      console.log(w < 960, h < 600);
+      console.log(w < 480, h < 300);
       console.log(w, h);
       // 第一次检测不到宽高
       if (h !== 0 && w !== 0) {
-        if (w < 960 || h < 600) {
-          alert('分辨率小于 960 * 120,请重新选择')
+        if (w < 480 || h < 300) {
+          // alert("分辨率小于 480 * 300,请重新选择")
+          message.open({type: 'warning', content: '分辨率小于 480 * 300,请重新选择', falg: true})
           return
         } else {
-          console.log('sb===');
-          
           if (w >= h) {
             setCoverHw(true)
           } else {
             setCoverHw(false)
           }
           setCoverType(e.target.files[0].type.split('/')[1])
-          setCover(newurl)
+          // 转base64
+          fileToBase64(cover).then(res => {
+            // console.log('base 64:', res);
+            setCover(res)
+          }).catch(e => {
+            message.open({type: 'warning', content: '更换失败', flag: true})
+            return
+          })
+          // setCover(newurl)
           setCoverfile(cover)
         }
       }
@@ -195,7 +223,8 @@ function Upcenter () {
     if(e.dataTransfer.files[0].type.includes('video/')) {      
       // file = e.dataTransfer.files[0]
     } else {
-      alert('请选择正确的文件类型')
+      message.open({type: 'warning', content: '请选择正确的文件类型'})
+      return
     }
   }
 
@@ -225,7 +254,7 @@ function Upcenter () {
   // 上传视频信息
   const touploadvideo = async (e) => {
     if (titleinp === "" || maintag === "" || vidcover === null) {
-      alert('缺少必要信息')
+      message.open({type: 'warning', content: '缺少必要信息'})
       return
     }
     // 视频文件
@@ -258,7 +287,7 @@ function Upcenter () {
         duration: videoduration,
         cover: vidcover,
         maintag: maintag,
-        othertags: tags,
+        othertags: atags.join(" "),
         hashValue: HASH,
         listid: listindex !== -1 ? videolisttoselect[listindex].listid : -1,
         aid: listindex2 !== -1 ? animationlist[listindex2].aid : -1,
@@ -267,7 +296,7 @@ function Upcenter () {
         chapter: chapternum,
         chaptertitle: chaptertitle
       }
-      console.log(data);
+      console.log('upload data:', data);
       thisvid = await uploadVideoInfos(data) // 返回vid
       // 添加到视频列表
     }
@@ -344,7 +373,10 @@ function Upcenter () {
         }
         return Promise.reject('error')
       }).catch(() => {
-        console.log('上传文件失败');
+        message.open({type: 'error', content: '上传文件失败', flag: true})
+        setTimeout(() => {
+          document.location.reload()
+        }, 2000)
       })
     })
     
@@ -364,19 +396,7 @@ function Upcenter () {
     window.location.reload()
   }
 
-  // const setTgas = (e) => {
-  //   if (e.target.value != '') {
-  //     console.log(e.target.value);
-      
-  //     setTags(e.target.value)
-  //     const tagnums = e.target.value.split(",")
-  //     setAtags(tagnums)
-  //   } else {
-  //     setTags(null)
-  //     setAtags([])
-  //   }
-  // }
-
+  // 回车确定tag
   const entertosplice = (e) => {
     if (e.key === 'Enter') {
       const nword = tags
@@ -388,6 +408,7 @@ function Upcenter () {
     }
   }
 
+  // 删除一个tag
   const deletethis = (e) => {
     const ind = parseInt(e.target.dataset.index)
     setAtags(atags.filter((item, index) => {
@@ -484,6 +505,7 @@ function Upcenter () {
     let ctx = canvas.getContext('2d');
     ctx.drawImage(videoref.current, 0, 0, 1280, 960)
     const dataurl = canvas.toDataURL('image/png')
+    // console.log('data,',dataurl);
     setCover(dataurl)
     // setCoverbase64()
   }
@@ -826,7 +848,9 @@ function Upcenter () {
                                       <div className="ltt2">
                                         <label for="coverinput" className='outlabel'>
                                           <span className="iconsp icon iconfont">&#xe614; 更换封面</span>
-                                          <input type="file" id="coverinput" className="rightinpfile" accept='image/*' onChange={addcover}/>
+                                          <input type="file" id="coverinput" className="rightinpfile" accept='image/*'
+                                            onChange={addcover}
+                                          />
                                         </label>
                                       </div>
                                     </div>
@@ -865,7 +889,9 @@ function Upcenter () {
                                 <div className="other-video-img"></div>
                                 <div className="done-line">
                                   <div className="dl-box1">使用模板封面</div>
-                                  <div className="dl-box2">完成</div>
+                                  <div className="dl-box2"
+                                    onClick={() => tocloseupview }
+                                  >完成</div>
                                 </div>
                               </div>
                             </div>
@@ -892,7 +918,9 @@ function Upcenter () {
                                         <div className="ltt2">
                                           <label for="coverinput" className='outlabel'>
                                             <span className="iconsp icon iconfont">&#xe614; 更换封面</span>
-                                            <input type="file" id="coverinput" className="rightinpfile" accept='image/*' onChange={addcover}/>
+                                            <input type="file" id="coverinput" className="rightinpfile" accept='image/*'
+                                              onChange={addcover}
+                                            />
                                           </label>
                                         </div>
                                       </div>
@@ -971,7 +999,10 @@ function Upcenter () {
                   </div>
                   <div className="input-box-main-tag">
                     <div className="input2box">
-                      <span className='inp2span' ref={spanref}>{maintag}</span>
+                      <span className='inp2span'
+                        ref={spanref}
+                        style={{visibility: maintag.length > 0 ? 'visible' : 'hidden'}}
+                      >{maintag}</span>
                       <div className="icon iconfont watchmore" ref={watchref}>&#xe775;</div>
                     </div>
                       <div className="selectMaintag" ref={mtagref}>
@@ -991,7 +1022,8 @@ function Upcenter () {
                       </div>
                   </div>
                 </div>
-                <div className="one-upbox" style={{marginTop: '30px'}}>
+                <div className="one-upbox"
+                  style={{marginTop: '30px'}}>
                   <div className="left-text-span">tags</div>
                   <div className="input-out-box1">
                     {/* <div className="tags-list"
@@ -1009,7 +1041,8 @@ function Upcenter () {
                     {/* </div> */}
                     <input type="text"
                         className="rightinptags"
-                        onChange={(e) => setTags(e.target.value)} value={tags}
+                        onChange={(e) => setTags(e.target.value)}
+                        value={tags}
                         onFocus={() => setFflag(true)}
                         onBlur={() => setFflag(false)}
                         onKeyDown={entertosplice}

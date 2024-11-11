@@ -58,11 +58,17 @@ import UserS from "../views/search/user/user";
 import Upload from "../views/upload/upload";
 import Uphome from "../views/upload/uphome/uphome";
 import Upcenter from "../views/upload/upcenter/upcentr";
-import Control from "../views/control/control";
 import Vdieocontrol from "../views/upload/upcontroller/videocontrol";
 import Upvideo2 from "../views/upload/upvideo2/upvideo2";
 import Upmg from "../views/upload/upmg/Upmg";
 import Mgcontrol from "../views/upload/upcontroller/mgcontrol";
+
+// control
+import Control from "../views/control/control";
+import AllConVideos from "../views/control/videos/allVideo";
+import ControlHome from "../views/control/home";
+import AllDynamic from "../views/control/dynamic/AllDynamic";
+import Bannercon from "../views/control/system/BannerCon";
 
 // live
 import Livinghoom from "../views/living/livinghome/livinghoow";
@@ -89,7 +95,24 @@ import Topical from "../views/toplical/topical";
 // error
 import Error from "../views/404/error"
 
+// mg
+import Mghome from "../views/mg/Home/Home"
+import Chapter from "../views/mg/Chapter/Chapter";
+import Detail from "../views/mg/Detail/Detai";
+import Type from "../views/mg/Type/Type";
+import Ranking from "../views/mg/Ranking/Rnaking";
+import Searchmg from "../views/mg/Search/Search"
+import Usermg from '../views/mg/User/User'
+import UserMain from "../views/mg/User/main"
+import UserHistory from "../views/mg/User/history"
+import UserFavorite from "../views/mg/User/favorite"
+
+// test
 import Test from "../views/testV/test";
+
+
+// 重定向组件(<AuthRoute> <XXXXX /> </AuthRoute>)
+import AuthRoute from "../util/AuthRouter";
 
 const router = createBrowserRouter([
   {
@@ -311,7 +334,25 @@ const router = createBrowserRouter([
   },
   {
     path: '/control',
-    element: <Control />
+    element: <Control />,
+    children: [
+      {
+        index: true,
+        element: <ControlHome />
+      },
+      {
+        path: 'videos',
+        element: <AllConVideos />
+      },
+      {
+        path: 'dynamics',
+        element: <AllDynamic />
+      },
+      {
+        path: 'banners',
+        element: <Bannercon />
+      },
+    ]
   },
   // living
   {
@@ -346,8 +387,50 @@ const router = createBrowserRouter([
     ]
   },
   {
-    path: 'audit',
+    path: '/audit',
     element: <Audit />
+  },
+  {
+    path: '/manga',
+    element: <Mghome />,
+  },
+  {
+    path: 'userspace/:uid',
+    element: <Usermg />,
+    children: [
+      {
+        index: true,
+        element: <UserMain />
+      },
+      {
+        path: "history",
+        element: <UserHistory />
+      },
+      {
+        path: "favorite",
+        element: <UserFavorite />
+      }
+    ]
+  },
+  {
+    path: 'searchmg/:keyword',
+    element: <Searchmg />
+  },
+  {
+    path: "classify",
+    element: <Type />
+  },
+  {
+    path: "chapter/:mid",
+    element: <Chapter />
+  },
+  {
+    path: "detail/:mid/:number",
+    element: <Detail />
+  },
+  {
+    path: 'mgranking',
+    element: <Ranking />
   },
   {
     path: 'topical/:topical',

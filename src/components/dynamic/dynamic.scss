@@ -27,10 +27,10 @@
       .boxinfo1 {
         height: fit-content;
         flex: 1;
-        .dy-ibe-name {
+        .dy-ibe-name-line {
           width: 100%;
-          height: 20px;
-          line-height: 20px;
+          height: 32px;
+          line-height: 32px;
           font-size: 17px;
           color: #18191C;
           font-weight: 550;
@@ -60,6 +60,17 @@
             color: #fff;
             font-size: 14px;
             background-color: #00aeec;
+            display: flex;
+            .icon {
+              position: relative;
+              margin-right: 5px;
+              span {
+                color: #00aeec;
+                position: absolute;
+                left: 50%;
+                translate: -50% 0;
+              }
+            }
             &:hover::after {
               position: absolute;
               left: 0;
@@ -204,6 +215,7 @@
           height: 132px;
           margin-top: 10px;
           display: flex;
+          cursor: pointer;
           .left-img-vtb-img {
             width: 236px;
             height: 132px;
@@ -285,6 +297,7 @@
       margin-top: 12px;
       box-sizing: border-box;
       padding: 20px;
+      cursor: pointer;
       .dtb-inner-box {
         width: 100%;
         height: fit-content;
@@ -372,6 +385,7 @@
       border: 1px solid #e3e5e7;
       border-radius: 6px;
       overflow: hidden;
+      cursor: pointer;
       .left-send-my-avatr {
         width: 236px;
         height: 132px;
@@ -447,6 +461,8 @@
       .right-share-box {
         flex: 1;
         height: 140px;
+        position: relative;
+        z-index: 2;
         .send-part {
           border-radius: 4px;
           min-height: 80px;
@@ -454,10 +470,14 @@
           width: 100%;
           border: 1px solid #e3e5e7;
           box-sizing: border-box;
-          padding: 10px 10px 5px;
+          padding: 5px 10px;
+          position: absolute;
+          background-color: #fff;
+          z-index: 2;
           .titleline {
             width: 100%;
-            height: 30px;
+            height: 20px;
+            line-height: 20px;
             font-size: 14px;
             color: #9499A0;
           }
@@ -476,9 +496,42 @@
         .bottom-opation-part {
           width: 100%;
           height: 40px;
+          transition: translate 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: space-between;
+          background-color: #fff;
+          .left-con-box {
+            width: fit-content;
+            height: 40px;
+            display: flex;
+            position: relative;
+            z-index: 3;
+            .at-box1 {
+              width: 30px;
+              height: 40px;
+              margin-right: 20px;
+              line-height: 40px;
+              position: relative;
+              .icon {
+                font-size: 20px;
+                cursor: pointer;
+                user-select: none;
+                &:hover {
+                  color: #00aeec;
+                }
+              }
+              .emojibox {
+                width: 360px;
+                height: 250px;
+                position: absolute;
+                z-index: 10;
+                border-radius: 4px;
+                background-color: #fff;
+                border: 1px solid #e3e5e7;
+              }
+            }
+          }
           .right-numandsend {
             display: flex;
             line-height: 40px;
@@ -543,99 +596,18 @@
     // background-color: pink;
     box-sizing: border-box;
     padding: 10px 0;
-    .toptitleline {
+    .commentbox-dy {
+      margin: 20px 0 10px;
       width: 100%;
-      height: 31px;
-      display: flex;
-      .lbox {
-        height: 31px;
-        width: 110px;
-        display: flex;
-        align-items: center;
-        .lbox-sp11 {
-          font-size: 24px;
-          color: #18191C;
-          margin-right: 10px;
-        }
-        .lbox-sp12 {
-          font-size: 14px;
-          color: #9499A0;
-        }
-      }
-      .rbox {
-        height: 31px;
-        line-height: 31px;
-        display: flex;
-        align-items: center;
-        .rbox-spp {
-          font-size: 14px;
-          color: #949994;
-          cursor: pointer;
-          user-select: none;
-        }
-        .rbox-line1 {
-          margin: 0 10px;
-          height: 10px;
-          width: 1px;
-          background-color: #18191C;
-        }
-      }
+      height: fit-content;
     }
-    .send-dy-sendbox {
-      margin-top: 15px;
+    .bottom-line {
       width: 100%;
-      min-height: 48px;
-      display: flex;
-      box-sizing: border-box;
-      padding: 0 16px;
-      .useravatar2-dy {
-        width: 48px;
-        height: 48px;
-        border-radius: 24px;
-        margin-right: 16px;
-      }
-      .send-r-outbox {
-        flex: 1;
-        height: fit-content;
-      }
-      .send-dy-innerbox {
-        height: 48px;
-        flex: 1;
-        border-radius: 4px;
-        border: 1px solid #e3e5e7;
-        box-sizing: border-box;
-        padding: 5px;
-        .inp333-dy {
-          width: 100%;
-          height: 100%;
-          outline: none;
-          resize: none;
-          border: 0;
-          font-family: 'Micsoft';
-        }
-      }
-      .send-dy-bottom-opation {
-        width: 100%;
-        margin-top: 10px;
-        height: 32px;
-        display: flex;
-        justify-content: space-between;
-        .sdbp-left {
-          height: 32px;
-          line-height: 32px;
-        }
-        .sdbp-right {
-          line-height: 32px;
-          width: 70px;
-          height: 32px;
-          border-radius: 4px;
-          background-color: #32AEEC;
-          color: #fff;
-          text-align: center;
-          cursor: pointer;
-          user-select: none;
-        }
-      }
+      height: 20px;
+      line-height: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #9499a0;
     }
   }
 }

@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react'
 import './main.scss'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { getVideoByUid, getFamous, getUnfamous, changeFamous } from '../../../api/video'
 import { getByUid, updateUserinfo } from '../../../api/user'
 import { getFavlist } from '../../../api/favlist'
 import { touserspace, tovideo } from '../../../util/fnc'
 
 function Mainhome () {
-  const localinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = parseInt(localinfo.uid)
-  const params = useParams()
-  const hisuid = parseInt(params.uid)
-  const isme = hisuid === uid
+  const context = useOutletContext()
+  const myinfo = context.myinfo,
+        myuid = parseInt(context.myuid)
 
-  const [userinfo, setUserinfo] = useState(() => isme ? localinfo : null)
-  const [gg, setGg] = useState('')  // 公告
-  const [ggflag, setGgflag] = useState(false)
+  const hisinfo = context.hisinfo,
+        hisuid = parseInt(context.hisuid),
+        setUserinfo = context.setUserinfo
+
+  const isme = context.isme
+  const [gg, setGg] = useState(''),  // 公告
+        [ggflag, setGgflag] = useState(false)
 
   const [addvideoflag, setAddvideoflag] = useState(false)   // 指定视频flag
   const [selectflag, setSelectflag] = useState(false)
@@ -29,14 +31,12 @@ function Mainhome () {
   const [homefavlist, setHomefavlist] = useState([])        // 收藏夹
 
   useEffect(() => {    
-    let senduid = isme ? uid : params.uid
     const getData = async () => {
       const res = await getVideoByUid(hisuid, 8)
       console.log(res);
       setVideolist(res)
 
       const res2 = await getFamous(hisuid)
-      console.log('res2:', res2);
       setFamouslist(res2)
       
       const res3 = await getUnfamous(hisuid, 0) // 默认事件排序
@@ -48,25 +48,24 @@ function Mainhome () {
       
       setHomefavlist(res4)
 
-      if (!isme) {
-        const res2 = await getByUid(hisuid)
-        setUserinfo(res2)
-      }
+      // if (!isme) {
+      //   const res2 = await getByUid(hisuid)
+      //   setUserinfo(res2)
+      // }
     }
     getData()
   }, [])
 
+  // 更新空间信息
   const blurfnc = async () => {
     setGgflag(false)
-    console.log(gg);
     const data = new FormData()
-    data.append('uid', uid)
+    data.append('uid', hisuid)
     data.append('gonggao', gg)
     const res = await updateUserinfo(data)
     if (res) {
-      userinfo.gonggao = gg
-      localStorage.setItem('userinfo', JSON.stringify(userinfo))
-      setUserinfo(userinfo)
+      hisinfo.gonggao = gg
+      setUserinfo(hisinfo)
     }
   }
 
@@ -78,7 +77,7 @@ function Mainhome () {
 
   const sendfamous = async () => {
     if (famousvids.length > 0) {
-      const res = await changeFamous(uid, famousvids, 0)
+      const res = await changeFamous(hisuid, famousvids, 0)
       console.log('update: ', res);
       
       setFamouslist(res)
@@ -131,7 +130,7 @@ function Mainhome () {
     const index = parseInt(e.target.dataset.index)
     setSelectstyle(index)
 
-    const res = await getUnfamous(uid, index)    
+    const res = await getUnfamous(myuid, index)    
     setUnfamouslist(res)
 
     setSelectflag(false)  // 关闭窗口
@@ -174,17 +173,30 @@ function Mainhome () {
                 <div className="video-content-avb">
                   {
                     unfamouslist.map((item, index) =>
-                      <div className={vidselected[index] ? "one-video-nox ovo-active" : "one-video-nox"} key={item.vid}
-                        data-vid={item.vid} data-index={index} onClick={clickthisfamous}>
+                      <div className={vidselected[index] ? "one-video-nox ovo-active" : "one-video-nox"}
+                        key={item.vid}
+                        data-vid={item.vid}
+                        data-index={index}
+                        onClick={clickthisfamous}
+                      >
                         <img src={item.cover} alt="" className="left-cover" />
-                        <div className="right-infos" data-vid={item.vid} data-index={index}>
+                        <div className="right-infos" 
+                          data-vid={item.vid} 
+                          data-index={index}
+                        >
                           <div className="ri-title">{item.title}</div>
-                          <div className="ri-infos" data-vid={item.vid} data-index={index}>
+                          <div className="ri-infos" 
+                            data-vid={item.vid} 
+                            data-index={index}
+                          >
                             <div className="rii-d1">
                               <span className="icon iconfont">&#xe6b8;</span>
                               <span className="ir-text">{item.plays}</span>
                             </div>
-                            <div className="rii-d1" data-vid={item.vid} data-index={index}>
+                            <div className="rii-d1"
+                              data-vid={item.vid}
+                              data-index={index}
+                            >
                             <span className="icon iconfont" style={{fontSize: '16px'}}>&#xe666;</span>
                             <span className="ir-text">{item.danmus}</span>
                             </div>
@@ -209,59 +221,75 @@ function Mainhome () {
             <span className="more-span icon iconfont" onClick={() => setAddvideoflag(true)}>设置 &#xe775;</span>
           }
         </div>
-        <div className="famesworks">
-          {
-            famouslist.map(item =>
-              <div className="onefamouswork">
-                <div className="coveroutbox">
-                  <img src={item.cover}
-                    alt=""
-                    className="workcover"
-                    data-vid={item.vid}
-                    onClick={tovideo} 
-                  />
-                  <div className="time-span">{item.vidlong}</div>
-                </div>
-                <div className="worktitle"
-                  data-vid={item.vid}
-                  onClick={tovideo} 
-                >{item.title}</div>
-                <div className="workinfos">
-                  <div className='onebox'>
-                    <div className='winner'>
-                      <span className="icon iconfont">&#xe6b8;</span>
-                      <span>{item.plays}</span>
+        {
+          famouslist.length > 0 ?
+            <div className="famesworks">
+              {
+                famouslist.map(item =>
+                  <div className="onefamouswork"
+                    key={item.vid}
+                  >
+                    <div className="coveroutbox">
+                      <img src={item.cover}
+                        alt=""
+                        className="workcover"
+                        data-vid={item.vid}
+                        onClick={tovideo} 
+                      />
+                      <div className="time-span">{item.vidlong}</div>
                     </div>
-                    <div className='winner'>
-                      <span className="icon iconfont" style={{fontSize: '15px'}}>&#xe666;</span>
-                      <span>{item.danmus}</span>
+                    <div className="worktitle"
+                      data-vid={item.vid}
+                      onClick={tovideo} 
+                    >{item.title}</div>
+                    <div className="workinfos">
+                      <div className='onebox'>
+                        <div className='winner'>
+                          <span className="icon iconfont">&#xe6b8;</span>
+                          <span>{item.plays}</span>
+                        </div>
+                        <div className='winner'>
+                          <span className="icon iconfont" style={{fontSize: '15px'}}>&#xe666;</span>
+                          <span>{item.danmus}</span>
+                        </div>
+                      </div>
+                      <div className='onebox'>
+                        {
+                          isme &&
+                          <span className='icon iconfont moreicon'>&#xe653;</span>
+                        }
+                      </div>
                     </div>
                   </div>
-                  <div className='onebox'>
-                    <span className='icon iconfont moreicon'>&#xe653;</span>
-                  </div>
+                )
+              }
+              {
+                isme && famouslist.length < 3 &&
+                <div className='addOneFmous' onClick={() => setAddvideoflag(true)}>
+                  <span className='icon iconfont'>&#xe643;</span>
+                  <span className='sptext'>设置置顶视频</span>
                 </div>
-              </div>
-            )
-          }
-          {
-            isme && famouslist.length < 3 &&
-            <div className='addOneFmous' onClick={() => setAddvideoflag(true)}>
-              <span className='icon iconfont'>&#xe643;</span>
-              <span className='sptext'>设置置顶视频</span>
+              }
             </div>
-          }
-        </div>
+            :
+          <div className='nofamous'>
+            没有设置置顶视频
+          </div>
+        }
         <div className="maintitle1">
           <span className='spp1'>TA的视频</span>
-          <Link to={`/${uid}/videos`}>
+          <Link to={`/${hisuid}/videos`}>
             <div className="more-span icon iconfont">更多 &#xe775;</div>
           </Link>
         </div>
-        <div className="hisvideo">
+        {
+          videoList.length > 0 ?
+          <div className="hisvideo">
           {
             videoList.map(item =>
-              <div className="onehisvideo">
+              <div className="onehisvideo"
+                key={item.vid}
+              >
                 <div className="coveroutbox">
                   <img src={item.cover}
                     alt=""
@@ -288,18 +316,23 @@ function Mainhome () {
             )
           }
         </div>
+        :
+        <div className='nofamous'>空间主任还没有投稿过视频~~</div>
+        }
         <div className="maintitle1">
           <span className='spp1'>收藏夹</span>
-          <Link to={`/${uid}/favlist`}>
+          <Link to={`/${hisuid}/favlist`}>
             <div className="more-span icon iconfont">更多 &#xe775;</div>
           </Link>
         </div>
         <div className="sublist">
           {
             homefavlist.map(item =>
-              <div className="one-favlist">
+              <div className="one-favlist"
+                key={item.fid}
+              >
                 <div className="fav-img">
-                  <Link to={`/${uid}/favlist/${item.fid}`}>
+                  <Link to={`/${hisuid}/favlist/${item.fid}`}>
                     <img src={item.cover} alt="" className="this-cover"/>
                   </Link>
                   <div className="imgs-span">{item.nums}</div>
@@ -331,38 +364,47 @@ function Mainhome () {
             <div className="toptitlexa">创作中心</div>
             <div className="bottomcontent">
               <div className="btcond1">
-                <Link to={`/${uid}/platform/upload/video`} target='_blank'>视频投稿</Link>
+                <Link to={`/${hisuid}/platform/upload/video`} target='_blank'>视频投稿</Link>
               </div>
               <div className="midsp"></div>
               <div className="btcond1">
-                <Link to={`/${uid}/platform/upload/video`} target='_blank'>内容管理</Link>
+                <Link to={`/${hisuid}/platform/upload/video`} target='_blank'>内容管理</Link>
               </div>
             </div>
           </div>
         }
         <div className="selfintro">
           <div className="introtitle">公告</div>
-          <div className="myintor"
-            style={{border: ggflag ? '1px solid #00AEEC' : '1px solid #b7babc88',
-                    borderWidth: ggflag ? '1px' : '1px 0 0 0',
-                    borderRadius: ggflag ? '4px' : '0'
-            }}
-            onMouseEnter={() => setGgflag(true)}
-            onMouseLeave={() => setGgflag(false)}
-          >
-            <textarea 
-              className="mytextarea"
-              onFocus={() => setGgflag(true)}
-              onBlur={blurfnc}
-              placeholder={gg.length > 0? gg : (userinfo != null ? userinfo.gonggao : '编辑空间公告')}
-              onChange={(e) => setGg(e.target.value)}
-              value={gg}
-            ></textarea>
-            {
-              ggflag &&
-              <div className="textnum">{gg.length} / 150</div>
-            }
-          </div>
+          {
+            isme ?
+            <div className="myintor"
+              style={{border: ggflag ? '1px solid #00AEEC' : '1px solid #b7babc88',
+                      borderWidth: ggflag ? '1px' : '1px 0 0 0',
+                      borderRadius: ggflag ? '4px' : '0'
+              }}
+              onMouseEnter={() => setGgflag(true)}
+              onMouseLeave={() => setGgflag(false)}
+            >
+              <textarea 
+                className="mytextarea"
+                onFocus={() => setGgflag(true)}
+                onBlur={blurfnc}
+                placeholder={gg.length > 0? gg : (hisinfo != null ? hisinfo.gonggao : '编辑空间公告')}
+                onChange={(e) => setGg(e.target.value)}
+                value={gg}
+              ></textarea>
+              {
+                ggflag &&
+                <div className="textnum">{gg.length} / 150</div>
+              }
+            </div>
+            :
+            <div className="gonggaodivbox">
+              <div className="text-gopngao-span">
+
+              </div>
+            </div>
+          }
         </div>
         <div className="livespace">
           <div className="introtitle">
@@ -395,7 +437,7 @@ function Mainhome () {
             {
               isme &&
               <div className="editorinfs"
-              onClick={() => window.open(`/${uid}/account/home`, '_blank')}>
+              onClick={() => window.open(`/${myuid}/account/home`, '_blank')}>
                 编辑资料
               </div>
             }
@@ -403,11 +445,11 @@ function Mainhome () {
           <div className="btinfosshow">
             <div className='oneinfo'>
               <span>UID</span>
-              <span>{userinfo != null ? userinfo.uid : '-1'}</span>
+              <span>{hisinfo?.uid}</span>
             </div>
             <div className='oneinfo'>
               <span>生日</span>
-              <span>{userinfo != null ? userinfo.birthday : '-1'}</span>
+              <span>{hisinfo?.birthday}</span>
             </div>
           </div>
         </div>

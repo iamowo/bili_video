@@ -2171,6 +2171,19 @@
       }
     }
   }
+  .donate-view {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    .donate-blank {
+      width: 100%;
+      height: 100%;
+      background-color: #00000080;
+    }
+  }
   // 弹幕列表
   .danmulist {
     width: 100%;

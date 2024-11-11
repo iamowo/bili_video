@@ -154,6 +154,39 @@
   }
 }
 
+.loadmore-line {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9499a0;
+  font-size: 13px;
+  div {
+    margin-left: 10px;
+    span {
+      font-size: 18px;
+    }
+    .sp1 {
+      animation: show1 1.5s ease infinite;
+    }
+    .sp2 {
+      animation: show1 1.5s ease 0.4s infinite;
+    }
+    .sp3 {
+      animation: show1 1.5s ease  0.8s infinite;
+    }
+    @keyframes show1 {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  }
+}
+
 .changpart {
   position: absolute;
   width: 40px;
@@ -170,9 +203,16 @@
   background-color: #fff;
   cursor: pointer;
   user-select: none;
-  div {
+  .icon {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
     height: fit-content;
     margin-bottom: 3px;
+    transition: rotate 1s ease;
+  }
+  .iconani {
+    rotate: 180deg;
   }
   &:hover {
     background-color: #E3E5E7;
@@ -181,6 +221,7 @@
 
 .bottompart {
   position: fixed;
+  z-index: 3;
   width: 40px;
   height: fit-content;
   font-size: 14px;
@@ -301,157 +342,6 @@
   background-color: blue;
 }
 
-
-// 视频
-.bannerout {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
-  .bannerinner {
-    width: 100%;
-    height: 450px;
-    position: relative;
-    display: flex;
-    flex-wrap: nowrap;
-    overflow: hidden;
-    border-radius: 6px;
-    .lipart {
-      position: absolute;
-      z-index: 2;
-      height: fit-content;
-      // background-color: red;
-      bottom: 20px;
-      left: 15px;
-      .ul-a {
-        // display: flex;
-        padding: 0;
-        margin: 0;
-        .oneli {
-          width: 8px;
-          height: 8px;
-          margin: 4px;
-          border-radius: 4px;
-          // list-style-type: disc;
-          // font-size: 20px;
-          background-color: rgba(255,255,255,.4);
-          display: inline-block;
-          cursor: pointer;
-          user-select: none;
-          .li-innerbox {
-            width: 100%;
-            height: 100%;
-          }
-        }
-        .li-active {
-          scale: 1.7;
-          background-color: #fff;
-        }
-      }
-    }
-    .onebannerimg {
-      flex-shrink: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .imgpart {
-      width: 100%;
-      height: 80%;
-      background-color: blue;
-      position: relative;
-      z-index: 1;
-      .imgs-out-box {
-        height: 100%;
-        width: fit-content;
-        display: flex;
-        transition: translate 0.5s linear;
-        .thisbannerimg {
-          flex-shrink: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          cursor: pointer;
-        }
-      }
-    }
-    .btinfo {
-      width: 100%;
-      height: 35%;
-      position: absolute;
-      z-index: 2;
-      -webkit-backdrop-filter: blur(3px);
-      backdrop-filter: blur(2px);
-      background: linear-gradient(to top, #111111d8 40%, #aca9a96c 90%, transparent 100%);
-      // -webkit-mask-image: linear-gradient(0, #2f3238 11%, transparent 20%);
-
-      // background-color: pink;
-      bottom: 0;
-      .infosline {
-        position: absolute;
-        bottom: 15px;
-        // top: 65%;
-        // translate: 0 -50%;
-        width: 100%;
-        height: 60px;
-        box-sizing: border-box;
-        padding: 0 15px 0 15px;
-        // background-color: red;
-        display: flex;
-        justify-content: space-between;
-        .lp {
-          .tp {
-            height: 25px;
-            line-height: 25px;
-            font-size: 20px;
-            color: #fff;
-            cursor: pointer;
-          }
-          .bp {
-            height: 20px;
-            color: #fff;
-          }
-        }
-      }
-    }
-    .rp {
-      position: absolute;
-      z-index: 2;
-      bottom: 60px;
-      right: 15px;
-      height: 25px;
-      display: flex;
-      .tol {
-        width: 28px;
-        height: 28px;
-        background-color: #FFFFFF1A;
-        text-align: center;
-        line-height: 28px;
-        border-radius: 6px;
-        margin-right: 10px;
-        color: #Fff;
-        cursor: pointer;
-        user-select: none;
-        &:hover {
-          background-color: #a5a4a4;
-        }
-      }
-      .tor {
-        width: 28px;
-        height: 28px;
-        background-color: #FFFFFF1A;
-        text-align: center;
-        line-height: 28px;
-        border-radius: 6px;
-        color: #Fff;
-        cursor: pointer;
-        user-select: none;
-        &:hover {
-          background-color: #a5a4a4;
-        }
-      }
-    }
-  }
-}
-
 .onevideo {
   width: 100%;
   height: 250px;
@@ -515,21 +405,20 @@
       background-color: #000;
     }
     .load1 {
+      position: absolute;
+      z-index: 2;
+      border-radius: 4px;
       width: 100%;
       height: 100%;
       background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
       background-size: 400% 100%;
       animation: skeleton-loading 1.2s ease-in-out infinite;
     }
-    
-    .load2, 
-    .load3 {
-      margin-top: 5px;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
-      background-size: 400% 100%;
-      animation: skeleton-loading 1.2s ease-in-out infinite;
+    .loaded1 {
+      // 加载完
+      z-index: -1;
+      display: none;
+      animation: none;
     }
     @keyframes skeleton-loading {
       0% {
@@ -544,10 +433,10 @@
       height: 100%;
       border-radius: 8px;
       object-fit: cover;
-      background-color: pink;
       display: block;
       cursor: pointer;
       position: absolute;
+      // display: none;
     }
     .infos {
       position: absolute;
@@ -592,6 +481,40 @@
           color: #fff;
         }
       }
+    }
+  }
+  .load2  {
+    margin-top: 5px;
+    text-indent: -999px;
+    overflow: hidden;
+    width: 100%;
+    height: 17px;
+    border-radius: 4px;
+    background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.2s ease-in-out infinite;
+  }
+  .load22 {
+    margin-top: 3px;
+    width: 80%;
+  }
+  .load3 {
+    text-indent: -999px;
+    overflow: hidden;
+    margin-top: 5px;
+    width: 70%;
+    border-radius: 4px;
+    height: 17px;
+    background: linear-gradient(-45deg, var(--graph_bg_regular) 25%, var(--bg1) 45%, var(--graph_bg_regular) 65%);
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.2s ease-in-out infinite;
+  }
+  @keyframes skeleton-loading {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
     }
   }
   .title {

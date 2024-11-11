@@ -7,11 +7,24 @@ export function getAllVideo() {
   })
 }
 
-// 获取随机推荐
-export function getRandom() {
+// 懒加载获取
+export function getSomeVideos(vids, num) {
   return http({
     method: 'GET',
-    url: '/video/getRandom'
+    url: '/video/getSomeVideos',
+    params: {
+      vids: vids,
+      num: num
+    }
+  })
+}
+
+
+// 获取随机推荐
+export function getRandom(num) {
+  return http({
+    method: 'GET',
+    url: `/video/getRandom/${num}`
   })
 }
 
@@ -174,11 +187,32 @@ export function sendDm(data) {
   })
 }
 
-// kw 结果
+// 关键词搜索结果（标题）
 export function searchKw(kw) {
   return http ({
     method: 'GET',
     url: `/video/searchKw/${kw}`
+  })
+}
+
+// 多关键词搜索视频
+export function searchVideoByMany(sort, maintag, pass) {
+  return http ({
+    method: 'GET',
+    url: '/video/searchVideoByMany',
+    params: {
+      sort: sort,
+      maintag: maintag,
+      pass: pass
+    }
+  })
+}
+
+// 得到全部一级分类
+export function getAllClassify() {
+  return http ({
+    method: 'GET',
+    url: '/video/getAllClassify'
   })
 }
 
@@ -244,5 +278,17 @@ export function getAllMainTag () {
   return http({
     method: 'GET',
     url: '/video/getAllMainTag'
+  })
+}
+
+// 根据关键词搜索某人视频
+export function getVideoByKeyword (uid, keyword) {
+  return http({
+    method: 'GET',
+    url: '/video/getVideoByKeyword',
+    params: {
+      uid: uid,
+      keyword: keyword
+    }
   })
 }

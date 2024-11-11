@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import './sum.scss'
-import { useParams } from 'react-router-dom'
+import { useOutletContext, useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
-import { getUserVideoList, addVideoList, addVideoToList, getUnaddVideo } from '../../../api/videolist'
+import { getUserVideoList, getVideoFormList, addVideoList, addVideoToList, getUnaddVideo } from '../../../api/videolist'
+import { tovideo } from '../../../util/fnc'
+
 function Sum() {
-  const params = useParams()
-  const uid = params.uid
+  const context = useOutletContext(),
+        hisuid = context.hisuid,
+        isme = context.isme
 
   const [addflag, setAddflag] = useState(0) // 1 新建列表  2 .添加视频
 
@@ -19,9 +22,9 @@ function Sum() {
   const [newlistintro, setIntro] = useState()
   useEffect(() => {
     const getData = async () => {
-      const res = await getUserVideoList(uid)
+      const res = await getUserVideoList(hisuid)
       setVlist(res)
-      const res2 = await getUnaddVideo(uid)  // listid = -1 时， 查找全部视频
+      const res2 = await getUnaddVideo(hisuid)  // listid = -1 时， 查找全部视频
       setUnvideos(res2)
       setSelectlist(new Array(res2.length).fill(false))
     }
@@ -43,14 +46,14 @@ function Sum() {
       return
     }
     const data = {
-      uid: uid,
+      uid: hisuid,
       title: newlisttitle,
       intro: newlistintro,
     }
     const res = await addVideoList(data);
     setNlistid(res) // 新listid
     if (res) {
-      const res2 = await getUserVideoList(uid)
+      const res2 = await getUserVideoList(hisuid)
       setVlist(res2)
     }
     setAddflag(2)
@@ -75,12 +78,12 @@ function Sum() {
         vids.push(unvideos[i].vid)
       }
     }
-    const res = await addVideoToList(newlistid, uid, vids)
+    const res = await addVideoToList(newlistid, hisuid, vids)
     if (res) {
-      const res2 = await getUserVideoList(uid)
+      const res2 = await getUserVideoList(hisuid)
       setVlist(res2)
       // 更新列表
-      const res3 = await getUnaddVideo(uid)  // listid = -1 时， 查找全部视频
+      const res3 = await getUnaddVideo(hisuid)  // listid = -1 时， 查找全部视频
       setUnvideos(res3)
       setSelectlist(new Array(res3.length).fill(false))
       tocloseview()
@@ -91,9 +94,16 @@ function Sum() {
     <div className="sum-view">
       <div className="title-sum">
         <div className="top-left-sum">
-        <div className="title-span">我的合集和视频列表</div>
+        <div className="title-span">
           {
-            style === 0 &&
+            isme ?
+            <span>我的合集和视频列表</span>
+            :
+            <span>TA的合集和视频列表</span>
+          }
+        </div>
+          {
+            style === 1 && isme &&
             <div className="add-newlist-btn icon iconfont"  onClick={() => setAddflag(1)}>&#xe643; 新建</div>
           }
         </div>
@@ -105,10 +115,14 @@ function Sum() {
       {
         style === 0 ?
         <div className="sum-content1">
-          <div className="add-newlist-bnt" onClick={() => setAddflag(1)}>
-            <span className='icon iconfont'>&#xe643;</span>
-            <span>添加视频列表</span>
-          </div>
+          {
+            isme &&
+            <div className="add-newlist-bnt"
+              onClick={() => setAddflag(1)}>
+              <span className='icon iconfont'>&#xe643;</span>
+              <span>添加视频列表</span>
+            </div>
+          }
           {
             vlist.map(item=>
               <div className="one-vlist-box" key={item.listid}>
@@ -118,7 +132,7 @@ function Sum() {
                     <span className="sp1-num-vlist">{item.nums}</span>
                     <span className="iconfont icon">&#xe63a;</span>
                   </div>
-                  <Link to={`/${uid}/channel/detail/${item.listid}`}>
+                  <Link to={`/${hisuid}/channel/detail/${item.listid}`}>
                     <div className="rmask-2"></div>
                   </Link>
                 </div>
@@ -131,18 +145,12 @@ function Sum() {
         <div className="sum-content2">
           {
             vlist.map(item=>
-              <div className="contene2-line-box">
-                <div className="title-con2-line">
-                  <div className="tcl-left">
-                    <span className="stcl-sp1">123</span>
-                    <span className="stcl-sp2">1</span>
-                  </div>
-                  <Link to={`/${uid}/channel/detail/${item.id}`}>
-                    <div className="tcl-right">更多</div>
-                  </Link>
-                </div>
-                <div className="videos-con2-line"></div>
-              </div>
+              <Style2 
+                listid={item.listid}
+                item={item}
+                hisuid={hisuid}
+                isme={isme}
+              />
             )
           }
         </div>
@@ -224,3 +232,74 @@ function Sum() {
 }
 
 export default Sum
+
+function Style2(props) {
+  const listid = props.listid,
+        item = props.item,
+        hisuid = props.hisuid,
+        isme = props.isme
+  const [videolist, setVideolist] = useState([])
+  useEffect(() => {
+    const getData = async () => {
+      const res = await getVideoFormList(listid)
+      if (isme) {
+        setVideolist(res.slice(0, 5))        
+      } else {
+        setVideolist(res.slice(0, 6))
+      }
+    }
+    getData()
+  }, [])
+  return (
+    <div className="contene2-line-box">
+      <div className="title-con2-line">
+        <div className="tcl-left">
+          <span className="stcl-sp1">{item.title}</span>
+          <span className="stcl-sp2">{item.nums}</span>
+        </div>
+        <Link to={`/${hisuid}/channel/detail/${item.listid}`}>
+          <div className="tcl-right">更多</div>
+        </Link>
+      </div>
+      <div className="videos-con2-line">
+        {
+          isme &&
+          <div className="add-out-box">
+            <div className="add-newlist-bnt"
+              // onClick={() => setAddflag(1)}
+            >
+              <span className='icon iconfont'>&#xe643;</span>
+              <span>添加视频列表</span>
+            </div>
+          </div>
+        }
+        {
+          videolist.map(item =>
+            <div className="one-list-video">
+              <div className="img-box">
+                <div className="time-box">{item.vidlong}</div>
+                <img src={item.cover} alt="" className="vid-img" 
+                  data-vid={item.vid}
+                  onClick={tovideo}
+                />
+              </div>
+              <div className="olv-title"
+                data-vid={item.vid}
+                onClick={tovideo}
+              >{item.title}</div>
+              <div className="olv-infos">
+                <div className="info-b">
+                  <span className="icon iconfont">&#xe6b8;</span>
+                  <span className='numsp'>{item.plays}</span>
+                </div>
+                <div className="info-b">
+                  <span className='numsp'>{item.time.slice(0, 10)}</span>
+                </div>
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  )
+}

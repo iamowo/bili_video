@@ -15,7 +15,7 @@
   margin-bottom: 20px;
   line-height: 26px;
   span {
-    font-size: 12px;
+    font-size: 18px;
     color: #222;
   }
 }
@@ -35,20 +35,92 @@
       width: 110px;
       height: 140px;
       border-radius: 2px;
+      cursor: pointer;
+      user-select: none;
     }
     .rightinfos {
       margin-left: 10px;
       height: 140px;
       flex: 1;
-      background-color: red;
       .infos-title1 {
         width: 100%;
         height: 24px;
         font-size: 18px;
         color: #222;
+        cursor: pointer;
+        user-select: none;
+        &:hover {
+          color: #32aeec;
+        }
+
+        word-break: break-all;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .intro-line {
+        margin-top: 6px;
+        height: 60px;
+        width: 100%;
+        line-height: 20px;
+        font-size: 12px;
+        color: #9499a0;
+
+        word-break: break-all;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+      }
+      .chapters {
+        height: 20px;
+        width: 100%;
+        line-height: 20px;
+        font-size: 12px;
+        color: #999;
+      }
+      .more-line {
+        margin-top: 5px;
+        width: 100%;
+        height: 25px;
+        line-height: 25px;
+        text-align: end;
+        margin-right: 10px;
+        position: relative;
+        .morespan {
+          font-size: 16px;
+          cursor: pointer;
+          user-select: none;
+          color: #999;
+        }
+        .append-control-btn {
+          position: absolute;
+          z-index: 2;
+          right: 0;
+          width: 116px;
+          height: 45px;
+          border-radius: 4px;
+          background-color: #fff;
+          bottom: 30px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          border: 1px solid #e5e9ef;
+          text-align: center;
+          line-height: 45px;
+          color: #212121;
+          cursor: pointer;
+          user-select: none;
+          &:hover {
+            background-color: #e5e7ef;
+          }
+        }
       }
     }
   }
+  // .noresult-box {
+  //   width: 100%;
+  //   height: 250px;
+  //   text-align: center;
+  // }
 }
 
 .anima-bottom-page {

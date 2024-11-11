@@ -1,10 +1,41 @@
 .topilca-view {
-  width: 100%;
+  width: 100vw;
   height: fit-content;
   background-color: rgba(97, 136, 255, 0);
+  position: relative;
 }
 
+.topical-top-bg {
+  position: absolute;
+  top: 50px;
+  z-index: -1;
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(rgba(97, 136, 255, 0.12), rgba(97, 136, 255, 0));
+}
+
+.gptoptop {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  translate: 500px 0;
+  width: 50px;
+  height: 50px;
+  background-color: #fff;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  .icon {
+    margin: 0;
+  }
+}
 .topical-mid-content {
+  margin: 0 auto;
   width: 700px;
   min-height: 100vh;
   box-sizing: border-box;

@@ -23,7 +23,7 @@ function Dydetail () {
       const res = await getDynamic(did, uid)
       console.log('dynamic:', res);
       setDynamicinfo(res)
-      document.title = res.name + '动态'      
+      document.title = res.name + '动态-pilipili'      
       setImgs(res.imgs)
       console.log(res.imgs);
       setLikes(res.likes)
@@ -102,6 +102,7 @@ function Dydetail () {
                 hisuid={dynamicinfo?.uid}
                 userinfo={userinfo}
                 OutComments={OutComments}
+                commentType = {1}
               />
             </div>
           </div>

@@ -1,15 +1,14 @@
-import { useState } from "react"
 import "./search.scss"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useOutletContext } from "react-router-dom"
 import { baseurl } from "../../../api/index"
+import { HeightLightKw } from "../../../util/fnc"
 
 function SearchVideo() {
-  const params = useParams()
-  const uid = params.uid  
-  const keyword = params.keyword
-  const [videolist, setVideolist] = useState([
-
-  ])
+  const params = useParams(),
+        keyword = params.keyword
+  const context = useOutletContext(),
+        hisuid= context.hisuid,
+        videolist = context.videolist
   return (
     <div>
       <div className="video-right-title-sss">
@@ -26,7 +25,7 @@ function SearchVideo() {
         <div className="search-video-view">
           <div className="search-line-spicale">
             <span className="sls-sp1">共找到关于“ {keyword} ”的</span>
-            <span className="sls-sp2"> {12} </span>
+            <span className="sls-sp2"> {videolist.length} </span>
             <span className="sls-sp1">个视频</span>
           </div>
           <div className="selectline2">
@@ -46,9 +45,13 @@ function SearchVideo() {
           <div className="user-videopart">
             {
               videolist.map(item => 
-                <div className="one-uservideo-video" key={item.uid}>
+                <div className="one-uservideo-video"
+                  key={item.uid}
+                >
                   <img src={item.cover} alt="" className="video-cover" />
-                  <div className="video-title">{item.title}</div>
+                  <div className="video-title">
+                    <span dangerouslySetInnerHTML={{__html: HeightLightKw(item.title, keyword, "span", 0)}}></span>
+                  </div>
                   <div className="vidoe-infos">
                     <div className="vi-btn-info">
                       <span className="icon iconfont" style={{scale: '0.8'}}>&#xe6b8;</span>
@@ -73,7 +76,7 @@ function SearchVideo() {
           </div>
           <div className="ssp2-nores">没有找到“ {keyword} ”的动态哦</div>
           <div className="watch-moreline">
-            <Link to={`/${uid}/videos`}>
+            <Link to={`/${hisuid}/videos`}>
               <div className="look-all-dy">查看全部视频</div>
             </Link>
           </div>

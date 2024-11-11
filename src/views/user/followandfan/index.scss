@@ -2,7 +2,7 @@
   margin-top: 10px;
   width: 100%;
   // height: fit-content;
-  height: 1200px;
+  min-height: 1200px;
   margin-bottom: 40px;
   background-color: #fff;
   border-radius: 2px;
@@ -16,7 +16,6 @@
   width: 210px;
   height: 100%;
   box-sizing: border-box;
-  border-right: 1px solid #eee;
   a {
     text-decoration: none;
     .one-left-contentn {
@@ -42,6 +41,8 @@
 }
 
 .fan-right {
+  box-sizing: border-box;
+  border-left: 1px solid #eee;
   width: 100%;
   height: fit-content;
   flex: 1;
@@ -167,68 +168,7 @@
     }
   }
   .bottom-page-con {
-    width: 100%;
-    height: 35px;
-    margin: 50px 0 20px 0;
-    display: flex;
-    justify-content: center;
-    .bpl-lastpage {
-      width: 74px;
-      height: 34px;
-      font-size: 14px;
-      cursor: pointer;
-      user-select: none;
-      border-radius: 5px;
-      text-align: center;
-      line-height: 34px;
-      box-sizing: border-box;
-      border: 1px solid #e3e5e7;
-      margin-right: 8px;
-      color: #18191c;
-      &:hover {
-        background-color: #e3e5e7;
-      }
-      // color: #9499A0; 禁用时
-    }
-    .page-allcontent {
-      display: flex;
-      .onepage-se {
-        margin-right: 8px;
-        border-radius: 6px;
-        width: 34px;
-        height: 34px;
-        box-sizing: border-box;
-        border: 1px solid #e3e5e7;
-        font-size: 14px;
-        color: #18191C;
-        text-align: center;
-        line-height: 34px;
-        cursor: pointer;
-        user-select: none;
-        &:hover {
-          background-color: #e3e5e7;
-        }
-      }
-      .opepage-active {
-        background-color: #32AEEC;
-        border-color: #32AEEC;
-        color: #fff;
-      }
-    }
-    .bpl-nextpage {
-      width: 74px;
-      height: 34px;
-      font-size: 14px;
-      cursor: pointer;
-      user-select: none;
-      border-radius: 5px;
-      text-align: center;
-      line-height: 34px;
-      box-sizing: border-box;
-      border: 1px solid #e3e5e7;
-      &:hover {
-        background-color: #e3e5e7;
-      }
-    }
+    margin: 40px 0 30px;
+    width: 100%;    
   }
 }

@@ -12,9 +12,9 @@ import { tovideo, touserspace } from '../../util/fnc'
 import { baseurl, baseurl2 } from '../../api'
 import { getVideoFormList, getUserListOne } from '../../api/videolist'
 import message from '../../components/notice/notice'
-import { getSeasons, getAnimationByVid } from '../../api/animation'
+import { getSeasons, getAnimationByVid, subthisAnimation, cnacleAnimation } from '../../api/animation'
 import Comments from '../../components/comments/comments'
-
+import Donate from '../../components/Donate/donate'
 
 function VideoPart (props) {
   const vid = +props.vid
@@ -71,6 +71,12 @@ function VideoPart (props) {
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
         [vlistindex, setVlistindex] = useState(0)                  // 列表篇中当前播放的视频的index
 
+  const [seasonlist, setSeasonlist] = useState([]),
+        [seasonindex, setSeasonindex] = useState(0),
+        [chapterlist, setChapterlist] = useState([]),
+        [chapterindex, setChapterindex] = useState(0)
+
+
   const [taglist, settaglist] = useState([])
   const [littlewindow, setLittlewindow] = useState(false)
 
@@ -81,6 +87,8 @@ function VideoPart (props) {
   useEffect(() => {
     const getData = async () => {
       const res = (await getByVid(vid, uid))
+      console.log('res is:', res);
+      
       // 刚开始数据还没加载出来， 无法使用slice
       res.time = (res.time).slice(0, 10) + ' ' + (res.time).slice(11, 16) // 在{ } 中修改会报错
       // setThisvid(res)
@@ -97,6 +105,9 @@ function VideoPart (props) {
           setVlistindex(i + 1)
         }
       }
+      console.log('lid:', res.listid);
+      console.log('视频集合:', res3);
+      
       setVlist(res3)
 
       const text = res.title      
@@ -113,8 +124,26 @@ function VideoPart (props) {
         setTitleflag(false)
       }
 
-      const res4 = await getAnimationByVid(vid)
-      setAnimationinfo(res4)
+      const res4 = await getAnimationByVid(vid, uid)
+      setAnimationinfo(res4)      
+
+      // animation list 信息
+      if (res.aid !== -1 && res.aid != null) {
+        console.log('=====================');
+        const res5 = await getSeasons(res.aid)
+        setSeasonlist(res5)
+        console.log('======================res4: ', res5);
+        
+        for (let i = 0; i < res5.length; i++) {
+          for (let j = 0; j < res5[i].length; j++) {
+            if (res5[i][j].vid === vid) {
+              setSeasonindex(i)
+              setChapterindex(j)
+              setChapterlist(res5[i])
+            }
+          }
+        }
+      }
     }
     getData()
     const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
@@ -540,6 +569,14 @@ function VideoPart (props) {
     }, 2000)
   }
 
+  // mover2
+  const mover2 = (e) => {
+    e.stopPropagation()
+    if (!vidoopationflag) {
+      setVidoopationflag(true)
+    }
+  }
+
   // 进入底部操作框
   const entervop = () => {
     setVidoopationflag(true)
@@ -588,10 +625,12 @@ function VideoPart (props) {
       message.open({ type: 'error', content: '请先登录'})
       return;
     }
-    if (e.target.className === 'onepart' || e.target.parentNode.className === 'onepart'
+    console.log(e.target.className, e.target.parentNode.className);
+    
+    if (e.target.className.includes('onepart') || e.target.parentNode.className.includes('onepart')
         || e.target.className === 'iconbox-a' || e.target.parentNode.className === 'iconbox-a'
     ) {
-      const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)
+      const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)      
       if (type === 3) {   // 收藏
         // 获得收藏列表
         const res = await getFavlist(userinfo.uid, vid)
@@ -924,6 +963,18 @@ function VideoPart (props) {
     document.location.reload()
   }
 
+  const prvanima = () => {
+    let prvtVid = chapterlist[chapterindex - 1].vid
+    navigate(`/video/${prvtVid}`)
+    document.location.reload()
+  }
+
+  const nextanima = () => {
+    let nextVid = chapterlist[chapterindex + 1].vid
+    navigate(`/video/${nextVid}`)
+    document.location.reload()
+  }
+
   // 重播
   const replayvideo = (e) => {
     e.stopPropagation()
@@ -982,6 +1033,28 @@ function VideoPart (props) {
     props.userinfo.follows = props.userinfo.follows - 1
     localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
     message.open({type: 'info', content: '取消关注', flag: true})
+  }
+
+  const tosunanima = async (aid) => {
+    const res = await subthisAnimation(uid, aid)
+    if (res) {
+      setAnimationinfo({
+        ...animationinfo,
+        liked: true
+      })
+      message.open({type: 'info', content: '已追番', flag: true})
+    }
+  }
+
+  const tounsubanima = async (aid) => {
+    const res = await cnacleAnimation(uid, aid)
+    if (res) {
+      setAnimationinfo({
+        ...animationinfo,
+        liked: false
+      })
+      message.open({type: 'info', content: '取消追番', flag: true})
+    }
   }
   return (
     <>
@@ -1205,8 +1278,10 @@ function VideoPart (props) {
               style={{opacity: vidoopationflag ? '1' : '0'}}
             ></div>
           }
-          <div className={fullfalg ? "videobottomcof videobottomcof-active" : "videobottomcof"}
+          <div
+            className={fullfalg ? "videobottomcof videobottomcof-active" : "videobottomcof"}
             style={{opacity: vidoopationflag ? '1' : '0'}}
+            onMouseMove={mover2}
             onMouseEnter={entervop}
             onMouseLeave={leaveop}
             >
@@ -1235,6 +1310,15 @@ function VideoPart (props) {
                   </div>
                 }
                 {
+                  chapterlist.length > 0 && chapterindex  > 0 &&
+                  <div className="out111">
+                    <div className="leftinnerspan icon iconfont"
+                      style={{rotate: '-180deg'}}
+                      onClick={prvanima}
+                    >&#xe609;</div>
+                  </div>
+                }
+                {
                   playflag ?
                   <span className="icon iconfont"
                     onClick={clickvideo}
@@ -1248,6 +1332,12 @@ function VideoPart (props) {
                   vlist.length > 0 && vlistindex < vlist.length &&
                     <div className="nextvideo icon iconfont"
                       onClick={nextvideo}
+                    >&#xe609;</div>
+                }
+                {
+                  chapterlist.length > 0 && chapterindex < chapterlist.length - 1 &&
+                    <div className="nextvideo icon iconfont"
+                      onClick={nextanima}
                     >&#xe609;</div>
                 }
                 <span className="timerspan">
@@ -1696,20 +1786,24 @@ function VideoPart (props) {
             <div className="ani-title">
               <span className="ani-title-span">{animationinfo?.title}</span>
               {
-                false ?
+                animationinfo.liked ?
                 <div className="follow-ani-box">
-                  <span className="icon iconfont">&#xe644; 已追番</span>
+                  <span className="icon iconfont"
+                    onClick={() => tounsubanima(animationinfo.aid)}
+                  >&#xe644; 已追番</span>
                 </div>
                 :
                 <div className="follow-ani-box follow-tofollow">
-                  <span className='icon iconfont'>&#xe630; 追番</span>
+                  <span className='icon iconfont'
+                    onClick={() => tosunanima(animationinfo.aid)}
+                  >&#xe630; 追番</span>
                 </div>
               }
             </div>
             <div className="ani-info">
-              <div className="one-info">12播放</div>
-              <div className="one-info">12弹幕</div>
-              <div className="one-info">12追番</div>
+              <div className="one-info">{animationinfo?.plays}播放</div>
+              <div className="one-info">{animationinfo?.dms}弹幕</div>
+              <div className="one-info">{animationinfo?.subs}追番</div>
             </div>
             <div className="ani-taginfo">一共{animationinfo?.chapters}集</div>
             <div className="ani-intro">简介:{animationinfo?.intro}</div>
@@ -1776,6 +1870,8 @@ function VideoPart (props) {
 }
 
 function RightPart (props) {
+  console.log('right part...');
+  
   const vid = +props.vid
   const userinfo = props.userinfo  // 我的个人信息
   const uid = props.uid            // myuid
@@ -1796,6 +1892,8 @@ function RightPart (props) {
         [seasonindex, setSeasonindex] = useState(0),
         [chapterlist, setChapterlist] = useState([]),
         [chapterindex, setChapterindex] = useState(0)
+
+  const [donateflag, setDonateflag] = useState(false)
 
   const rigtbox = useRef()
   const recommendref = useRef()
@@ -1962,25 +2060,27 @@ function RightPart (props) {
     <>
     <div className="upinfosbox">
       <div className="leftuserinfoavatar">
-        <img src={upinfo != null ? upinfo.avatar : null} alt="" className="upsavatar" 
-          data-uid={upinfo != null ? upinfo.uid : -1}
+        <img src={upinfo?.avatar} alt="" className="upsavatar" 
+          data-uid={upinfo?.uid}
           onClick={touserspace}
         />
       </div>
       <div className="irghtupinfos">
         <div className="upname">
           <span className="namespan"
-            data-uid={upinfo != null ? upinfo.uid : -1}
+            data-uid={upinfo?.uid}
             onClick={touserspace}
           >{upinfo != null ? upinfo.name : null}</span>
           <span className="messafespan icon iconfont"
-            data-uid={upinfo != null ? upinfo.uid : null}
+            data-uid={upinfo?.uid}
             onClick={towhisper}
           >&#xe6b9; 发消息</span>
         </div>
-        <div className="upintro">{upinfo != null ? upinfo.userintro : null}</div>
+        <div className="upintro">{upinfo?.intro}</div>
         <div className="uprotate">
-          <div className="donate">充电</div>
+          <div className="donate icon iconfont"
+            onClick={() => setDonateflag(true)}
+          >&#xe69c; 充电</div>
           { 
             (upinfo != null ? upinfo.followed : false) ?
             <div className="hadsuni iconfont icon"
@@ -1994,6 +2094,18 @@ function RightPart (props) {
         </div>
       </div>
     </div>
+    {
+      donateflag &&
+      <div className="donate-view">
+        <div className="donate-blank"
+          onClick={() => setDonateflag(false)}
+        ></div>
+        <Donate 
+          setDonateflag={setDonateflag}
+          upinfo={upinfo}
+        />
+      </div>
+    }
     <div className="danmulist"
       style={{height: danmulistflag ? '44px' : '656px', marginTop: props.widthscreen ? '855px' : '0'}}>
       <div className="danmulisttop"  onClick={handleList}>
@@ -2087,6 +2199,10 @@ function RightPart (props) {
             chapterlist.map((item, index) =>
                 <div className={chapterindex === index ? "one-div-chapter chapter-active" : "one-div-chapter"}
                   key={item.id}
+                  onClick={() => {
+                    navigate(`/video/${item.vid}`)
+                    document.location.reload()
+                  }}
                 >{index + 1}</div>
             )
           }
@@ -2144,6 +2260,8 @@ function RightPart (props) {
 }
 
 function Video () {
+  console.log('top father...');
+  
   const params = useParams()
   const vid = params.vid
   const userinfos = JSON.parse(localStorage.getItem('userinfo'))
@@ -2204,6 +2322,7 @@ function Video () {
             uid={uid}
             hisuid={thisvid != null ? thisvid.uid : null}
             userinfo={userinfo}
+            commentType = {0}
           />
         </div>
         <div className="vid-rightpp">

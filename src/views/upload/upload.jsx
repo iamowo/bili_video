@@ -16,9 +16,11 @@ function Upload () {
     <div className="upload-allpage">
       <div className="ap-top-nav">
         <div className="contnetnboxtop">
-          <span className="up-icon" style={{marginRight: '20px'}}>创作中心</span>
+          <div className="up-icon">创作中心</div>
           <Link to="/">
-            <span className="icon iconfont">&#xe62f; 首页</span>
+            <span className="icon iconfont">
+              <span style={{color: "#00aeec", marginRight: '5px'}}>&#xe62f;</span>
+              首页</span>
           </Link>
         </div>
         <div className="contnetnboxtop">

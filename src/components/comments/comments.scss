@@ -2,6 +2,7 @@
   margin-top: 24px;
   width: 100%;
   height: fit-content;
+  font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif !important;
   .commenttitle {
     width: 100%;
     height: 28px;
@@ -415,11 +416,22 @@
                 position: relative;
               }
               .secondcontent {
-                margin-left: 15px;
+                margin-left: 10px;
                 line-height: 30px;
                 height: 30px;
                 font-size: 15px;
                 color: #18191C;
+                .text11 {
+                  margin-right: 5px;
+                  .replayname {
+                    position: relative;
+                    .spcliname {
+                      cursor: pointer;
+                      user-select: none;
+                      color: #32aeec;
+                    }
+                  }
+                }
               }
             }
             .secondcommentinfos {

@@ -49,12 +49,13 @@ function Comments(props) {
         [atfalg2, setAtflag2] = useState(false),
         [atuser2, setAtuser2] = useState()
 
-  const [userinfoflag, setUserinfoflag] = useState({f1: -1, f2: -1})
+  // f1: 一级的index  f2:二级的index  f3: 0 头像  1 名字  2 回复人的名字
+  const [userinfoflag, setUserinfoflag] = useState({f1: -1, f2: -1, f3: -1})
   useEffect(() => {
     const getData = async () => {   
       const res = await getAllComment(id, uid, 0, commentType)
       setCommentlist(res)      
-      console.log('all comment is:', res);
+      // console.log('all comment is:', res);
       let tempsum = 0;
       for (let i = 0; i < res.length; i++) {        
         tempsum += (1 + res[i].lists.length)
@@ -75,26 +76,6 @@ function Comments(props) {
       }
       setThisinfo(res2)
     }
-
-    // const getData2 = async () => {      
-    //   const res = await getAllComment(did, uid, 0, commentType)
-    //   setCommentlist(res)      
-    //   // console.log('all comment is:', res);
-    //   let tempsum = 0;
-    //   for (let i = 0; i < res.length; i++) {        
-    //     tempsum += (1 + res[i].lists.length)
-    //   }
-    //   setCommentnums(tempsum)
-    //   if (props.OutComments !== null && props.OutComments !== undefined) {
-    //     props.OutComments(tempsum)   // 外层评论数量
-    //   }
-    //   setCommentarray(new Array(res.length).fill(false))
-    //   setSecondsnums(new Array(res.length).fill(3))
-    //   const res2 = await getDynamic(did, uid)
-    //   setThisinfo(res2)
-    // }
-    // if (vid !== undefined) getData1()
-    // else if (did != undefined) getData2()
       
     getData()
     window.addEventListener('scroll', scrollfnc)
@@ -444,17 +425,17 @@ function Comments(props) {
   
   const time_userinfo = useRef(null)
   // 展示用户详情(可以加关注， 发私信)
-  const enterUserinfo = (index, num) => {    
+  const enterUserinfo = (index, index2, num) => {    
     if (time_userinfo.current != null) {
       clearTimeout(time_userinfo.current)
     }
-    setUserinfoflag({f1: index, f2: num})
+    setUserinfoflag({f1: index, f2: index2, f3: num})
   }
 
   // 离开用户详情(0.8s之后关闭)
   const leaveUserinfo = () => {
     time_userinfo.current = setTimeout(() => {
-      setUserinfoflag({f1: -1, f2: -1})
+      setUserinfoflag({f1: -1, f2: -1, f3: -1})
       time_userinfo.current = null
     }, 800)
   }
@@ -584,14 +565,14 @@ function Comments(props) {
                   style={{cursor: 'pointer', userSelect: 'none'}}
                   data-uid={item.uid}
                   onClick={touserspace}
-                  onMouseEnter={() => enterUserinfo(index, 0)}
+                  onMouseEnter={() => enterUserinfo(index, -1, 0)}
                   onMouseLeave={leaveUserinfo}
                 />
                 {
-                  userinfoflag.f1 === index && userinfoflag.f2 === 0 &&
+                  userinfoflag.f1 === index && userinfoflag.f2 === -1 && userinfoflag.f3 === 0 &&
                   <div className="ui-append"
                     style={{position: "absolute", left: "50px", bottom: '50px'}}
-                    onMouseEnter={() => enterUserinfo(index, 0)}
+                    onMouseEnter={() => enterUserinfo(index, -1, 0)}
                     onMouseLeave={leaveUserinfo}
                   >
                     <Userinfo
@@ -607,17 +588,18 @@ function Comments(props) {
                 <div className="onerpart">
                   <span className="cmname"
                     style={{cursor: 'pointer', userSelect: 'none'}}
-                    data-uid={item.uid}
-                    onClick={touserspace}
-                    onMouseEnter={() => enterUserinfo(index, 1)}
+                    onMouseEnter={() => enterUserinfo(index, -1, 1)}
                     onMouseLeave={leaveUserinfo}
                   >
-                    <span>{item.name}</span>
+                    <span
+                      data-uid={item.uid}
+                      onClick={touserspace}
+                    >{item.name}</span>
                     {
-                      userinfoflag.f1 === index && userinfoflag.f2 === 1 &&
+                      userinfoflag.f1 === index && userinfoflag.f2 === -1 && userinfoflag.f3 === 1 &&
                       <div className="ui-append"
                         style={{position: "absolute", left: "0px", bottom: '25px'}}
-                        onMouseEnter={() => enterUserinfo(index, 1)}
+                        onMouseEnter={() => enterUserinfo(index, -1, 1)}
                         onMouseLeave={leaveUserinfo}
                       >
                         <Userinfo
@@ -685,14 +667,14 @@ function Comments(props) {
                             style={{cursor: 'pointer', userSelect: 'none'}}
                             data-uid={item2.uid}
                             onClick={touserspace}
-                            onMouseEnter={() => enterUserinfo(index2, 2)}
+                            onMouseEnter={() => enterUserinfo(-1, index2, 0)}
                             onMouseLeave={leaveUserinfo}
                           />
                           {
-                            userinfoflag.f1 === index && userinfoflag.f2 === 2 &&
+                            userinfoflag.f1 === -1 && userinfoflag.f2 === index2 && userinfoflag.f3 === 0 &&
                             <div className="ui-append"
                               style={{position: "absolute", left: "0px", bottom: '35px'}}
-                              onMouseEnter={() => enterUserinfo(index, 2)}
+                              onMouseEnter={() => enterUserinfo(-1, index2, 0)}
                               onMouseLeave={leaveUserinfo}
                             >
                               <Userinfo
@@ -707,17 +689,18 @@ function Comments(props) {
                           <div className="rightcommentscrond">
                             <span className="secondname"
                               style={{cursor: 'pointer', userSelect: 'none'}}
-                              data-uid={item2.uid}
-                              onClick={touserspace}
-                              onMouseEnter={() => enterUserinfo(index2, 3)}
+                              onMouseEnter={() => enterUserinfo(-1, index2, 1)}
                               onMouseLeave={leaveUserinfo}
                             >
-                              <span>{item2.name}</span>
+                              <span
+                                data-uid={item2.uid}
+                                onClick={touserspace}
+                              >{item2.name}</span>
                               {
-                                userinfoflag.f1 === index && userinfoflag.f2 === 3 &&
+                                userinfoflag.f1 === -1 && userinfoflag.f2 === index2 && userinfoflag.f3 === 1 &&
                                 <div className="ui-append"
                                   style={{position: "absolute", left: "0px", bottom: '25px'}}
-                                  onMouseEnter={() => enterUserinfo(index, 2)}
+                                  onMouseEnter={() => enterUserinfo(-1, index2, 1)}
                                   onMouseLeave={leaveUserinfo}
                                 >
                                   <Userinfo
@@ -729,16 +712,38 @@ function Comments(props) {
                               }
                             </span>
                             <span className="secondcontent">
-                              <span className="text11"
-                                style={{color: '#222', marginRight: '5px'}}>
-                                回复
-                                <span style={{color: '#32aeec', cursor: 'pointer', userSelect: 'none'}}>{item2.fname}:</span>
+                              <span className="text11">
+                                <span
+                                  style={{color: '#222', margin: '0 5px'}}
+                                >回复</span>
+                                <span className='replayname'>
+                                  <span className='spcliname'
+                                    data-uid={item2.fid}
+                                    onClick={touserspace}
+                                    onMouseEnter={() => enterUserinfo(-1, index2, 2)}
+                                    onMouseLeave={leaveUserinfo}
+                                  >{item2.fname}</span>
+                                  {
+                                    userinfoflag.f1 === -1 && userinfoflag.f2 === index2 && userinfoflag.f3 === 2 &&
+                                    <div className="ui-append"
+                                      style={{position: "absolute", left: "0px", bottom: '25px'}}
+                                      onMouseEnter={() => enterUserinfo(-1, index2, 2)}
+                                      onMouseLeave={leaveUserinfo}
+                                    >
+                                      <Userinfo
+                                        hisuid={item2.fid}
+                                        myuid={uid}
+                                        setClose={setUserinfoflag}
+                                      />
+                                    </div>
+                                  }
+                                </span>
                               </span>
                               {/* {item2.content} */}
                               {
                                 item2.atid === -1 ?
                                 <span className="firstcon">
-                                  {item2.content}
+                                  :{item2.content}
                                 </span>
                                 :
                                 <span 

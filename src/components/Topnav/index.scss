@@ -109,9 +109,79 @@
     font-size: 14px;
     color: #18191C;
     .oneitem {
+      height: 64px;
       display: flex;
       align-items: center;
       margin-right: 20px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      .home-append {
+        font-size: 14px;
+        box-sizing: border-box;
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        width: 608px;
+        height: 412px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, .1);
+        border: 1px solid #E3E5E7;
+        padding: 16px;
+        .item-box {
+          width: 100%;
+          height: 100%;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          grid-template-rows: repeat(10, 1fr);
+          .oneitem-classify {
+            width: 120px;
+            height: 32px;
+            border-radius: 4px;
+            background-color: rgb(255, 255, 255);
+            line-height: 32px;
+            text-align: center;
+            &:hover {
+              transition: background-color 0.4s ease;
+              background-color: #e3e5e7;
+            }
+          }
+        }
+      }
+      &:hover {
+      .moveanimation {
+        animation: moverain 0.2s ease;
+        cursor: pointer;
+        user-select: none;
+      }
+        @keyframes moverain {
+          0% {
+            translate: 0 0px;
+          }
+          50% {
+            translate: 0 -5px;
+          }
+          100% {
+            translate: 0 0px;
+          }
+        }
+      }
+      .moreic {
+        margin-left: 5px;
+        .iconfont {
+          width: 14px;
+          height: 20px;
+          font-size: 12px;
+          text-align: center;
+          line-height: 22px;
+          transition: rotate 0.4s ease;
+        }
+        .rotate1 {
+          transition: rotate 0.4s ease;
+          rotate: 180deg;
+        }
+      }
       img {
         width: 56px;
         height: 30px;
@@ -127,8 +197,13 @@
           color: #32AEEC;
         }
         .icon2 {
-          margin-right: 5px;
-          font-size: 15px;
+          margin-right: 8px;
+          font-size: 17px;
+        }
+        .logo-img {
+          width: 60px;
+          height: 34px;
+          margin-right: 25px;
         }
       }
     }
@@ -1072,7 +1147,8 @@
         user-select: none;
         text-align: center;
         line-height: 56px;
-        font-family: 'Micosoft';
+        font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif !important;
+        font-weight: 400;
         .vipb1 {
           width: 100%;
           height: 100%;
@@ -1209,24 +1285,5 @@
         color: #fff;
       }
     }
-  }
-}
-
-.moveanimation {
-  &:hover {
-    animation: moverain 0.2s ease;
-    cursor: pointer;
-    user-select: none;
-  }
-}
-@keyframes moverain {
-  0% {
-    translate: 0 0px;
-  }
-  50% {
-    translate: 0 -5px;
-  }
-  100% {
-    translate: 0 0px;
   }
 }

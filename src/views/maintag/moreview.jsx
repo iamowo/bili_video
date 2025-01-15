@@ -13,6 +13,7 @@ function AllMaintag() {
       setTgs(res)
     }
     getData()
+    document.title = '全部标签'
   },[])
 
   const tothistag = (e) => {

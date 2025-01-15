@@ -142,11 +142,19 @@ const DynamicCom = memo((props) => {
   return (
     <div key={item.id} className="one-dynamic-box">
       <div className="TTP">
-        <img src={item.avatar} alt="" className="left-user-avatar" />
+        <img src={item.avatar} alt="" className="left-user-avatar"
+          data-uid={item.uid}
+          onClick={touserspace}
+        />
         <div className="right-user-conetnt">
           <div className="right-infod1">
             <div className="boxinfo1">
-              <div className="dy-ibe-name-line">{item.name}</div>
+              <div className="dy-ibe-name-line">
+                <span
+                  data-uid={item.uid}
+                  onClick={touserspace}
+                >{item.name}</span>
+              </div>
               <div className="data-infos">
                 <span className="time-span">{item.time.slice(0, 10)}</span>
                 {item.type === 3 && (

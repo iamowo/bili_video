@@ -54,6 +54,11 @@ function Upload () {
               <span className="icon iconfont">漫画</span>
             </div>
           </Link>
+          <Link to={`/${uid}/platform/upimg`}  onClick={() => setLeftindex(0)}>
+            <div className="upload-btn">
+              <span className="icon iconfont">图片</span>
+            </div>
+          </Link>
           <Link to={`/${uid}/platform/home`} onClick={() => setLeftindex(1)}>
             <div className="one-opation-u">
               <div className="ll-a">

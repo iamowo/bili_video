@@ -99,9 +99,10 @@ export function HeightLightKw (content, keyword, tagName, type, uid) {
   if (content === "") {
     return content
   }
+  // 转为小写
   const a = content.toLowerCase()
   const b = keyword.toLowerCase()
-
+  // 找到匹配项
   const indexof = a.indexOf(b)
   const c = indexof > -1 ? content.substr(indexof, keyword.length) : ''
   let val = `<${tagName} style="color:${color};">${c}</${tagName}>`
@@ -122,4 +123,28 @@ export function tothismg (mid) {
 
 export function tothiskeyword (keyword) {
   window.open(`${baseurl2}/searchmg/${keyword}`, '_blank')
+}
+
+// file to base64
+export function fileToBase64 (f) {
+  return new Promise((resolve, reject) => {
+    // 创建一个新的 FileReader 对象
+    const reader = new FileReader();
+    // 读取 File 对象
+    reader.readAsDataURL(f);
+    // 加载完成后
+    reader.onload = function () {
+      // 将读取的数据转换为 base64 编码的字符串
+      // 去掉前面的信息，否则后端会报错
+      const base64String = reader.result.split(",")[1]
+      // const base64String = reader.result
+      // 解析为 Promise 对象，并返回 base64 编码的字符串
+      resolve(base64String);
+    };
+ 
+    // 加载失败时
+    reader.onerror = function () {
+      reject(new Error("Failed to load file"));
+    };
+  });
 }

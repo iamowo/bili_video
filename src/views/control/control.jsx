@@ -24,20 +24,6 @@ function Control () {
         </div>
         <div className="con-rightcont">
           <Outlet />
-          {/* <div className="filter-box">
-            <Search
-              placeholder="input search text"
-              allowClear
-              enterButton="Search"
-              onChange={(e) => setKeyword(e.target.value)}
-              value={keyword}
-              size="large"
-              onSearch={searchFnc}
-            />
-          </div>
-          <div className="con-box">
-            <Outlet />
-          </div> */}
         </div>
       </div>
     </div>
@@ -50,7 +36,6 @@ export default Control
 const Lmenu = () => {
   const menuitems = [
     {
-      key: 'grp',
       type: 'group',
       children: [
         {
@@ -61,12 +46,10 @@ const Lmenu = () => {
       ],
     },
     {
-      key: 'sub1',
       label: '内容管理',
       icon: <ProductFilled />,
       children: [
         {
-          key: 'g1',
           type: 'group',
           children: [
             {
@@ -108,20 +91,19 @@ const Lmenu = () => {
       ],
     },
     {
-      key: 'sub2',
       label: '用户管理',
       icon: <UserOutlined />,
       children: [
         {
-          key: '5',
+          key: '7',
           label: '全部用户',
         },
         {
-          key: '6',
-          label: '权限设置',
+          key: '8',
+          label: '用户行为统计',
         },
         {
-          key: '7',
+          key: '9',
           label: '黑名单',
         },
       ],
@@ -130,20 +112,19 @@ const Lmenu = () => {
       type: 'divider',
     },
     {
-      key: 'sub4',
       label: '系统管理',
       icon: <SettingFilled />,
       children: [
         {
-          key: '8',
+          key: '10',
           label: 'banner',
         },
         {
-          key: '9',
+          key: '11',
           label: '活动',
         },
         {
-          key: '10',
+          key: '12',
           label: '系统通知',
         },
       ],
@@ -164,14 +145,18 @@ const Lmenu = () => {
     } else if (e.key === '5') {
       navigate("/control/dynamics")
     } else if (e.key === '6') {
-      navigate("/control/videos")
+      navigate("/control/users")
     } else if (e.key === '7') {
-      navigate("/control/videos")
+      navigate("/control/users")
     } else if (e.key === '8') {
       navigate("/control/banners")
     } else if (e.key === '9') {
       navigate("/control/videos")
     } else if (e.key === '10') {
+      navigate("/control/banners")
+    } else if (e.key === '11') {
+      navigate("/control/videos")
+    } else if (e.key === '12') {
       navigate("/control/videos")
     }
   }
@@ -181,7 +166,7 @@ const Lmenu = () => {
         onClick={clickbtn}
         style={{width: '226px', borderRadius: '6px'}}
         defaultSelectedKeys={['1']}
-        defaultOpenKeys={['sub1']}
+        defaultOpenKeys={['1']}
         mode="inline"
         items={menuitems}
       />

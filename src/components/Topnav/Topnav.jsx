@@ -8,13 +8,14 @@ import { useSelector, useDispatch } from 'react-redux'   // 使用redux
 import { setuserinfo } from '../../store/modules/userStore'  // redux方法
 import Login from '../Login/login'
 import { getByUid, login } from '../../api/user'
-import { getHistory, getHomeHistory, searchKw, getHomeDynamic } from '../../api/video'
+import { getHistory, getHomeHistory, searchKw, getHomeDynamic, getAllClassify } from '../../api/video'
 import { tovideo } from '../../util/fnc'
 import { getFavlist, getOneList } from '../../api/favlist'
 import { baseurl, baseurl2 } from '../../api'
 import message from '../notice/notice'
 import { getAllKeyword, addKeyword, deleteKeyword, deleteAllKeyword, getHotRanking } from '../../api/search'
 import VIP from '../vip/VIP'
+import { hover } from '@testing-library/user-event/dist/hover'
 
 // 类形式的组件
 // class Topnav extends Component {
@@ -63,29 +64,31 @@ const Topnav = memo((props) => {
   const [active, setActive] = useState(() => 
     location.pathname === '/' ||  location.pathname.includes('/rank/') || location.pathname.includes('/channels/')
     ? false : true)
-  const [bgflag, setBgflag] = useState(active)   // 是否显示顶部背景图
-  const [appendflag, setAppendflag] = useState(false)  // 用户信息append
+  const [bgflag, setBgflag] = useState(false)            // 是否显示顶部背景图
+  const [classifys, setClassifys] = useState([]),
+        [showflag, setShowflag] = useState(false)         // 顶部‘首页’hover详情
+  const [appendflag, setAppendflag] = useState(false)     // 用户信息append
 
-  const [messageflag, setMfalg] = useState(false)
-  const [dynamicflag, setDyflag] = useState(false)
-  const [historyflag, setHisflag] = useState(false)
-  const [favlistflag, setFavlistflag] = useState(false)
+  const [messageflag, setMfalg] = useState(false) 
+  const [dynamicflag, setDyflag] = useState(false)  
+  const [historyflag, setHisflag] = useState(false) 
+  const [favlistflag, setFavlistflag] = useState(false) 
 
-  const [focusflag, setFocusflag] = useState(false),    // 搜索框append
-        [hoslist, setHotlist] = useState(),              // 热搜 10条
-        [keywordresult, setKyresult] = useState([]),    // kw的搜索结果
-        [oldkeywords, setOldkeywords] = useState([])    // 本地存储关键词
+  const [focusflag, setFocusflag] = useState(false),      // 搜索框append
+        [hoslist, setHotlist] = useState(),               // 热搜 10条
+        [keywordresult, setKyresult] = useState([]),      // kw的搜索结果
+        [oldkeywords, setOldkeywords] = useState([])      // 本地存储关键词
 
-  const searchboxref = useRef()
+  const searchboxref = useRef() 
 
-  const [dyanmiclist, setDynamicList] = useState([])   // 动态
+  const [dyanmiclist, setDynamicList] = useState([])      // 动态
 
-  const [favlist, setFavlist] = useState([])           // 收藏夹
-  const [favindex, setFavindex] = useState(0)         
-  const [favonesum, setFavonesum] = useState([])       // 数量
+  const [favlist, setFavlist] = useState([])              // 收藏夹
+  const [favindex, setFavindex] = useState(0)           
+  const [favonesum, setFavonesum] = useState([])          // 数量
 
-  const [hisList, setHislist] = useState([])            // 历史记录
-  const [hisindex, setHisindex] = useState(0)  // 0 视频  1 直播
+  const [hisList, setHislist] = useState([])              // 历史记录
+  const [hisindex, setHisindex] = useState(0)             // 0 视频  1 直播
 
   const [vipbuyflag, setVipblyflag] = useState(false)
   useEffect(() => {
@@ -115,6 +118,12 @@ const Topnav = memo((props) => {
 
       const res6 = await getHotRanking()
       setHotlist(res6.slice(0, 10))
+
+      const res7 = await getAllClassify()
+      const res8 = res7.filter(item =>
+        item.type !== 1
+      )
+      setClassifys(res8)
     }
     if (uid === -1) {
       console.log('未登录');
@@ -151,8 +160,10 @@ const Topnav = memo((props) => {
       setActive(false)
     }
   }
-  if (location.pathname === '/') {     // 获得当前路由
-    window.addEventListener('scroll', debounce(scrfnc, 100))
+  if (location.pathname === '/') {                            // 获得当前路由
+    // 停止滑动之后才出现，影像观感
+    // window.addEventListener('scroll', debounce(scrfnc, 100))
+    window.addEventListener('scroll', scrfnc)
   }
 
   const [keyword, setKeyword] = useState('')
@@ -437,6 +448,25 @@ const Topnav = memo((props) => {
     }
     window.open(`/${uid}/platform/upload/video`, "_blank")
   }
+
+  const tothisitem = (value, type) => {
+    window.open(`/channels/${value}`)
+  }
+
+  const hovertimer = useRef(null)
+  const enterfnc = () => {
+    if (hovertimer.current != null) {
+      clearTimeout(hovertimer.current)
+    }
+    setShowflag(true)
+  }
+
+  const leavefnc = () => {
+    hovertimer.current = setTimeout(() => {
+      setShowflag(false)
+    },500)
+  }
+
   return (
     <div className="toppart" >
       { loginfla &&
@@ -447,26 +477,59 @@ const Topnav = memo((props) => {
       }
       <div className={active ? "topnav" : "topnav topnavactive"}>
           <div className="leftp">
-            <div className="oneitem">
+            <div className="oneitem"
+              onMouseEnter={enterfnc}
+              onMouseLeave={leavefnc}
+            >
               <Link to="/">
                 {
                   active ?
-                  // <span className="icon1 icon iconfont">&#xe6f1;</span>
                   <img src={baseurl + "/sys/picon.png"} alt="" className="logo-img" />
                   :
-                  <span className='icon2 icon iconfont'>&#xe61e;</span>
+                  <span className='icon2 icon iconfont'>&#xe604;</span>
                 }
-                <span>首页</span>
+                <span className='txtsp'>首页</span>
+                {
+                  active &&
+                  <div className='moreic'>
+                    <div className={showflag ? "iconfont rotate1" : "iconfont"}>&#xe624;</div>
+                  </div>
+                }
               </Link>
+              {
+                active && showflag &&
+                <div className="home-append"
+                  onMouseEnter={enterfnc}
+                  onMouseLeave={leavefnc}
+                >
+                  <div className="item-box">
+                    {
+                      classifys.map(item =>
+                        <div className="oneitem-classify"
+                          onClick={() => tothisitem(item.value, item.type)}
+                        >{item.value}</div>
+                      )
+                    }
+                  </div>
+                </div>
+              }
             </div>
-            <div className="oneitem moveanimation">
-              <Link to={`/channels/番剧`} target='blank'>番剧</Link>
+            <div className="oneitem">
+              <span className='moveanimation'>
+                <Link to={`/channels/番剧`} target='blank'>番剧</Link>
+              </span>
             </div>
-            <div className="oneitem moveanimation">直播</div>
-            <div className="oneitem moveanimation"
+            <div className="oneitem">
+              <span className='moveanimation'>
+                <Link to={`/img`} target='blank'>图片</Link>
+              </span>
+            </div>
+            <div className="oneitem"
               onClick={() => window.open(baseurl2 + '/manga', "_balnk")}
             >
-              漫画
+              <span className='moveanimation'>
+                漫画
+              </span>
             </div>
           </div>
           <div className="midp" 

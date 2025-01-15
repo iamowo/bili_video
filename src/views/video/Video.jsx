@@ -15,6 +15,7 @@ import message from '../../components/notice/notice'
 import { getSeasons, getAnimationByVid, subthisAnimation, cnacleAnimation } from '../../api/animation'
 import Comments from '../../components/comments/comments'
 import Donate from '../../components/Donate/donate'
+import Userinfo from '../../components/Userinfo/Userinfo'
 
 function VideoPart (props) {
   const vid = +props.vid
@@ -312,26 +313,21 @@ function VideoPart (props) {
     }
   })
   // 键盘事件
-  window.addEventListener("keydown", (e) => {    
+  window.addEventListener("keydown", (e) => {
+    let temodmflag = true;
     const k = e.key.toLowerCase()      
     switch (k) {
       case " ":
         e.preventDefault()
         clickvideo()
-        console.log('播放暂停');
-        
         break;
       case 'f':
         console.log('全屏');
         fullscreenfnc()
-        // tempfnc()
-        break;
-      case ' ':
-        console.log('暂停');
-        clickvideo()
         break;
       case 'd':
         console.log('弹幕');
+        setDmflag(!temodmflag)
         break;
       case 'm':
         console.log('静音');
@@ -494,6 +490,8 @@ function VideoPart (props) {
   const [clicked, setcliceked] = useState(false)  // 播放了视频
   const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
   const clickvideo = async () => {
+    console.log('点击了视频 播放or暂停');
+    
     if (clicktimer != null) {
       clearTimeout(clicktimer)
       clicktimer = null
@@ -517,7 +515,6 @@ function VideoPart (props) {
             console.log('res: ', res);
             
             if (res === 0) {
-              console.log('xxxx0000xxx');
               props.setThisvid({
                 ...thisvid,
                 plays: thisvid.plays + 1,
@@ -1875,7 +1872,8 @@ function RightPart (props) {
   const vid = +props.vid
   const userinfo = props.userinfo  // 我的个人信息
   const uid = props.uid            // myuid
-  
+  // f1 0 头像   f1 1 名字
+  const [userinfoflag, setUserinfoflag] = useState({f1: -1, f2: -1, f3: -1})
   const [thisvid, setThisvid] = useState({})
   const [videouser, setVideouser] = useState()
   const [recommendlist, setRecommendlist] = useState([])          // 推荐列表
@@ -2056,6 +2054,20 @@ function RightPart (props) {
     document.location.reload()
   }
   
+  const time_userinfo = useRef(null)
+  const enterUserinfo = (index) => {
+    if (time_userinfo.current != null) {
+      clearTimeout(time_userinfo.current)
+    }
+    setUserinfoflag({f1: index, f2: -1, f3: -1})
+  }
+
+  const leaveUserinfo = () => {
+    time_userinfo.current = setTimeout(() => {
+      setUserinfoflag({f1: -1, f2: -1, f3: -1})
+      time_userinfo.current = null
+    }, 800)
+  }
   return (
     <>
     <div className="upinfosbox">
@@ -2063,14 +2075,46 @@ function RightPart (props) {
         <img src={upinfo?.avatar} alt="" className="upsavatar" 
           data-uid={upinfo?.uid}
           onClick={touserspace}
+          onMouseEnter={() => enterUserinfo(0)}
+          onMouseLeave={leaveUserinfo}
         />
+        {
+          userinfoflag.f1 === 0 &&
+          <div className="ui-append"
+            style={{position: "absolute", left: "-150px", top: '85px', zIndex: '3'}}
+            onMouseEnter={() => enterUserinfo(0)}
+            onMouseLeave={leaveUserinfo}
+          >
+            <Userinfo
+              hisuid={upinfo?.uid}
+              myuid={uid}
+              setClose={setUserinfoflag}
+            />
+          </div>
+        }
       </div>
       <div className="irghtupinfos">
         <div className="upname">
-          <span className="namespan"
-            data-uid={upinfo?.uid}
-            onClick={touserspace}
-          >{upinfo != null ? upinfo.name : null}</span>
+          <span className="namespan">
+            <span
+              data-uid={upinfo?.uid}
+              onClick={touserspace}
+            >{upinfo?.name}</span>
+            {
+            false &&
+            <div className="ui-append"
+              style={{position: "absolute", left: "-150px", top: '85px'}}
+              // onMouseEnter={() => enterUserinfo(index, -1, 1)}
+              // onMouseLeave={leaveUserinfo}
+            >
+              <Userinfo
+                hisuid={upinfo?.uid}
+                myuid={uid}
+                // setClose={setUserinfoflag}
+              />
+            </div>
+          }
+          </span>
           <span className="messafespan icon iconfont"
             data-uid={upinfo?.uid}
             onClick={towhisper}

@@ -48,7 +48,7 @@
       flex-shrink: 0;
       width: 100%;
       height: 100%;
-      background-color: #000;
+      // background-color: #000;
     }
     .imgpart {
       width: 100%;
@@ -72,12 +72,12 @@
     }
     .btinfo {
       width: 100%;
-      height: 35%;
+      height: 180px;
       position: absolute;
       z-index: 2;
       -webkit-backdrop-filter: blur(3px);
       backdrop-filter: blur(2px);
-      background: linear-gradient(to top, #111111cc 40%, #6e6c6c9d 80%, #ffffff00 100%);
+      // background: linear-gradient(to top, #111111cc 40%, #6e6c6c9d 80%, #ffffff00 100%);
       // -webkit-mask-image: linear-gradient(0, #2f3238 11%, transparent 20%);
 
       // background-color: pink;
@@ -96,11 +96,12 @@
         justify-content: space-between;
         .lp {
           .tp {
-            height: 25px;
-            line-height: 25px;
+            height: 28px;
+            line-height: 28px;
             font-size: 20px;
             color: #fff;
             cursor: pointer;
+            width: 350px;
           }
           .bp {
             height: 20px;
@@ -112,7 +113,7 @@
     .rp {
       position: absolute;
       z-index: 2;
-      bottom: 60px;
+      bottom: 50px;
       right: 15px;
       height: 25px;
       display: flex;
@@ -128,7 +129,7 @@
         cursor: pointer;
         user-select: none;
         &:hover {
-          background-color: #a5a4a4;
+          background-color: #ddd7d780;
         }
       }
       .tor {
@@ -142,7 +143,7 @@
         cursor: pointer;
         user-select: none;
         &:hover {
-          background-color: #a5a4a4;
+          background-color: #ddd7d780;
         }
       }
     }

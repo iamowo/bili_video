@@ -9,11 +9,19 @@ import { baseurl } from '../../api/index.js';
 import message from '../../components/notice/notice.jsx';
 import { throttle } from '../../util/fnc.js';
 import Banner from '../../components/Banner/Banner.jsx';
+document.title = 'pilipili'
 
 const MemoNav2 = memo(
   function Nav2 (props) {    
     const uid = props.uid
-    const [classifys, setClassify] = useState([])
+    const [classifys, setClassify] = useState([]),                  // 全部
+          [mainclassify, setMainclassify] = useState([]),           // 一级
+          [remaindclassify, setRecommendclassify] = useState([]),   // 剩余一级
+          [secondclassify, setSecondclassify] = useState([]),       // 二级
+          [secondflag, setSecondflag] = useState(-1),
+          timer = useRef(null)
+    const [scrollflag, setScrollflag] = useState(false)
+
     const todynamicview = () => {
       if (uid === -1) {
         message.open({ type: 'warning', content: '请先登录'})
@@ -33,44 +41,192 @@ const MemoNav2 = memo(
 
     useEffect(() => {
       const getData = async () => {
-        const res = await getAllClassify()
+        const res = await getAllClassify()        
         setClassify(res)
+        const temp = res.filter(item =>
+          item.type !== 1
+        )
+        const temp2 = temp.slice(23)
+        setMainclassify(temp.slice(0, 23))       // 23个
+        setRecommendclassify(temp2)              // 剩余的
       }
       getData()
+      document.addEventListener('scroll', scrollFnc)
+      return () => {
+        document.removeEventListener('scroll', scrollFnc)
+      }
     }, [])
+
+    const scrollFnc = () => {
+      const top = document.body.scrollTop || document.documentElement.scrollTop      
+      if (top > 236) {
+        setScrollflag(true)
+      } else {
+        setScrollflag(false)
+      }
+    }
+
+    const enterone = (index, id) => {
+      if (timer.current != null) {
+        setSecondflag(-1)
+        clearTimeout(timer.current)
+        timer.current = null
+      }
+      const temp = []
+      for (let i = 0; i < classifys.length; i++) {       
+        if (classifys[i].type === 1 && classifys[i].topid === id) {
+          temp.push(classifys[i])
+        }
+      }
+      if (temp.length > 0) {
+        setSecondflag(index)
+        setSecondclassify(temp)
+      }
+    }
+
+    const enterone2 = () => {
+      if (timer.current != null) {
+        setSecondflag(-1)
+        clearTimeout(timer.current)
+        timer.current = null
+      }
+      setSecondflag(23)
+    }
+
+    const leaveone = () => {
+      timer.current = setTimeout(() => {
+        setSecondflag(-1)
+      },400)
+    }
+
+    const tothisitem = (value, type) => {
+      // console.log(value, type);
+      window.open(`/channels/${value}`)
+    }
     return (
-      <div className="nav2">
-        <div className="navleft">
-            <div className="nl1"
-              onClick={todynamicview}>
-              <div className="topn2 icon iconfont">&#xe608;</div>
-              <span>动态</span>
+      <>
+        <div className="nav2">
+          <div className="navleft">
+              <div className="nl1"
+                onClick={todynamicview}>
+                <div className="topn2 icon iconfont">&#xe608;</div>
+                <span>动态</span>
+              </div>
+            <Link to="/rank/hot">
+              <div className="nl1">
+              <div className="topnl icon iconfont">&#xe6c0;</div>
+                <span>热门</span>
+              </div>
+            </Link>
+          </div>
+          <div className="navmid"
+            onClick={tothisone}>
+            {
+              mainclassify.map((item, index) =>
+                <div className="item"
+                  onMouseEnter={() => enterone(index, item.id)}
+                  onMouseLeave={leaveone}
+                  onClick={() => tothisitem(item.value, item.type)}
+                >
+                  <span>{item.value}</span>
+                  {
+                    secondflag === index &&
+                    <div className={index <= 11 ? "childbox" : "childbox childbox2"}>
+                      {
+                        secondclassify.map(item2 =>
+                          <div className="seconditem"
+                            onMouseEnter={() => enterone(index, item.id)}
+                            onMouseLeave={leaveone}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              tothisitem(item2.value, item2.type)
+                            }}
+                          >
+                            {item2.value}
+                          </div>
+                        )
+                      }
+                    </div>
+                  }
+                </div>
+              )
+            }
+            <div className="item"
+              onMouseEnter={enterone2}
+              onMouseLeave={leaveone}
+              onClick={() => window.open('/alltag')}
+            >
+              <span>更多</span>
+              <div className='iconfont'>&#xe624;</div>
+              {
+                secondflag === 23 && remaindclassify.length > 0 &&
+                <div className="childbox childbox2">
+                  {
+                    remaindclassify.map(item2 =>
+                      <div className="seconditem"
+                        onMouseEnter={enterone2}
+                        onMouseLeave={leaveone}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          tothisitem(item2.value, item2.type)
+                        }}
+                      >
+                        {item2.value}
+                      </div>
+                    )
+                  }
+                </div>
+              }
             </div>
-          <Link to="/rank/hot">
-            <div className="nl1">
-            <div className="topnl icon iconfont">&#xe6c0;</div>
-              <span>热门</span>
+          </div>
+          <div className="navright">
+            <div className="oneitem">专栏</div>
+            <div className="oneitem">活动</div>
+            <div className="oneitem">社区中心</div>
+            <div className="oneitem">直播</div>
+            <div className="oneitem">音乐</div>
+            <div className="oneitem">课堂</div>
+          </div>
+        </div>
+        <div className={scrollflag ? "nav2active nav2active2" : "nav2active"}>
+          <div className="nav22active">
+              <div className="navleft">
+                <div className="nl1"
+                  onClick={todynamicview}>
+                  <div className="topn2 icon iconfont">&#xe608;</div>
+                  <span>动态</span>
+                </div>
+              <Link to="/rank/hot">
+                <div className="nl1">
+                <div className="topnl icon iconfont">&#xe6c0;</div>
+                  <span>热门</span>
+                </div>
+              </Link>
             </div>
-          </Link>
+            <div className="little-line">
+              <div className="line"></div>
+            </div>
+            <div className="right-cont">
+              {
+                mainclassify.map(item =>
+                  <div className="one-box"
+                    onClick={() => tothisitem(item.value, item.type)}
+                  >{item.value}</div>
+                )
+              }
+              <div className="one-box"
+                onClick={() => window.open('/alltag')}
+              >
+                <span>更多</span>
+                <div className='iconfont'>&#xe624;</div>
+              </div>
+            </div>
+            <div className="right-box-icon">
+              <div className='iconfont rbii'>&#xe624;</div>
+            </div>
+          </div>
         </div>
-        <div className="navmid"
-          onClick={tothisone}>
-          {
-            classifys.map(item =>
-              <div className="item">{item.value}</div>
-            )
-          }
-          <div className="item iconfont">更多 &#xe624;</div>
-        </div>
-        <div className="navright">
-          <div className="oneitem">专栏</div>
-          <div className="oneitem">活动</div>
-          <div className="oneitem">社区中心</div>
-          <div className="oneitem">直播</div>
-          <div className="oneitem">音乐</div>
-          <div className="oneitem">课堂</div>
-        </div>
-      </div>
+      </>
     )
   }
 )
@@ -231,7 +387,7 @@ function Video (props) {
           <span>{data.name}</span>
         </div>
         <span className='icon iconfont point'>&#xec1e;</span>
-        <span>{data.time.slice(0, 10)}</span>
+        <span>{data.time != null ? data.time.slice(0, 10) : ''}</span>
       </div>
     </div>
   )
@@ -249,14 +405,13 @@ function Home() {
         [videolist, setVideolist] = useState([]),
         [vids, setVids] = useState([])
 
-  // 获取数据
+  // 下拉获取数据
   useEffect(() => {
-    document.title = 'pilipili'
     const getData = async() => {      
-      const result = await Promise.all([getRandom(5), getRandom(6)])
+      const result = await Promise.all([getRandom(5), getRandom(6)])      
       setVideolist(result[0])
       for(let i = 0; i < result[0].length; i++) {
-        console.log(result[0][i].vid)
+        // console.log(result[0][i].vid)
         setVids([
           ...vids,
           result[0][i].vid
@@ -265,30 +420,49 @@ function Home() {
       setRecommend(result[1])
     }
     getData();
-    window.addEventListener("scroll", lazyloadfnc)
   },[])
+
+  // 下拉刷新
+  const time1 = useRef(null)
+  useEffect(() => {
+    document.addEventListener("scroll", lazyloadfnc)
+    return () => {
+      document.removeEventListener('scroll', lazyloadfnc)
+    }
+  }, [videolist])
+  // 第二个参数是空的话，形成了闭包，导致不会更新
   
-  
-  const lazyloadfnc = async (e) => {
+  const lazyloadfnc = () => {
     var a = document.body.clientHeight || document.documentElement.clientHeight
     var b = document.body.scrollTop || document.documentElement.scrollTop
     var c = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-    // console.log(a, Math.ceil(b + c));
     
-    if(a <= Math.ceil(b + c) && b > 0 ){
-      console.log(vids);
-      const res = await getSomeVideos(vids, 5);
-      setVideolist([
-        ...videolist,
-        res
-      ])
-      for(let i = 0; i < res[0].length; i++) {
-        setVids([
-          ...vids,
-          res[0][i].vid
-        ])
+    if(a <= Math.ceil(b + c) && b > 0 ) {
+        if (time1.current != null) {
+          return;
+        } else {
+          time1.current = setTimeout(async () => {
+            console.log(vids);
+            const res = await getSomeVideos(vids, 5);
+            const temp = [
+              ...videolist,
+              ...res
+            ]
+            console.log('old:', videolist);
+            
+            console.log('new video:', temp);
+            
+            setVideolist(temp)
+            for(let i = 0; i < res[0].length; i++) {
+              setVids([
+                ...vids,
+                res[0][i].vid
+              ])
+            }
+            time1.current = null
+          }, 1500)
+        }
       }
-    }
   }
 
   const totopmove = () => {

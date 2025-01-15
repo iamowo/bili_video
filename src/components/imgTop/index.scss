@@ -1,0 +1,128 @@
+.imgTopbox {
+  width: 100vw;
+  height: 60px;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .08);
+  padding: 0 24px;
+  display: flex;
+  box-sizing: border-box;
+  padding: 0 24px;
+  background-color: #fff;
+  position: fixed;
+  .topleft {
+    width: fit-content;
+    height: 60px;
+    display: flex;
+    .box1 {
+      width: 55px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      .iconfont {
+        font-size: 22px;
+        // color: linear-gradient(#FF728C, #fff);
+        color: #FF728C;
+        cursor: pointer;
+        user-select: none;
+      }
+      .txt {
+        color: #1E202373;
+        font-size: 16px;
+        font-weight: 550;
+        cursor: pointer;
+        &:hover {
+          color: #1E2023A6;
+        }
+      }
+    }
+  }
+  .topmid {
+    flex: 1;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 30px;
+    .searchbox-out {
+      width: 100%;
+      height: 40px;
+      border-radius: 25px;
+      border: 1px solid grey;
+      box-sizing: border-box;
+      background-color: #EDF2F5;
+      transition: background-color 0.4s ease;
+      cursor: pointer;
+      &:hover {
+        background-color: #fff;
+        box-shadow: 0px 0px 4px #ff708176;
+      }
+    }
+  }
+  .topright {
+    width: fit-content;
+    height: 60px;
+    display: flex;
+    .box1 {
+      width: 55px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:hover {
+        .outb {
+          transition: background-color 0.4s ease;
+          background-color: #EDF2F5;
+        }
+      }
+      .outb {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background-color: #fff;
+        transition: background-color 0.4s ease;
+        text-align: center;
+        line-height: 40px;
+      }
+      .iconfont {
+        font-size: 22px;
+        cursor: pointer;
+      }
+    }
+    .box2 {
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:hover {
+        .outb {
+          transition: background-color 0.4s ease;
+          background-color: #EDF2F5;
+        }
+      }
+      .outb {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background-color: #fff;
+        transition: background-color 0.4s ease;
+        .roundbox {
+          margin: 5px 0 0 5px;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+          }
+        }
+      }
+    }
+  }
+}

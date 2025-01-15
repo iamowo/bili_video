@@ -1,6 +1,14 @@
 import http from ".";
 
+// type 0  未删除的
+export function getDynamics (type) {
+  return http({
+    method: 'GET',
+    url: `/dynamic/getDynamics/${type}`,
+  })
+}
 
+// 全部 包括删除的
 export function getAllDynamic () {
   return http({
     method: 'GET',

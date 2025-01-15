@@ -7,12 +7,20 @@ export function getAllVideo() {
   })
 }
 
+// 0 pass = 1 (审核通过)
+export function getVideos(type) {
+  return http({
+    method: 'GET',
+    url: `/video/getVideos/${type}`
+  })
+}
+
 // 懒加载获取
 export function getSomeVideos(vids, num) {
   return http({
-    method: 'GET',
+    method: 'POST',
     url: '/video/getSomeVideos',
-    params: {
+    data: {
       vids: vids,
       num: num
     }

@@ -61,6 +61,7 @@ import Upcenter from "../views/upload/upcenter/upcentr";
 import Vdieocontrol from "../views/upload/upcontroller/videocontrol";
 import Upvideo2 from "../views/upload/upvideo2/upvideo2";
 import Upmg from "../views/upload/upmg/Upmg";
+import UpImgs from "../views/upload/upimgs/UpImgs";
 import Mgcontrol from "../views/upload/upcontroller/mgcontrol";
 
 // control
@@ -69,6 +70,7 @@ import AllConVideos from "../views/control/videos/allVideo";
 import ControlHome from "../views/control/home";
 import AllDynamic from "../views/control/dynamic/AllDynamic";
 import Bannercon from "../views/control/system/BannerCon";
+import AllUser from "../views/control/user/AllUser";
 
 // live
 import Livinghoom from "../views/living/livinghome/livinghoow";
@@ -110,6 +112,9 @@ import UserFavorite from "../views/mg/User/favorite"
 // test
 import Test from "../views/testV/test";
 
+// imgsspace
+import ImgHome from "../views/ImgSpace/ImgHome"
+import ImgDetail from "../views/ImgSpace/ImgDetail";
 
 // 重定向组件(<AuthRoute> <XXXXX /> </AuthRoute>)
 import AuthRoute from "../util/AuthRouter";
@@ -202,6 +207,16 @@ const router = createBrowserRouter([
         path: 'channel/detail/:listid',
         element: <Allvideos />,
       }  
+    ]
+  },
+  {
+    path: '/img',
+    element: <ImgHome />,
+    children: [
+      {
+        path: '/img/:imgid',
+        element: <ImgDetail />
+      },
     ]
   },
   {
@@ -329,9 +344,14 @@ const router = createBrowserRouter([
       {
         path: 'uploadmg',
         element: <Upmg />
+      },
+      {
+        path: 'upimg',
+        element: <UpImgs />
       }
     ]
   },
+  // control
   {
     path: '/control',
     element: <Control />,
@@ -352,6 +372,10 @@ const router = createBrowserRouter([
         path: 'banners',
         element: <Bannercon />
       },
+      {
+        path: 'users',
+        element: <AllUser />
+      }
     ]
   },
   // living

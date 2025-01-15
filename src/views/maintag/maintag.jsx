@@ -5,6 +5,7 @@ import { getByMaintag } from '../../api/video'
 import Topnav from '../../components/Topnav/Topnav'
 import { tovideo, touserspace } from '../../util/fnc'
 
+
 function Maintag() {
   const params = useParams()
   const maintag = params.maintag
@@ -15,9 +16,10 @@ function Maintag() {
       const res = await getByMaintag(maintag)
       console.log(res);
       setVideolist(res.slice(0, 10))
-      
     }
     getData()
+
+    document.title = '标签-' + params.maintag
   },[])
   return (
     <div className="maintag-view">

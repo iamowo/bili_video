@@ -1,5 +1,13 @@
 import http from ".";
 
+// type 0  全部
+export function getAnimations(type) {
+  return http({
+    method: "GET",
+    url: `animation/getAnimations/${type}`
+  })
+}
+
 // 分页获取收藏
 export function getAnimationPage(uid, page, num) {
   return http({

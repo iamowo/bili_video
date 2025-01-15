@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1269",
+      "name": "加",
+      "font_class": "jia3",
+      "unicode": "e63e",
+      "unicode_decimal": 58942
+    },
+    {
+      "icon_id": "11459723",
+      "name": "消息",
+      "font_class": "xiaoxi1",
+      "unicode": "e63f",
+      "unicode_decimal": 58943
+    },
+    {
+      "icon_id": "1845413",
+      "name": "闪闪",
+      "font_class": "shanshan",
+      "unicode": "e673",
+      "unicode_decimal": 58995
+    },
+    {
+      "icon_id": "14329892",
+      "name": "stimulate_fre",
+      "font_class": "stimulate_fre",
+      "unicode": "e7e6",
+      "unicode_decimal": 59366
+    },
+    {
+      "icon_id": "32170999",
+      "name": "闪闪 渐变",
+      "font_class": "a-shanshanjianbian",
+      "unicode": "e809",
+      "unicode_decimal": 59401
+    },
+    {
       "icon_id": "1270",
       "name": "错误",
       "font_class": "cuowu",

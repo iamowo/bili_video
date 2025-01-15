@@ -1,0 +1,112 @@
+.content-out {
+  width: 100vw;
+  height: fit-content;
+}
+
+.content-out {
+  width: 100vw;
+  height: fit-content;
+  box-sizing: border-box;
+  padding: 0 80px;
+  position: relative;
+  @media (min-width: 1920px) {
+   .content-inner {
+    // 8个
+      width: 2032px;
+    }  
+  }
+  @media ((max-width: 1920px) and (min-width: 1800px)) {
+    .content-inner {
+      width: 1776px;
+    } 
+  }
+  @media ((max-width:  1799px) and (min-width: 1680px)) {
+    .content-inner {
+      width: 1520px;
+    } 
+  }
+  @media ((max-width: 1679px) and (min-width: 1430px)) {
+    .content-inner {
+      width: 1264px;
+    } 
+  }
+  @media (max-width: 1430px) {
+    .content-inner {
+      width: 1008px;
+    } 
+  }
+  .content-inner {
+    left: 50%;
+    translate: -50% 0;
+    position: absolute;
+    height: fit-content;
+    .second-box {
+        width: 100%;
+        height: 70px;
+        // background-color: blue;
+      }
+    // 图片区域
+    .content-box {
+      width: 100%;
+      display: grid;
+      align-items: flex-start;
+      grid-auto-flow: column;
+      overflow: hidden;
+      grid-auto-columns: 240px;
+      gap: 16px;
+      position: relative;
+      cursor: pointer;
+      // height: 400px;
+      .oneimgbox {
+        // position: relative;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 240px;
+        border-radius: 14px;
+        overflow: hidden;
+        background-color: pink;
+        .imgcover {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background-color: #ffffff00;
+          transition: background-color 0.3s ease;
+          &:hover {
+            background-color: #29272762;
+            .collect-btn {
+              .iconfont {
+                opacity: 1;
+              }
+            }
+          }
+          .collect-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            .iconfont {
+              font-size: 35px;
+              cursor: pointer;
+              user-select: none;
+              color: #ffffff;
+              opacity: 0;
+              transition: opacity 0.4s ease;
+              &:hover {
+                transition: color 0.4s ease;
+                color: #FF5967;
+              }
+            }
+            .icon1 {
+              color: #FF5967;
+            }
+          }
+        }
+      }
+    }
+  }  
+}

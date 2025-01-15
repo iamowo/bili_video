@@ -13,6 +13,7 @@ const Banner = memo((props)=> {
     useEffect(() => {
       const getData = async () => {
         const res = await getBanner()
+        console.log('banner list:', res);
         setBanner(res)
         setOneinfo(res[0])
       }
@@ -44,7 +45,6 @@ const Banner = memo((props)=> {
     }
     
     useEffect(() => {
-      console.log('nindex:', nindex);
       setOneinfo(bannerlist[nindex])
     }, [nindex])
 
@@ -85,7 +85,9 @@ const Banner = memo((props)=> {
               }
               </div>
             </div>
-            <div className="btinfo">
+            <div className="btinfo"
+              style={{background: `${oneBannerinfo?.bgc}`}}
+            >
               <div className="infosline">
                 <div className="lp">
                   <div className="tp"

@@ -251,7 +251,7 @@ const AllConVideos = () => {
         <div className="searchline">
           <div className="search-box-o">
             <Search
-              placeholder="搜索标题"
+              placeholder="搜索vid或者标题"
               allowClear
               enterButton="Search"
               onChange={(e) => setKeyword(e.target.value)}

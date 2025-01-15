@@ -8,7 +8,7 @@
 
 .nav2 {
   bottom: 0;
-  // width: 2260px;
+  width: 2260px;
   box-sizing: border-box;
   // padding: 0 140px;
   display: flex;
@@ -85,11 +85,59 @@
       background-color: #F6F7F8;
       color: #61666D;
       font-weight: 400;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       user-select: none;
+      position: relative;
+      transition: background-color 0.4s ease,
+                  color 0.4s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .iconfont {
+        font-size: 10px;
+        margin-left: 3px;
+        transition: rotate 0.3s ease;
+        rotate: 0;
+      }
+      .childbox {
+        padding: 8px 0 8px 16px;
+        z-index: 3;
+        position: absolute;
+        translate: -50% 0;
+        left: 50%;
+        bottom: 40px;
+        width: 160px;
+        height: fit-content;
+        background-color: #fff;
+        border-radius: 6px;
+        // box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        box-shadow: inset 0 -1px 0 #E3E5E7;
+        display: flex;
+        flex-wrap: wrap;
+        .seconditem {
+          height: 20px;
+          font-size: 14px;
+          line-height: 20px;
+          color: #9499a0;
+          width: fit-content;
+          margin-right: 16px;
+          cursor: pointer;
+          user-select: none;
+          &:hover {
+            color: #18191c;
+          }
+        }
+      }
+      .childbox2 {
+        top: 40px;
+      }
       &:hover {
         background-color: #E3E5E7;
+        color: #18191c;
+        .iconfont {
+          rotate: 180deg;
+        }
       }
     }
   }
@@ -111,6 +159,137 @@
       user-select: none;
       &:hover {
         color: #32AEEC;
+      }
+    }
+  }
+}
+.nav2active {
+  width: 100%;
+  height: 56px;
+  box-sizing: border-box;
+  padding: 14px 60px;
+  background-color: #fff;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  z-index: -1;
+  opacity: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
+}
+
+.nav2active2 {
+  opacity: 1;
+  z-index: 2;
+  transition: opacity 0.5s ease,
+              height 0.3s ease;
+  &:hover {
+    height: 112px;
+  }
+  .nav22active {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    &:hover {
+      .right-box-icon {
+        background-color: #e3e5e7;
+        .rbii {
+          rotate: 180deg;
+          translate: rotate 0.4s ease;
+        }
+      }
+    }
+    .navleft {
+      display: flex;
+      height: 28px;
+      width: 140px;
+      .nl1 {
+        width: 70px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        color: #61666D;
+        cursor: pointer;
+        user-select: none;
+        font-size: 14px;
+        span {
+        }
+        &:hover {
+          color: #00aeec;
+        }
+      }
+    }
+    .little-line {
+      width: 14px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: left;
+      .line {
+        width: 1px;
+        height: 12px;
+        background-color: #61666D80;
+      }
+    }
+    .right-cont {
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      margin-right: 14px;
+      flex-wrap: wrap;
+      .one-box {
+        flex-shrink: 0;
+        margin: 0 14px 14px 0;
+        letter-spacing: 2px;
+        border: 1px solid #f1f2f3;
+        height: 28px;
+        width: 70px;
+        line-height: 28px;
+        text-align: center;
+        border-radius: 6px;
+        background-color: #F6F7F8;
+        color: #61666D;
+        font-weight: 400;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        transition: background-color 0.4s ease,
+                    color 0.4s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .iconfont {
+          font-size: 12px;
+          rotate: 0;
+          translate: rotate 0.4s ease;;
+        }
+        &:hover {
+          background-color: #E3E5E7;
+          color: #18191c;
+          .iconfont {
+            rotate: 180deg;
+          }
+        }
+      }
+    }
+    .right-box-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background-color: #F6F7F8;
+      transition: background-color 0.4s ease,
+                  color 0.4s ease;
+      cursor: default;
+      .rbii {
+        width: 28px;
+        height: 28px;
+        text-align: center;
+        line-height: 28px;
+        font-size: 12px;
+        color: #61666D;
+        rotate: 0;
+        transition: rotate 0.4s ease;
       }
     }
   }
@@ -270,7 +449,6 @@
     padding: 0 140px;
     width: 100%;
     height: 130px;
-
   }
   .innerbox {
       padding: 0 140px 40px;

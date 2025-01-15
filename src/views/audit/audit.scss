@@ -23,12 +23,19 @@
           line-height: 50px;
           text-align: center;
           padding: 0 10px;
-          .icon {
-            cursor: pointer;
-            user-select: none;
+          a {
+            color: #222;
+            font-size: 14px;
             &:hover {
-              color: #32aeec;
+                color: #32aeec;
             }
+            .icon {
+              cursor: pointer;
+              user-select: none;
+            }
+            .sp1 {
+              margin-left: 5px;
+            } 
           }
         }
       }
@@ -36,6 +43,17 @@
   }
 }
 
+.novideobox {
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .textdiv {
+    margin-top: 50px;
+    font-size: 14px;
+    color: #636161;  
+  }
+}
 
 .work-content {
   width: 100%;

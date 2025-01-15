@@ -32,22 +32,24 @@ function Dydetail () {
   }, [])
 
   const clickLikeDynamic = async () => {
+    // 要更新的信息
     const data = {
       did: did,
       uid: uid,
       hisuid: dynamicinfo.uid,
       type: 1
     }
+    // 获取点击对象的信息
     const res = await addDynamicLike(data);
     if (dynamicinfo.liked) {
-      // 取消点赞
+      // 取消
       setLikes(likes - 1)
       setDynamicinfo({
         ...dynamicinfo,
         liked: false
       })
     } else {
-      // 点赞
+      // 选中
       if (res) {
         setLikes(likes + 1)
         setDynamicinfo({

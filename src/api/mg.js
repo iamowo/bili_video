@@ -1,5 +1,13 @@
 import http from ".";
 
+// type 0 全部
+export function getMgsss (type) {
+  return http({
+    method: "GET",
+    url: `/mg/getMgsss/${type}`
+  })
+}
+
 export function uploadMgInfo (data) {
   return http({
     method: "POST",

@@ -1,5 +1,12 @@
 import http from ".";
 
+export function getAllUser () {
+  return http({
+    method: 'GET',
+    url: '/user/AllUser'
+  })
+}
+
 export function login (data) {
   return http({
     method: 'POST',
@@ -54,6 +61,7 @@ export function searchUser (keyword, uid, sort) {
 }
 
 // 关注用户
+// uid2 关注了 uid1
 export function toFollow(uid1, uid2) {
   return http({
     method: 'GET',

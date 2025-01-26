@@ -10,7 +10,7 @@ const ImgTop = memo(() => {
     <div className="imgTopbox">
       <div className="topleft">
         <div className="box1">
-          <Link to={'/123'}>
+          <Link to={'/'}>
             <div className="iconfont">&#xe63d;</div>          
           </Link>
         </div>

@@ -119,6 +119,7 @@ function UpImgs() {
       return
     }
     if (upstyle === 0) {
+      // 单个上传
       for (let i = 0; i < imgfile.length; i++) {
         const data = {
           title: imgfile[i].name.replace(/(.*\/)*([^.]+).*/ig,"$2"),
@@ -134,6 +135,7 @@ function UpImgs() {
           data2.append("height", heightlist[i])
           data2.append("file", imgfile[i])
           data2.append("type", imgfile[i].type.split("/")[1])
+          data2.append("ind", 0)
           const res2 = await uploadImgs(data2)
           if (res2) {
             uploadSuccess()
@@ -141,6 +143,7 @@ function UpImgs() {
         }
       }
     } else {
+      // 合并上传
       const data = {
         title: titleinp,
         intro: introinp,
@@ -157,7 +160,10 @@ function UpImgs() {
           data2.append("height", heightlist[i])
           data2.append("file", imgfile[i])
           data2.append("type", imgfile[i].type.split("/")[1])
+          data2.append("ind", parseInt(i))
           const res2 = await uploadImgs(data2)
+          console.log('heigist: ', heightlist[i]);
+          
           if (res2) {
             uploadSuccess()
           }
@@ -199,8 +205,6 @@ function UpImgs() {
 
   // 上传成功，更新状态，清空样式
   const uploadSuccess = () => {
-    //
-
     // 清空原来的样式
     setImgfile([])
     setImgs([])
@@ -208,9 +212,9 @@ function UpImgs() {
 
     setUpstyle(0)
     setClicked(false)
-    setTitleinp()
-    setIntroinp()
-    setTgas()
+    setTitleinp("")
+    setIntroinp("")
+    setTgas("")
   }
   return (
     <div className="upmg-view">

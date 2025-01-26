@@ -64,7 +64,7 @@ const Topnav = memo((props) => {
   const [active, setActive] = useState(() => 
     location.pathname === '/' ||  location.pathname.includes('/rank/') || location.pathname.includes('/channels/')
     ? false : true)
-  const [bgflag, setBgflag] = useState(false)            // 是否显示顶部背景图
+  const [bgflag, setBgflag] = useState(active)            // 是否显示顶部背景图
   const [classifys, setClassifys] = useState([]),
         [showflag, setShowflag] = useState(false)         // 顶部‘首页’hover详情
   const [appendflag, setAppendflag] = useState(false)     // 用户信息append

@@ -37,7 +37,30 @@ export function getOneById(imgid, uid) {
 }
 
 // 收藏一个图片到收藏夹
-
+export function collectOneImg(data) {
+  return http({
+    method: 'GET',
+    url: base + `collectOneImg/${data.uid}/${data.imgid}/${data.boardid}`
+  })
+}
 // 取消收藏一个图片到收藏夹
 
-// 
+// 创建收藏夹
+export function createNewBoard(data) {
+  return http({
+    method: 'POST',
+    url: base + 'createNewBoard',
+    data: data
+  })
+}
+// 删除收藏夹
+
+// 修改收藏夹
+
+// 获得一个用户的收藏夹
+export function getAllBoards(uid) {
+  return http({
+    method: 'GET',
+    url: base + `getAllBoards/${uid}`
+  })
+}

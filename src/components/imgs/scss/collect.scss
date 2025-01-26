@@ -12,9 +12,205 @@
     left: 50%;
     top: 50%;
     translate: -50% -50%;
-    width: 400px;
-    height: 400px;
     background-color: #fff;
     border-radius: 12px;
+    display: flex;
+    .leftbox {
+      border-radius: 12px 0 0 12px;
+      width: 312px;
+      height: 448px;
+      padding: 24px;
+      box-sizing: border-box;
+      background-color: #F7F9FA;
+      .imgbox {
+        width: 264px;
+        height: 264px;
+        border-radius: 12px;
+        background-color: #fff;
+        border-radius: 12px;
+        img {
+          width: 100%;
+          height: 100%;
+          border-radius: 12px;
+          object-fit: cover;
+        }
+      }
+      .tagbox {
+        margin-top: 20px;
+        width: 264px;
+        height: 116px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-sizing: border-box;
+        padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: left;
+        align-items: start;
+        .onetag {
+          height: 25px;
+          line-height: 25px;
+          color: #fff;
+          padding: 0 10px;
+          font-size: 13px;
+          background-color: rgb(255, 89, 103);
+          border-radius: 4px;
+          margin-right: 10px;
+        }
+      }
+    }
+    .rightbox {
+      width: 408px;
+      height: 448px;
+      box-sizing: border-box;
+      padding: 24px;
+      .text-line {
+        width: 100%;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        span {
+          font-size: 16px;
+          font-weight: 550;
+        }
+        .iconfont {
+          float: right;
+          cursor: pointer;
+        }
+      }
+      .collectb {
+        margin-top: 20px;
+        width: 100%;
+        height: 300px;
+        // background-color: red;
+        background-color: rgb(253, 253, 253);
+        border-radius: 12px;
+        padding-right: 10px;
+        box-sizing: border-box;
+        overflow-y: scroll;
+        .one-collcet {
+          width: 100%;
+          height: 48px;
+          background-color: #fff;
+          box-sizing: border-box;
+          padding: 8px;
+          transition: background-color 0.4s ease;
+          border-radius: 12px;
+          margin-bottom: 5px;
+          cursor: pointer;
+          user-select: none;
+          display: flex;
+          .imgdiv {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background-color: rgb(245, 206, 212);
+            img {
+              width: 100%;
+              height: 100%;
+              border-radius: 4px;
+            }
+          }
+          .infodiv {
+            padding: 0 10px;
+            flex: 1;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #1e2023;
+            justify-content: space-between;
+          }
+          .collcet {
+            width: 62px;
+            height: 32px;
+            background-color: rgb(255, 89, 103);
+            color: #fff;
+            text-align: center;
+            line-height: 32px;
+            border-radius: 8px;
+            display: none;
+          }
+          &:hover {
+            background-color: #F7F9FA;
+            .nums {
+              display: none;
+            }
+            .collcet {
+              display: block;
+            }
+          }
+        }
+      }
+      .addnewline {
+        border-top: 1px solid #9b9d9eb1;
+        width: 100%;
+        height: 50px;
+        box-sizing: border-box;
+        .createnewbox {
+          margin-top: 10px;
+          width: 100%;
+          height: 40px;
+          box-sizing: border-box;
+          border-radius: 12px;
+          border: 1px solid rgb(255, 89, 103);
+          display: flex;
+          padding: 5px 10px;
+          .titleinp {
+            flex: 1;
+            border: 0;
+            outline: none;
+          }
+          .canclebox {
+            width: 60px;
+            height: 30px;
+            background-color: #DEF2F5;
+            font-size: 14px;
+            color: #1E2023;
+            text-align: center;
+            border-radius: 10px;
+            margin-left: 10px;
+            line-height: 30px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease;
+            &:hover {
+              background-color: #e4f0f2;
+            }
+          }
+          .okbox {
+            color: #fff;
+            background-color: #FF5967;
+            &:hover {
+              background-color: #f9838d;
+            }
+          }
+        }
+        .addone {
+          margin-top: 10px;
+          width: 100%;
+          height: 40px;
+          cursor: pointer;
+          transition: background-color 0.4s ease;
+          border-radius: 4px;
+          box-sizing: border-box;
+          padding: 0 10px;
+          user-select: none;
+          display: flex;
+          align-items: center;
+          span {
+            font-size: 14px;
+          }
+          .iconfont {
+            font-size: 20px;
+            margin-right: 5px;
+            color: rgb(255, 89, 103);
+          }
+          &:hover {
+            background-color: #F7F9FA;
+          }
+        }
+      }
+    }
   }
 }

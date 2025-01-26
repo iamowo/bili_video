@@ -108,8 +108,8 @@ function Sum() {
           }
         </div>
         <div className="right-top-sum">
-          <span className="icon iconfont" onClick={() => setStyle(0)} style={{color: style === 0 ? '#32aeec' : "#222"}}>1</span>
-          <span className="icon iconfont" onClick={() => setStyle(1)} style={{color: style === 1 ? '#32aeec' : "#222"}}>2</span>
+          <span className="icon iconfont" onClick={() => setStyle(0)} style={{color: style === 0 ? '#32aeec' : "#222"}}>&#xe645;</span>
+          <span className="icon iconfont" onClick={() => setStyle(1)} style={{color: style === 1 ? '#32aeec' : "#222"}}>&#xe675;</span>
         </div>
       </div>
       {

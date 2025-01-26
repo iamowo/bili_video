@@ -7,7 +7,7 @@ import CollectImg from '../../components/imgs/CollectImg'
 
 const OneImg = memo((props) => {
   const navigate = useNavigate()
-  const {data, tl, setDetailflag} = props
+  const {data, tl, setDetailflag, collectflag, setCollectflag, setOpationidex, index} = props
 
   const toImgDetail = (imgid) => {    
     // window.open(`/imgdetail/${imgid}`, "_blank")
@@ -17,9 +17,11 @@ const OneImg = memo((props) => {
 
   const collectOrCancle = (e, imgid) => {
     e.stopPropagation()
-    console.log('233333');
+    setCollectflag(true)
+    // 设置操作index
+    setOpationidex(index)
   }
-  
+
   return (
     <div className="oneimgbox"
       style={{height: data.height + 'px',translate: `${tl?.x}px ${tl?.y}px` }}
@@ -51,7 +53,7 @@ function ImgHome () {
         maxheight = useRef(0)                                      // 最高的一列的高度
 
   const [collectflag, setCollectflag] = useState(false)
-  
+  const [opationindex, setOpationidex] = useState(-1)              // 对那个图片进行操作
   useEffect(() => {
     const getData = async () => {
       const res = await Promise.all([getAllImg(uid)])
@@ -143,6 +145,10 @@ function ImgHome () {
                     data={item}
                     tl={translate[index]}
                     setDetailflag={setDetailflag}
+                    collectflag = {collectflag}
+                    setCollectflag = {setCollectflag}
+                    setOpationidex = {setOpationidex}
+                    index = {index}
                   />
                 )
               }
@@ -158,6 +164,8 @@ function ImgHome () {
       <CollectImg 
         uid={uid}
         collectflag={collectflag}
+        setCollectflag = {setCollectflag}
+        data={imgs[opationindex]}
       />
     </div>
   )

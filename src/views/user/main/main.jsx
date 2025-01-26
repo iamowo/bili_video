@@ -217,7 +217,8 @@ function Mainhome () {
         <div className="maintitle1">
           <span className='spp1'>代表作</span>
           {
-            isme && famouslist.length >= 3 &&
+            // isme && famouslist.length >= 3 &&
+            isme &&
             <span className="more-span icon iconfont" onClick={() => setAddvideoflag(true)}>设置 &#xe775;</span>
           }
         </div>

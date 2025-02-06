@@ -157,6 +157,10 @@
       color: #61666D;
       cursor: pointer;
       user-select: none;
+      .iconfont {
+        font-size: 14px;
+        margin-right: 5px;
+      }
       &:hover {
         color: #32AEEC;
       }

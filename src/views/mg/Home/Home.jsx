@@ -4,7 +4,8 @@ import Mgtopnav from "../../../components/mgTop/Topnav"
 import { getMgs, getMgImgsRandom } from "../../../api/mg"
 import { useEffect, useState } from "react"
 import { tothismg, tothiskeyword } from "../../../util/fnc"
-import { useParams } from "react-router-dom"
+
+document.title = '漫画'
 
 function Mghome() {
   const userinfo = JSON.parse(localStorage.getItem("userinfo")),
@@ -17,15 +18,12 @@ function Mghome() {
   useEffect(() => {
     const gatData = async () => {
       const res1 = await getMgs(7, 0)
-      console.log('res1: ',res1);
       setRecommendlist(res1)
-
       const res2 = await getMgImgsRandom(res1[0].mid, 1, 5)
       setReandoming(res2)
-      // console.log(res2);
     }
     gatData()
-    document.title = '漫画'
+
     const timer = setInterval(() => {
       setNowindex(n => {
         if (n < 6) {

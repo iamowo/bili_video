@@ -7,7 +7,8 @@ import { tothismg } from "../../util/fnc"
 
 function Mgtopnav(props) {
   const userinfo = JSON.parse(localStorage.getItem('userinfo')),
-        uid = userinfo.uid
+        uid = userinfo?.uid
+  console.log('userinf: ', userinfo);
   
   const location = useLocation()
   const isdetail = location.pathname.includes("/detail/")

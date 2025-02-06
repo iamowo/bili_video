@@ -49,7 +49,7 @@ function ImgHome () {
   const [imgs, setImgs] = useState([]),
         imgs2 = useRef([]),
         heightlist = useRef([]),                                   // 记录每列最高值,列数会随屏幕变化而变化
-        [translate, setTraslate] = useState([]),                                      // 每个图片的偏移距离
+        [translate, setTraslate] = useState([]),                   // 每个图片的偏移距离
         maxheight = useRef(0)                                      // 最高的一列的高度
 
   const [collectflag, setCollectflag] = useState(false)

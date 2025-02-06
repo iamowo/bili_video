@@ -9,6 +9,8 @@ import { baseurl } from '../../api/index.js';
 import message from '../../components/notice/notice.jsx';
 import { throttle } from '../../util/fnc.js';
 import Banner from '../../components/Banner/Banner.jsx';
+import { getBanner } from "../../api/banner"
+
 document.title = 'pilipili'
 
 const MemoNav2 = memo(
@@ -24,7 +26,9 @@ const MemoNav2 = memo(
 
     const todynamicview = () => {
       if (uid === -1) {
-        message.open({ type: 'warning', content: '请先登录'})
+        message.open(
+          
+        )
         return
       }
       window.open(`dynamicM/${uid}`, '_blank')
@@ -180,12 +184,12 @@ const MemoNav2 = memo(
             </div>
           </div>
           <div className="navright">
-            <div className="oneitem">专栏</div>
-            <div className="oneitem">活动</div>
-            <div className="oneitem">社区中心</div>
-            <div className="oneitem">直播</div>
-            <div className="oneitem">音乐</div>
-            <div className="oneitem">课堂</div>
+            <div className="oneitem"><span className="iconfont">&#xe605;</span><span>专栏</span></div>
+            <div className="oneitem"><span className="iconfont">&#xe67d;</span><span>活动</span></div>
+            <div className="oneitem"><span className="iconfont">&#xe685;</span><span>反馈</span></div>
+            <div className="oneitem"><span className="iconfont">&#xe67c;</span><span>会员购</span></div>
+            <div className="oneitem"><span className="iconfont">&#xe67b;</span><span>音乐</span></div>
+            <div className="oneitem"><span className="iconfont">&#xe678;</span><span>漫画</span></div>
           </div>
         </div>
         <div className={scrollflag ? "nav2active nav2active2" : "nav2active"}>
@@ -403,12 +407,13 @@ function Home() {
   // 要赋值为数组形式， 否则没有map方法，会报错
   const [recommendlist, setRecommend] = useState([]),
         [videolist, setVideolist] = useState([]),
-        [vids, setVids] = useState([])
+        [vids, setVids] = useState([]),
+        [bannerlist, setBannerlist] = useState([])
 
   // 下拉获取数据
   useEffect(() => {
     const getData = async() => {      
-      const result = await Promise.all([getRandom(5), getRandom(6)])      
+      const result = await Promise.all([getRandom(5), getRandom(6), getBanner()])      
       setVideolist(result[0])
       for(let i = 0; i < result[0].length; i++) {
         // console.log(result[0][i].vid)
@@ -417,7 +422,8 @@ function Home() {
           result[0][i].vid
         ])
       }
-      setRecommend(result[1])
+      setRecommend(result[1])      
+      setBannerlist(result[2])
     }
     getData();
   },[])
@@ -515,9 +521,14 @@ function Home() {
             </div>
           </div>
           <div className="bannerpart">
-            <Banner
-              playflag={true}
-            />
+            {
+              bannerlist.length > 0 &&
+              <Banner
+                playflag={true}
+                bannerlist = {bannerlist}
+                listLength = {bannerlist.length}
+              />
+            }
           </div>
           <div className="toprecbox">
           {

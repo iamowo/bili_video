@@ -1,42 +1,47 @@
 import "./Banner.scss"
 import { baseurl } from "../../api"
 import { useRef, useState, memo, useEffect } from "react"
-import { getBanner } from "../../api/banner"
 
 const Banner = memo((props)=> {
-    const playflag = props.playflag
-    const [nindex, setNindex] = useState(0)
-    const [bannerlist, setBanner] = useState([]),
-          [oneBannerinfo, setOneinfo] = useState()
+    const { playflag, bannerlist, listLength } = props    
+    console.log('props: ', props);
+    
+    const [nindex, setNindex] = useState(0),
+          nindexRef = useRef(0)
+    const [oneBannerinfo, setOneinfo] = useState(bannerlist)
     const timer = useRef(null)
 
     useEffect(() => {
-      const getData = async () => {
-        const res = await getBanner()
-        console.log('banner list:', res);
-        setBanner(res)
-        setOneinfo(res[0])
+      startAutoPlay()
+      return () => {
+        stopAutoPlay()
       }
-      getData()
-      timer.current = setInterval(() => {
-        toright()
-      }, 2000)
     }, [])
+
+    // 更新
+    useEffect(() => {
+      nindexRef.current = nindex
+    }, [nindex])
+
+    // 开启轮播
+    const startAutoPlay = () => {
+      timer.current = setInterval(toright, 5000)
+    }
+
+    // 停止轮播
+    const stopAutoPlay = () => {
+      if (timer.current) {
+        clearInterval(timer.current)
+        timer.current = null
+      }
+    }
   
     const toleft = () => {
-      if (nindex === 0) {
-        setNindex(bannerlist.length - 1);
-      } else {
-        setNindex(nindex - 1)
-      }
+      setNindex((nindexRef.current - 1) % listLength)
     }
 
     const toright = () => {
-      if (nindex === bannerlist.length - 1) {
-        setNindex(0);
-      } else {        
-        setNindex(nindex + 1)
-      }
+      setNindex((nindexRef.current + 1) % listLength)
     }
   
     const tothispoint = (e) => {
@@ -44,20 +49,14 @@ const Banner = memo((props)=> {
       setNindex(now)
     }
     
-    useEffect(() => {
-      setOneinfo(bannerlist[nindex])
-    }, [nindex])
-
     const menter = () => {
-      console.log('enter============');
-      clearTimeout(timer.current)
-      timer.current = null
+      console.log('enter');
+      stopAutoPlay()
     }
   
     const mleave = () => {
-      timer.current = setInterval(() => {
-        toright()
-      }, 2000)
+      console.log('leave');
+      startAutoPlay()
     }
     
     const clicclickthis = (id, type) => {
@@ -73,26 +72,26 @@ const Banner = memo((props)=> {
             <div className="imgpart">
               <div className="imgs-out-box"
               style={{translate: -100 * nindex + '% 0px'}}>
-              {
-                bannerlist.map((item, index) =>
-                  <img key={item.id}
-                    src={item.cover}
-                    alt=""
-                    className="thisbannerimg"
-                    onClick={() => clicclickthis(item.targetId, item.type)}
-                  />
-                )
-              }
+                {
+                  bannerlist.map((item, index) =>
+                    <img key={item.id}
+                      src={item.cover}
+                      alt=""
+                      className="thisbannerimg"
+                      onClick={() => clicclickthis(item.targetId, item.type)}
+                    />
+                  )
+                }
               </div>
             </div>
             <div className="btinfo"
-              style={{background: `${oneBannerinfo?.bgc}`}}
+              style={{background: `${bannerlist[nindex]?.bgc}`}}
             >
               <div className="infosline">
                 <div className="lp">
                   <div className="tp"
-                    onClick={() => clicclickthis(oneBannerinfo.targetId, oneBannerinfo.type)}
-                  >{oneBannerinfo?.title}</div>
+                    onClick={() => clicclickthis(bannerlist[nindex].targetId, bannerlist[nindex].type)}
+                  >{bannerlist[nindex]?.title}</div>
                 </div>
               </div>
             </div>

@@ -524,11 +524,20 @@ const Topnav = memo((props) => {
                 <Link to={`/img`} target='blank'>图片</Link>
               </span>
             </div>
-            <div className="oneitem"
-              onClick={() => window.open(baseurl2 + '/manga', "_balnk")}
-            >
+            <div className="oneitem">
+              <span className="moveanimation">
+                {/* ⭐如果用windos。open打开新页面，新页面中没有localstorage中的数据 */}
+                <Link to={'/manga'} target='_blank'>漫画</Link>
+              </span>
+            </div>
+            <div className="oneitem">
               <span className='moveanimation'>
-                漫画
+                <Link to={`/img`} target='blank'>会员购</Link>
+              </span>
+            </div>
+            <div className="oneitem">
+              <span className='moveanimation'>
+                <Link to={`/img`} target='blank'>音乐</Link>
               </span>
             </div>
           </div>

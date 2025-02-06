@@ -37,10 +37,10 @@ export function getOneById(imgid, uid) {
 }
 
 // 收藏一个图片到收藏夹
-export function collectOneImg(data) {
+export function collectOneImg(uid, imgid, boardid) {
   return http({
     method: 'GET',
-    url: base + `collectOneImg/${data.uid}/${data.imgid}/${data.boardid}`
+    url: base + `collectOneImg/${uid}/${imgid}/${boardid}`
   })
 }
 // 取消收藏一个图片到收藏夹

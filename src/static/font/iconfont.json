@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "683287",
+      "name": "书",
+      "font_class": "shu",
+      "unicode": "e678",
+      "unicode_decimal": 59000
+    },
+    {
+      "icon_id": "693709",
+      "name": "意见反馈",
+      "font_class": "yijianfankui",
+      "unicode": "e685",
+      "unicode_decimal": 59013
+    },
+    {
+      "icon_id": "13254745",
+      "name": "课程_音符",
+      "font_class": "course_note_fill",
+      "unicode": "e67b",
+      "unicode_decimal": 59003
+    },
+    {
+      "icon_id": "28854043",
+      "name": "会员购@2x",
+      "font_class": "vip",
+      "unicode": "e67c",
+      "unicode_decimal": 59004
+    },
+    {
+      "icon_id": "37640491",
+      "name": "旗帜-F",
+      "font_class": "qizhi-F",
+      "unicode": "e67d",
+      "unicode_decimal": 59005
+    },
+    {
       "icon_id": "17665148",
       "name": "显示方式",
       "font_class": "xianshifangshi",

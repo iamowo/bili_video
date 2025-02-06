@@ -234,7 +234,14 @@ const Bannercon = () => {
         <div className="bv-banner-show1">
           <div className="bbs-title">example</div>
           <div className="bb-bannerbox">
-            <Banner playflag={playflag} />
+            {
+              bannerlist.length > 0 &&
+              <Banner
+                playflag={playflag}
+                bannerlist = {bannerlist}
+                listLenght = {bannerlist.length}
+              />
+            }
           </div>
           <div className="conbtn">
             {playflag ? (

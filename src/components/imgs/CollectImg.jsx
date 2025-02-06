@@ -18,9 +18,14 @@ const CollectImg = (props) => {
     getData()
   }, [])
 
-  const collectThisImg = async (boardid, imgid) => {
-
-    const res = await collectOneImg()
+  const collectThisImg = async (boardid) => {
+    const res = await collectOneImg(uid, data.id, boardid)
+    if (res) {
+      message.open({ type: 'success', content:'收藏成功', false: true})
+    } else {
+      message.open({ type: 'error', content:'收藏失败', false: true})      
+    }
+    closeCollectBox()
   }
 
   const createABoard = async () => {
@@ -35,6 +40,12 @@ const CollectImg = (props) => {
       message.open({ type: 'warning', content: '创建成功', flag: true})
     }
   }
+
+  // 关闭收集页面
+  const closeCollectBox = () => {
+    setCollectflag(false)
+  }
+
   return (
     <div>
       {
@@ -67,7 +78,7 @@ const CollectImg = (props) => {
                 {
                   collectlist.map(item =>
                     <div className="one-collcet"
-                      onClick={() => collectThisImg()}
+                      onClick={() => collectThisImg(item.id)}
                     >
                       <div className="imgdiv">
                         {

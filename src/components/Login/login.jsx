@@ -1,29 +1,52 @@
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import './login.scss'
-import { login, register, findAccount } from '../../api/user';
+import { login, register, findAccount, generateQrCode } from '../../api/user';
 import { useDispatch } from 'react-redux';
 import { setuserinfo } from '../../store/modules/userStore'  // redux方法
 import message from '../notice/notice';
+import uqrcode   from 'uqrcodejs';
 
 function Login (props) {
   // console.log(props.login);
   const dispatch = useDispatch()
   const [flag1, setFlag1] = useState(0)
 
-  const [inp11, setInp11] = useState('')
-  const [inp12, setInp12] = useState('')
+  // 登录
+  const [inp11, setInp11] = useState(''),
+        [inp12, setInp12] = useState('')
 
-  const [inp21, setInp21] = useState('')
-  const [inp22, setInp22] = useState('')
-  const [inp23, setInp23] = useState('')
-  const [inp24, setInp24] = useState('')
+  // 注册：账号信息
+  const [inp21, setInp21] = useState(''),
+        [inp22, setInp22] = useState(''),
+        [inp23, setInp23] = useState('')
 
-  const [inp31, setInp31] = useState('')
-  const [inp32, setInp32] = useState('')
-  const [inp33, setInp33] = useState('')
-  const [useravatar, setUseravatar] = useState()   // 头像文件
-  const [uavatar, setUavatar] = useState('')   // 头像url
+  // 注册： 基本信息
+  const [inp31, setInp31] = useState(''),
+        [inp32, setInp32] = useState(''),
+        [inp33, setInp33] = useState(''),
+        [useravatar, setUseravatar] = useState(),   // 头像文件
+        [uavatar, setUavatar] = useState('')   // 头像url
 
+  const canvasref = useRef(null)
+
+  useEffect(() => {
+    const getData = async () => {
+      const res = await generateQrCode()
+      const canvas = canvasref.current
+      if (canvas)
+      uqrcode.make({
+        canvas: 'canvas',
+        text: res,
+        width: 200,
+        height: 200,
+        callback: (res) => {
+          console.log('二维码生成成功');
+          
+        }
+      })
+    }
+    getData()
+  },[])
   // 登录
   const tologin = async() => {
     const loginData = {
@@ -169,24 +192,29 @@ function Login (props) {
     <div className="login-page">
       <div className="center-box" style={{top: flag1 === 0 ? '50%': '-100%'}}>
         <div className="top-lin-close">
-          <span className='icon iconfont' onClick={() => props.closeLogin()}>
-            x
-          </span>
+          <span className='icon iconfont' onClick={() => props.closeLogin()}>&#xe66a;</span>
         </div>
-        <div className="title-line2">账号登录</div>
-        <div className="loginboxx">
-          <div className="top-loginbox">
-            <span>账号</span>
-            <input type="text" className="inp11" onChange={(e) => setInp11(e.target.value)} value={inp11}/>
+        <div className="logincontent">
+          <div className="qrcodelogin">
+            <canvas canvas-id="qrcode" style={{width: "200px", height: "200px"}}></canvas>  
           </div>
-          <div className="bottom-loginbox">
-          <span>密码</span>
-          <input type="password" className="inp12" onChange={(e) => setInp12(e.target.value)} value={inp12} onKeyDown={kendonwtologin}/>
+          <div className="accountlogin">
+            <div className="title-line2">账号登录</div>
+            <div className="loginboxx">
+              <div className="top-loginbox">
+                <span>账号</span>
+                <input type="text" className="inp11" onChange={(e) => setInp11(e.target.value)} value={inp11}/>
+              </div>
+              <div className="bottom-loginbox">
+              <span>密码</span>
+              <input type="password" className="inp12" onChange={(e) => setInp12(e.target.value)} value={inp12} onKeyDown={kendonwtologin}/>
+              </div>
+            </div>
+            <div className="btline-opation">
+              <div className="left-register" onClick={() => setFlag1(1)}>注册</div>
+              <div className="right-login" onClick={tologin}>登录</div>
+            </div>
           </div>
-        </div>
-        <div className="btline-opation">
-          <div className="left-register" onClick={() => setFlag1(1)}>注册</div>
-          <div className="right-login" onClick={tologin}>登录</div>
         </div>
       </div>
       <div className="registerbox" style={{top: flag1 === 1 ? "50%" : "150%"}}>

@@ -4,7 +4,7 @@ import { useRef, useState, memo, useEffect } from "react"
 
 const Banner = memo((props)=> {
     const { playflag, bannerlist, listLength } = props    
-    console.log('props: ', props);
+    // console.log('props: ', props);
     
     const [nindex, setNindex] = useState(0),
           nindexRef = useRef(0)

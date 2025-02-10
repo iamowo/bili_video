@@ -132,4 +132,12 @@ export function getUserData(uid) {
   })
 }
 
+// 生成登录二维码
+export function generateQrCode() {
+  return http({
+    method: 'GET',
+    url: '/user/generateQrCode'
+  })
+}
+
 

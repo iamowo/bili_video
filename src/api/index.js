@@ -27,6 +27,7 @@ http.interceptors.request.use(
     if ( token != null && token !== ""
       && config.url !== '/user/login'
       && config.url !== '/user/register'
+      && config.url !== '/user/generateQrCode'
       // && config.url !== '/user/register'
       // && config.url !== '/video/getAllVideo'
       // && config.url !== '/video/getRandom'

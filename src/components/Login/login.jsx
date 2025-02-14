@@ -4,7 +4,7 @@ import { login, register, findAccount, generateQrCode } from '../../api/user';
 import { useDispatch } from 'react-redux';
 import { setuserinfo } from '../../store/modules/userStore'  // redux方法
 import message from '../notice/notice';
-import uqrcode   from 'uqrcodejs';
+import QRCode from "react-qr-code";
 
 function Login (props) {
   // console.log(props.login);
@@ -27,23 +27,12 @@ function Login (props) {
         [useravatar, setUseravatar] = useState(),   // 头像文件
         [uavatar, setUavatar] = useState('')   // 头像url
 
-  const canvasref = useRef(null)
+  const [qrcodetext, setQrcodetext] = useState()
 
   useEffect(() => {
-    const getData = async () => {
+    const getData = async () => {      
       const res = await generateQrCode()
-      const canvas = canvasref.current
-      if (canvas)
-      uqrcode.make({
-        canvas: 'canvas',
-        text: res,
-        width: 200,
-        height: 200,
-        callback: (res) => {
-          console.log('二维码生成成功');
-          
-        }
-      })
+      setQrcodetext(res)
     }
     getData()
   },[])
@@ -196,7 +185,15 @@ function Login (props) {
         </div>
         <div className="logincontent">
           <div className="qrcodelogin">
-            <canvas canvas-id="qrcode" style={{width: "200px", height: "200px"}}></canvas>  
+            <div className='qrbox'>
+              <QRCode
+                value={qrcodetext || ''}
+                size={160}
+              />  
+            </div>
+            <div className="txtline">
+              <span>扫码登录</span>
+            </div>
           </div>
           <div className="accountlogin">
             <div className="title-line2">账号登录</div>

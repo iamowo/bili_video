@@ -44,7 +44,30 @@
       width: 320px;
       height: 250px;
       box-sizing: border-box;
-      border-right: 1px solid #9499a0;
+      border-right: 1px solid #9d9e9f87;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      .qrbox {
+        width: 180px;
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border: 1px solid #9d9e9f87;
+        border-radius: 12px;
+      }
+      .txtline {
+        width: 100%;
+        height: 20px;
+        line-height: 20px;
+        margin-top: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #9499a0;
+      }
     }
     .accountlogin {
       .title-line2 {
@@ -114,7 +137,7 @@
     align-items: center;
     justify-content: space-between;
     .left-register {
-      width: 180px;
+      width: 140px;
       height: 40px;
       border-radius: 8px;
       cursor: pointer;
@@ -127,7 +150,8 @@
       border: 1px solid #e3e5e7;
     }
     .right-login {
-      width: 180px;
+      margin-left: 40px;
+      width: 140px;
       height: 40px;
       border-radius: 8px;
       cursor: pointer;

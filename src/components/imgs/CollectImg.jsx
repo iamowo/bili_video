@@ -21,9 +21,10 @@ const CollectImg = (props) => {
   const collectThisImg = async (boardid) => {
     const res = await collectOneImg(uid, data.id, boardid)
     if (res) {
-      message.open({ type: 'success', content:'收藏成功', false: true})
+      // setCollectlist(await getAllBoards(uid))
+      message.open({ type: 'info', content:'收藏成功', flag: true})
     } else {
-      message.open({ type: 'error', content:'收藏失败', false: true})      
+      message.open({ type: 'error', content:'收藏失败', flag: true})
     }
     closeCollectBox()
   }

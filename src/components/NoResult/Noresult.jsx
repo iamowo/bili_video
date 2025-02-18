@@ -1,4 +1,5 @@
 import { baseurl } from "../../api"
+import img from '../../static/assets/nodata02.png'
 
 function Noresult () {
   return (
@@ -6,7 +7,8 @@ function Noresult () {
       style={{
           width: '100%',
           height: '300px',
-          background: `url(${baseurl}/sys/nodata02.png)`,
+          // background: `url(${baseurl}/sys/nodata02.png)`,
+          background: `url(${img})`,
           backgroundPosition: 'center 50px',
           backgroundRepeat: 'no-repeat'}}>
     </div>

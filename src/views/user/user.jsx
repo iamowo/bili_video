@@ -2,14 +2,14 @@ import './user.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { Outlet, Link, useParams, useLocation, useNavigate } from 'react-router-dom'
-import { setuserinfo } from '../../store/modules/userStore'
 import { getByUid, getByUidFollowed, toFollow, toUnfollow, updateUserinfo, getSetting } from '../../api/user'
 import { getFavlist } from '../../api/favlist'
 import { getDyanmciListWidthImg } from '../../api/dynamic'
 import { getVideoByUid } from "../../api/video"
 import { getUserVideoList } from "../../api/videolist"
 import { baseurl } from '../../api'
-
+import userbg from '../../static/assets/user_space1.jpg'
+import userpsace_b2 from '../../static/assets/userpsace_b2.jpg'
 // 顶部nav
 function navReducer (state, action) {
   switch(action.type) {
@@ -232,9 +232,9 @@ function User() {
       <div className="userspace">
         <div className="usertopinfos">
           <div className="topinfos"
-            style={{background: `url(${baseurl}/sys/user_space1.jpg)`}}>
+            style={{background: `url(${userbg})`}}>
             <div className="detail-userinfos"
-              style={{background: `url(${baseurl}/sys/userpsace_b2.jpg)`}}>
+              style={{background: `url(${userpsace_b2})`}}>
               <img src={userinfo?.avatar} alt="" className="user-avatar" />
               <div className="user-tighy-infos">
                 <div className="uti-username">

@@ -23,8 +23,13 @@
   border-radius: 6px;
   background-color: #fff;
   box-sizing: border-box;
-  padding: 20px 20px;
   transition: top 0.3s linear;
+  padding: 32px 92px 70px 92px;
+  background-image: url(../../static/assets/22_open.4ea5f239.png),
+                    url(../../static/assets/33_open.f7d7f655.png);
+  background-position: 0 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 14%;
   .top-lin-close {
     width: 100%;
     height: 20px;
@@ -63,7 +68,7 @@
         width: 100%;
         height: 20px;
         line-height: 20px;
-        margin-top: 20px;
+        margin-bottom: 20px;
         text-align: center;
         font-size: 14px;
         color: #9499a0;
@@ -171,13 +176,20 @@
   left: 50%;
   top: 150%;
   translate: -50% -50%;
-  width: 430px;
+  width: 500px;
   height: fit-content;
   border-radius: 6px;
   background-color: #fff;
   box-sizing: border-box;
   padding: 20px 20px;
   transition: top 0.3s linear;
+
+  padding: 32px 92px 60px 92px;
+  background-image: url(../../static/assets/22_open.4ea5f239.png),
+                    url(../../static/assets/33_open.f7d7f655.png);
+  background-position: 0 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 24%;
   .top-lin-close {
     width: 100%;
     height: 20px;
@@ -284,13 +296,20 @@
   left: 50%;
   top: 150%;
   translate: -50% -50%;
-  width: 430px;
+  width: 500px;
   height: fit-content;
   border-radius: 6px;
   background-color: #fff;
   box-sizing: border-box;
   padding: 20px 20px;
   transition: top 0.3s linear;
+
+  padding: 32px 92px 50px 92px;
+  background-image: url(../../static/assets/22_open.4ea5f239.png),
+                    url(../../static/assets/33_open.f7d7f655.png);
+  background-position: 0 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 24%;
   .top-lin-close {
     width: 100%;
     height: 20px;

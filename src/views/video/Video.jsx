@@ -16,6 +16,10 @@ import { getSeasons, getAnimationByVid, subthisAnimation, cnacleAnimation } from
 import Comments from '../../components/comments/comments'
 import Donate from '../../components/Donate/donate'
 import Userinfo from '../../components/Userinfo/Userinfo'
+import icon1static from '../../static/assets/icon1-static.png'
+import icon1 from '../../static/assets/icon1.png'
+import icon2static from '../../static/assets/icon2-static.png'
+import icon2 from '../../static/assets/icon2.png'
 
 function VideoPart (props) {
   const vid = +props.vid
@@ -1690,22 +1694,22 @@ function VideoPart (props) {
             </div>
             <div className="icon-content">
               <div className={icons === 1 ? "one-content left-icon-one icon-active" : "one-content left-icon-one"}
-                style={{background: `url(${baseurl}/sys/icon1-static.png)`, backgroundSize: '120px',
+                style={{background: `url(${icon1static})`, backgroundSize: '120px',
                   backgroundPosition: '20px 20px', backgroundRepeat: 'no-repeat'}}
                 onClick={() => setIcons(1)}>
                   <span className="iconnum-span" style={{color: icons === 1 ? '#32AEEC' : '#9499A0'}}>1硬币</span>
                   <div className="inner-box-img">
-                    <img src={`${baseurl}/sys/icon1.png`} alt="" className="activeimh"
+                    <img src={`${icon1}`} alt="" className="activeimh"
                       style={{opacity: icons === 1 ? '1' : '0'}}/>
                   </div>
               </div>
               <div className={icons === 2 ? "one-content icon-active" : "one-content"}
-                style={{background: `url(${baseurl}/sys/icon2-static.png)`, backgroundSize: '120px',
+                style={{background: `url(${icon2static})`, backgroundSize: '120px',
                   backgroundPosition: '20px 20px', backgroundRepeat: 'no-repeat'}}
                 onClick={() => setIcons(2)}>
                   <span className="iconnum-span" style={{color: icons === 2 ? '#32AEEC' : '#9499A0'}}>2硬币</span>
                   <div className="inner-box-img">
-                    <img src={`${baseurl}/sys/icon2.png`} alt="" className="activeimh"
+                    <img src={`${icon2}`} alt="" className="activeimh"
                       style={{opacity: icons === 2 ? '1' : '0'}}/>
                   </div>
               </div>

@@ -12,6 +12,9 @@ import { setuserinfo } from '../../store/modules/userStore'
 import { useParams } from 'react-router-dom'
 import At from '../../components/At/at'
 import Emoji from '../../components/emoji/emoji'
+import nodata from '../../static/assets/nodata02.png'
+import bg from '../../static/assets/messagebg.png'
+import tpbg from '../../static/assets/trbg.png'
 
 function DynamicM () {  
   const params = useParams()
@@ -19,7 +22,7 @@ function DynamicM () {
   const uid = parseInt(params.uid)
 
   document.title = "动态首页-pilipili"
-  document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
+  document.body.style.background = `url(${bg}) top / cover no-repeat fixed`
 
   const [dylist, setDylist] = useState([])
   const [oldlist, setOldlist] = useState([])
@@ -591,7 +594,7 @@ function DynamicM () {
               dylist.length === 0 &&
               <div className="noresult-videw">
                 <div className="noresult-img"
-                  style={{background: `url(${baseurl}/sys/nodata02.png)`,
+                  style={{background: `url(${nodata})`,
                                       backgroundPosition: 'center 50px',
                                       backgroundRepeat: 'no-repeat'}}>
                 </div>
@@ -601,7 +604,7 @@ function DynamicM () {
         </div>
         <div className="dy-right">
           <div className="rank-img">
-            <img src={`${baseurl}/sys/trbg.png`} alt="" />
+            <img src={`${tpbg}`} alt=""/>
           </div>
           <div className="dy-rnak">
             <div className="rank-title">话题</div>

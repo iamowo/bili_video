@@ -185,14 +185,14 @@ function Login (props) {
         </div>
         <div className="logincontent">
           <div className="qrcodelogin">
+            <div className="txtline">
+              <span>扫码登录</span>
+            </div>
             <div className='qrbox'>
               <QRCode
                 value={qrcodetext || ''}
                 size={160}
               />  
-            </div>
-            <div className="txtline">
-              <span>扫码登录</span>
             </div>
           </div>
           <div className="accountlogin">

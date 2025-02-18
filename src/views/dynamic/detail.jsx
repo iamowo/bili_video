@@ -5,6 +5,8 @@ import { getDynamic, addDynamicLike } from "../../api/dynamic"
 import { useEffect, useState } from "react"
 import { baseurl } from "../../api"
 import Comments from "../../components/comments/comments"
+import msbg from '../../static/assets/messagebg.png'
+import topimg from '../../static/assets/topimg.webp'
 
 function Dydetail () {
   const params = useParams()
@@ -18,7 +20,7 @@ function Dydetail () {
         [ourcomments, OutComments] = useState(0)
 
   useEffect(() => {
-    document.body.style.background = `url(${baseurl}/sys/bg.png) top / cover no-repeat fixed`
+    document.body.style.background = `url(${msbg}) top / cover no-repeat fixed`
     const getData = async () => {      
       const res = await getDynamic(did, uid)
       console.log('dynamic:', res);
@@ -77,7 +79,7 @@ function Dydetail () {
                 <div className="title-bba-dy1">{dynamicinfo!=null ? dynamicinfo.name : null}</div>
                 <div className="title-bba-dy2">{dynamicinfo!=null ? dynamicinfo.time.slice(0, 10) : null}</div>
               </div>
-              <img src={ baseurl + "/sys/topimg.webp"} alt="" className="right-topimg" />
+              <img src={topimg} alt="" className="right-topimg" />
               <div className="more-div">
                 <span className="icon iconfont">&#xe653;</span>
               </div>

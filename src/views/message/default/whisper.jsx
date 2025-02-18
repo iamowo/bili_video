@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getWhisperList, sendImg, sendMessage, getWhisperConent, updateWhisperList } from '../../../api/message'
 import { type } from '@testing-library/user-event/dist/type'
 import { getByUid } from '../../../api/user'
+import message from '../../../components/notice/notice'
 
 function Whisper () {
   const navigate = useNavigate()
@@ -128,7 +129,7 @@ function Whisper () {
         setWhisperlist(whisperlist)
       }
     } else {
-      alert('输入为空')
+      message.open({ type: 'warning', content: '请输入内容'})
     }
     // 本地更新
     // if (res === 200) {

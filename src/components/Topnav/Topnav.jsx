@@ -15,7 +15,7 @@ import { baseurl, baseurl2 } from '../../api'
 import message from '../notice/notice'
 import { getAllKeyword, addKeyword, deleteKeyword, deleteAllKeyword, getHotRanking } from '../../api/search'
 import VIP from '../vip/VIP'
-import { hover } from '@testing-library/user-event/dist/hover'
+import toplogo from '../../static/assets/bpbg.png'
 
 // 类形式的组件
 // class Topnav extends Component {
@@ -929,7 +929,7 @@ const Topnav = memo((props) => {
               }
             </div>
             <div className='spanlogo'>
-              <img src={baseurl + "/sys/bpbg.png"} alt="" className="logo-img" />
+              <img src={toplogo} alt="" className="logo-img" />
             </div>
           </div>
         }

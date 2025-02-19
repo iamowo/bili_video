@@ -108,6 +108,8 @@ const Topnav = memo((props) => {
       setHislist(res3)      
       // 收藏夹
       const res2 = await getFavlist(uid, -1)
+      console.log('res2 is: ', res2);
+      
       // console.log('收藏夹列表,', res2);
       const res22 = await getOneList(res2[0].fid, 0, null)
       setFavlist(res2)

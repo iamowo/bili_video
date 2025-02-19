@@ -32,7 +32,7 @@ const OneImg = memo((props) => {
         <div className="collect-btn"
           onClick={(e) => collectOrCancle(e, data.id)}
         >
-          <div className={false ? "iconfont icon1" : "iconfont"}>&#xe8c3;</div>
+          <div className={data.liked ? "iconfont icon1" : "iconfont"}>&#xe8c3;</div>
         </div>
       </div>
       <img 

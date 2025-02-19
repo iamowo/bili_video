@@ -103,6 +103,37 @@ function Setting () {
     {id: 5, title: "5"},
     {id: 6, title: "6"},
   ])
+  // 拖拽索引
+  const [draggedIndex, setDraggedIndex] = useState(null),
+        [isDragging, setIsDragging] = useState(false);
+
+   const handleDragStart = (index) => {
+    setDraggedIndex(index);
+    setIsDragging(true);
+  }
+
+   const handleDragOver = (index) => {
+    console.log("index: ", index);
+    
+    if (draggedIndex === null) return;
+
+    const newSort1 = [...sort1];
+    const draggedItem = newSort1[draggedIndex];
+
+    // Remove the dragged item from its original position
+    newSort1.splice(draggedIndex, 1);
+    // Insert the dragged item at the new position
+    newSort1.splice(index, 0, draggedItem);
+
+    setSort1(newSort1);
+    setDraggedIndex(index);
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setIsDragging(false);
+  }
+
   return (
     <div className="setting-view">
       <div className="setting-title">
@@ -162,9 +193,24 @@ function Setting () {
       <div className="changesortbox1">
         {
           sort1.map((item, index) => 
-            <div draggable className={index === sort1.length - 1 ? "one-sort-box nobottom" : "one-sort-box"} key={item.id}>
+            <div
+                draggable
+                className={`one-sort-box ${index === sort1.length - 1 ? 'nobottom' : ''} ${
+                  index === draggedIndex && isDragging ? 'dragging' : ''
+                }`}
+                key={item.id}
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  handleDragOver(index);
+                }}
+                onDragEnd={handleDragEnd}
+                style={{
+                  transform: index === draggedIndex ? 'scale(1.05)' : 'none', // 拖拽时放大效果
+                }}
+              >
               <span className="left-titel">{item.title}</span>
-              <span className="icon iconfont">1</span>
+              <span className="iconfont">&#xe658;</span>
             </div>
           )
         }

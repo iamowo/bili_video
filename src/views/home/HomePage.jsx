@@ -127,7 +127,9 @@ const MemoNav2 = memo(
             onClick={tothisone}>
             {
               mainclassify.map((item, index) =>
-                <div className="item"
+                <div
+                  className="item"
+                  key={item.id}
                   onMouseEnter={() => enterone(index, item.id)}
                   onMouseLeave={leaveone}
                   onClick={() => tothisitem(item.value, item.type)}
@@ -138,7 +140,9 @@ const MemoNav2 = memo(
                     <div className={index <= 11 ? "childbox" : "childbox childbox2"}>
                       {
                         secondclassify.map(item2 =>
-                          <div className="seconditem"
+                          <div
+                            key={item2.id}
+                            className="seconditem"
                             onMouseEnter={() => enterone(index, item.id)}
                             onMouseLeave={leaveone}
                             onClick={(e) => {
@@ -167,7 +171,9 @@ const MemoNav2 = memo(
                 <div className="childbox childbox2">
                   {
                     remaindclassify.map(item2 =>
-                      <div className="seconditem"
+                      <div
+                        key={item2.id}
+                        className="seconditem"
                         onMouseEnter={enterone2}
                         onMouseLeave={leaveone}
                         onClick={(e) => {
@@ -213,7 +219,9 @@ const MemoNav2 = memo(
             <div className="right-cont">
               {
                 mainclassify.map(item =>
-                  <div className="one-box"
+                  <div
+                    className="one-box"
+                    key={item.id}
                     onClick={() => tothisitem(item.value, item.type)}
                   >{item.value}</div>
                 )
@@ -533,9 +541,10 @@ function Home() {
           <div className="toprecbox">
           {
             recommendlist.map((item, index) => 
-              <Video key={item.vid} 
-              data={item}
-              index={index}
+              <Video
+                key={item.vid} 
+                data={item}
+                index={index}
               />
             )
           }
@@ -543,10 +552,11 @@ function Home() {
           {
             videolist.map((item, index) => 
               <Video
-              key={item.vid} 
-              data={item}
-              index={index}
-              style1="yes"/>
+                key={item.vid}
+                data={item}
+                index={index}
+                style1="yes"
+              />
               // <div key={item.vid} className="onevideo">{item.vid}</div>
             )
           }

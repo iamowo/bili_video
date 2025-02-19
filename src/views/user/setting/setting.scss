@@ -105,8 +105,13 @@
     border-bottom: 1px solid #e3e5e3;
     cursor: move;
     user-select: none;
+    transition: transform 0.2s ease-in-out; // 添加过渡效果
   }
   .nobottom {
     border-bottom: none;
+  }
+  .dragging {
+    opacity: 0.5; // 拖拽时降低透明度
+    background-color: #f0f0f0; // 拖拽时背景色变化
   }
 }

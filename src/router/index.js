@@ -115,6 +115,9 @@ import Test from "../views/testV/test";
 // imgsspace
 import ImgHome from "../views/ImgSpace/ImgHome"
 import ImgDetail from "../views/ImgSpace/ImgDetail";
+import ImgUserSpace from "../views/ImgSpace/user/ImgUserSpace";
+import BoradsComponents from "../views/ImgSpace/user/boards";
+import CollectsComponents from "../views/ImgSpace/user/collects";
 
 // 重定向组件(<AuthRoute> <XXXXX /> </AuthRoute>)
 import AuthRoute from "../util/AuthRouter";
@@ -214,9 +217,25 @@ const router = createBrowserRouter([
     element: <ImgHome />,
     children: [
       {
-        path: '/img/:imgid',
+        path: 'img/:imgid',
         element: <ImgDetail />
       },
+    ]
+  },
+  {
+    path: '/userimg/:uid?',
+    element: <ImgUserSpace />,
+    children: [
+      {
+        index: true,
+        // path: 'boards/',
+        element: <BoradsComponents />
+      },
+      {
+        path: 'collects',
+        element: <CollectsComponents />
+      }
+      
     ]
   },
   {

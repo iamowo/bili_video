@@ -15,6 +15,11 @@ const ImgTop = memo(() => {
           </Link>
         </div>
         <div className="box1">
+          <Link to={'/img'}>
+            <span className="txt">主页</span>
+          </Link>
+        </div>
+        <div className="box1">
           <sapn className="txt">发现</sapn>
         </div>
         <div className="box1">
@@ -41,7 +46,9 @@ const ImgTop = memo(() => {
         <div className="box2">
           <div className="outb">
             <div className="roundbox">
-              <img src={userinfo.avatar} alt="" />
+              <Link to={`/userimg/${uid}`}>
+                <img src={userinfo.avatar} alt="" />              
+              </Link>
             </div>
           </div>
         </div>

@@ -1,0 +1,182 @@
+.allboardview {
+  width: 100%;
+  height: fit-content;
+  box-sizing: border-box;
+  padding-bottom: 30px;
+  .b-lines {
+    width: 100%;
+    height: 56px;
+    box-sizing: border-box;
+    padding-top: 8px;
+    display: flex;
+    .onebox {
+      margin: 16px 16px 0 0;
+      height: 32px;
+      border-radius: 16px;
+      padding: 0 10px;
+      background-color: #1c1f23;
+      color: #fff;
+      line-height: 32px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      font-size: 14px;
+    }
+  }
+  .boards-con {
+    width: 100%;
+    height: fit-content;
+    box-sizing: border-box;
+    padding: 16px 0 60px;
+    height: 400px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 255px;
+    .addbox {
+      width: 100%;
+      height: 152px;
+      box-sizing: border-box;
+      border: 4px dashed rgba(0, 0, 0, .08);
+      border-radius: 12px;
+      line-height: 152px;
+      text-align: center;
+      box-sizing: border-box;
+      padding: 0 6px 14px;
+      cursor: pointer;
+      user-select: none;
+      &:hover {
+        color: #1c1f23;
+        background-color: #e4e9ed;
+      }
+    }
+    .one-board {
+      width: 240px;
+      height: 255px;
+      margin: 0 16px 16px 0;
+      border-radius: 4px;
+      .innerboximg {
+        width: 228px;
+        height: 211px;
+        padding: 0 6px 14px;
+        cursor: pointer;
+        user-select: none;
+        .imgbox {
+          display: flex;
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
+          width: 100%;
+          height: 152px;
+          .imgcoverbox {
+            top: 0;
+            left: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            user-select: none;
+            background-color: transparent;
+            transition: background-color .25s ease-in-out;
+            &:hover {
+              background-color: rgba(30, 32, 35, .35);
+              .editorimgbox {
+                opacity: 1;
+              }
+            }
+            .editorimgbox {
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              padding: 0 10px;
+              height: 40px;
+              border-radius: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background-color: #ffffffd0;
+              opacity: 0;
+              transition: opacity .25s ease-in-out;
+              .icon1 {
+                height: 40px;
+                padding: 0 6px;
+                text-align: center;
+                line-height: 40px;
+              }
+              .icon2 {
+                height: 40px;
+                padding: 0 3px;
+                text-align: center;
+                line-height: 40px;
+                font-size: 14px;
+                color: #1c1f23;
+              }
+              .spp {
+                height: 18px;
+                width: 1px;
+                margin: 0 6px 0 12px;
+                background-color: #1c1f2380;
+              }
+            }
+          }
+          .box1 {
+            width: 152px;
+            height: 152px;
+            .b1img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+          .box2 {
+            width: 76px;
+            height: 152px;
+            .imgbox2 {
+              width: 76px;
+              height: 76px;
+              object-fit: cover;
+              .b2img {
+                width: 100px;
+                height: 100%;
+                object-fit: cover;
+              }
+            }
+          }
+        }
+        .ingobox {
+          width: 100%;
+          height: 20px;
+          .titleline {
+            margin-top: 6px;
+            width: 100%;
+            height: 27px;
+            box-sizing: border-box;
+            padding-left: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E2023;
+            cursor: pointer;
+            user-select: none;
+          }
+          .infol {
+            margin-top: 4px;
+            box-sizing: border-box;
+            padding-left: 6px;
+            width: 100%;
+            height: 24px;
+            font-size: 14px;
+            color: #1E202373;
+          }
+        }
+      }
+    }
+  }
+  .noemoeline {
+    margin: 65px 0;
+    width: 100%;
+    height: 21px;
+    line-height: 21px;
+    text-align: center;
+    color: #1E202373;
+    font-size: 14px;
+  }
+}

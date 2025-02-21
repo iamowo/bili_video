@@ -13,12 +13,13 @@ const CollectImg = (props) => {
     const getData = async() => {
       const res = await getAllBoards(uid)
       setCollectlist(res)
-      // console.log(res);
+      console.log(res);
     }
     getData()
   }, [])
 
   const collectThisImg = async (boardid) => {
+    // 收藏， 取消收藏
     const res = await collectOneImg(uid, data.id, boardid)
     if (res) {
       // setCollectlist(await getAllBoards(uid))
@@ -76,6 +77,18 @@ const CollectImg = (props) => {
                 >&#xe66a;</span>
               </div>
               <div className="collectb">
+                <div className="one-collcet"
+                  onClick={() => collectThisImg()}
+                >
+                  <div className="imgdiv">
+                    <span className="iconfont">&#xe8c3;</span>
+                  </div>
+                  <div className="infodiv">
+                    <div className="title">喜欢</div>
+                    <div className="nums">{12}</div>
+                    <div className="collcet">收集</div>
+                  </div>
+                </div>
                 {
                   collectlist.map(item =>
                     <div className="one-collcet"
@@ -83,8 +96,8 @@ const CollectImg = (props) => {
                     >
                       <div className="imgdiv">
                         {
-                          item.path &&
-                          <img src={item.path} alt="" />
+                          item.coverlist &&
+                          <img src={item.coverlist[0]} alt="" />
                         }
                       </div>
                       <div className="infodiv">

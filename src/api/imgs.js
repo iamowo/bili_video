@@ -64,3 +64,11 @@ export function getAllBoards(uid) {
     url: base + `getAllBoards/${uid}`
   })
 }
+
+// 获取一个用户的收集
+export function getAllCollect (uid) {
+  return http({
+    method: 'GET',
+    url: base + `getAllCollect/${uid}`
+  })
+}

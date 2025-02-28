@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, memo, useState } from "react"
 import '../scss/userspace.scss'
 import ImgTop from "../../../components/imgTop/imgTopCom"
 import { Outlet, Link } from "react-router-dom"
@@ -80,3 +80,5 @@ const ImgUserSpace = () => {
 }
 
 export default ImgUserSpace
+
+

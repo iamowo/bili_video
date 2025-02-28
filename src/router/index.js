@@ -121,6 +121,7 @@ import CollectsComponents from "../views/ImgSpace/user/collects";
 
 // 重定向组件(<AuthRoute> <XXXXX /> </AuthRoute>)
 import AuthRoute from "../util/AuthRouter";
+import ImgBorder from "../views/ImgSpace/ImgBorder";
 
 const router = createBrowserRouter([
   {
@@ -221,6 +222,10 @@ const router = createBrowserRouter([
         element: <ImgDetail />
       },
     ]
+  },
+  {
+    path: '/board/:boardid',
+    element: <ImgBorder />
   },
   {
     path: '/userimg/:uid?',

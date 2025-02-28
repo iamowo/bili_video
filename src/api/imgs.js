@@ -72,3 +72,11 @@ export function getAllCollect (uid) {
     url: base + `getAllCollect/${uid}`
   })
 }
+
+// 获取一个收藏夹（收藏夹信息， 图片）
+export function getOneBoard(boardid) {
+  return http({
+    method: 'GET',
+    url: base + `getOneBoard/${boardid}`
+  })
+}

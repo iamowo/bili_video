@@ -148,3 +148,9 @@ export function fileToBase64 (f) {
     };
   });
 }
+
+// 转到一个画板
+export function toThisBoard(boardid) {
+  const url = `/board/${boardid}`
+  window.open(url, "_blank")
+}

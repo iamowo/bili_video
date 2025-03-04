@@ -142,3 +142,12 @@ export function searchMg (keyword) {
     url: `/mg/searchMg/${keyword}`
   })
 }
+
+// 获取上次观看记录
+
+export function getLastWatch (mid, uid) {
+  return http({
+    method: 'GET',
+    url: `/mg/getLastWatch/${mid}/${uid}`
+  })
+}

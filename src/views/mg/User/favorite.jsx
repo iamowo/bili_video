@@ -3,15 +3,16 @@ import { useEffect, useState } from "react"
 import { getMgList, updateMgStatus  } from "../../../api/mg"
 import { tothismg } from '../../../util/fnc'
 import { useOutletContext } from "react-router-dom"
+import Noresult from "../../../components/NoResult/Noresult"
+
+document.title = '漫画收藏'
 
 function UserFavorite() {
   const context = useOutletContext(),
-        uid = context.uid
-  console.log('context is:', context);
-  
-  const [books, setBooks] = useState([])
-  const [editorflag, setEditorflag] = useState(false)
-  const [editornum, setEditornum] = useState([])
+        uid = context.uid  
+  const [books, setBooks] = useState([]),
+        [editorflag, setEditorflag] = useState(false),
+        [editornum, setEditornum] = useState([])
 
   useEffect(() => {
     const getData = async () => {
@@ -20,7 +21,6 @@ function UserFavorite() {
       setEditornum(new Array(res.length).fill(false))
     }
     getData()
-    document.title = '漫画收藏'
   }, [])
 
   const todelete = async () => {
@@ -84,44 +84,51 @@ function UserFavorite() {
           </div>
         }
       </div>
-      <div className="user-books-content">
-        {
-          books.map((item, index) =>
-            <div className="one-user-book">
-              <div className="imgbox-user">
-                {
-                  editorflag &&
-                  <div className="mask-imgbox"
-                    onClick={() => changenums(index)}
-                  >
-                    <input type="checkbox" id="ckbox"
-                      checked={editornum[index]}
-                      value={editornum[index]}
-                      onChange={() => changenums(index)}
-                    />
-                  </div>
-                }
-                <img src={item.cover} alt="" className="top-user-img"
-                  onClick={() => tothismg(uid, item.mid)}
-                />
-              </div>
-              <div className="bottom-user-infos">
-                <div className="bui-title"
-                  onClick={() => tothismg(uid, item.mid)}
-                >{item.title}</div>
-                <div className="bui-chapters">
+      {
+        books.length > 0 ?
+        <div className={editorflag ? "user-books-content user-books-content-active" :  "user-books-content"}>
+          {
+            books.map((item, index) =>
+              <div className="one-user-book">
+                <div className="imgbox-user">
                   {
-                    item.done === 1 ?
-                    <span>已完结,一共{item.chapters}章</span>
-                    :
-                    <span>连载中,更新至{item.chapters}章</span>
+                    editorflag &&
+                    <div className="mask-imgbox"
+                      onClick={() => changenums(index)}
+                    >
+                      <input type="checkbox" id="ckbox"
+                        checked={editornum[index]}
+                        value={editornum[index]}
+                        onChange={() => changenums(index)}
+                      />
+                    </div>
                   }
+                  <img src={item.cover} alt="" className="top-user-img"
+                    onClick={() => tothismg(uid, item.mid)}
+                  />
                 </div>
-              </div>
-            </div>     
-          )
-        }
-      </div>
+                <div className="bottom-user-infos">
+                  <div className="bui-title"
+                    onClick={() => tothismg(uid, item.mid)}
+                  >{item.title}</div>
+                  <div className="bui-chapters">
+                    {
+                      item.done === 1 ?
+                      <span>已完结,一共{item.chapters}章</span>
+                      :
+                      <span>连载中,更新至{item.chapters}章</span>
+                    }
+                  </div>
+                </div>
+              </div>     
+            )
+          }
+        </div>
+        :
+        <div className="noresult">
+          <Noresult />
+        </div>
+      }
     </div>
   )
 }

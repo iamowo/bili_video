@@ -1,9 +1,8 @@
 .user-view {
   width: 100%;
-  height: 100vh;
+  // height: 100vh;
   box-sizing: border-box;
-  padding-top: 50px;
-  background-color: #e3e5e7;
+  padding: 50px 0;
   .user-content {
     margin: 30px auto 0 auto;
     width: 1160px;
@@ -107,6 +106,8 @@
     column-gap: 20px;
     row-gap: 10px;
     overflow-y: auto;
+    box-sizing: border-box;
+    border-radius: 8px;
     .one-user-book {
       width: 100%;
       height: 250px;
@@ -197,6 +198,14 @@
     width: 6px;
     background-color: #e3e5e7;
     border-radius: 3px;
+  }
+  .user-books-content-active {
+    border: 1px solid #32aeec;
+    background-color: #f6f6f6;
+  }
+   .noresult {
+    width: 100%;
+    height: 100%;
   }
   .user-infos-user {
     margin-top: 20px;

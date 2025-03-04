@@ -86,7 +86,6 @@ function Upmg() {
     
   }
 
-
   // 添加视频封面
   const addcoverimg = async (e) => {
     const url = URL.createObjectURL(e.target.files[0])    
@@ -191,6 +190,7 @@ function Upmg() {
       setUploadstatus(2)
     }
   }, [upprogress])
+  
   return (
     <div className="upmg-view">
       <div className="upmg-box">

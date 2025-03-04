@@ -4,6 +4,8 @@ import { useOutletContext } from "react-router-dom"
 import { getMgList, updateMgStatus } from "../../../api/mg"
 import { tothismg } from '../../../util/fnc'
 
+document.title = '观看历史'
+
 function UserHistory() {
   const context = useOutletContext(),
         uid = context.uid
@@ -12,10 +14,10 @@ function UserHistory() {
   useEffect(() => {
     const getData = async () => {
       const res = await getMgList(uid, 1);
+      console.log(res);
       setBooks(res)
     }
     getData()
-    document.title = '观看历史'
   }, [])
 
   const changemg = async () => {

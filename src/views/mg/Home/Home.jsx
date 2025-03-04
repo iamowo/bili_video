@@ -5,8 +5,6 @@ import { getMgs, getMgImgsRandom } from "../../../api/mg"
 import { useEffect, useState } from "react"
 import { tothismg, tothiskeyword } from "../../../util/fnc"
 
-document.title = '漫画'
-
 function Mghome() {
   const userinfo = JSON.parse(localStorage.getItem("userinfo")),
         uid = userinfo?.uid
@@ -23,7 +21,7 @@ function Mghome() {
       setReandoming(res2)
     }
     gatData()
-
+    document.title = '漫画'
     const timer = setInterval(() => {
       setNowindex(n => {
         if (n < 6) {

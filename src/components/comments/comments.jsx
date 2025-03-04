@@ -14,7 +14,7 @@ function Comments(props) {
   const { vid, did, mid, commentType }  = props       
   const userinfo = props.userinfo
   const uid = props.uid
-  const hisuid = props.hisuid    
+  const hisuid = props.hisuid
   let id = -1
   if (commentType === 0) {
     id = vid
@@ -23,6 +23,7 @@ function Comments(props) {
   } else if (commentType === 2) {
     id = mid
   }
+
   console.log('id:', id,' type:', commentType);
   
   const [thisinfo, setThisinfo] = useState()             // 视频 or 动态 的信息
@@ -323,7 +324,6 @@ function Comments(props) {
     if (commentlist.length === 0) {
       return
     }
-    const id = commentType === 0 ? vid : did
     const res = await getAllComment(id, uid, sort, commentType)
     setCommentlist(res) 
   }

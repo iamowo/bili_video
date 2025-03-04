@@ -116,13 +116,11 @@ export function HeightLightKw (content, keyword, tagName, type, uid) {
 
 // 打开漫画
 export function tothismg (mid) {
-  console.log('mid is:', mid);
-  
-  window.open(`${baseurl2}/chapter/${mid}`, '_blank')
+  window.open(`/chapter/${mid}`, '_blank')
 }
 
 export function tothiskeyword (keyword) {
-  window.open(`${baseurl2}/searchmg/${keyword}`, '_blank')
+  window.open(`/searchmg/${keyword}`, '_blank')
 }
 
 // file to base64

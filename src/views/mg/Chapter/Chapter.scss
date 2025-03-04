@@ -102,6 +102,10 @@
             cursor: pointer;
             user-select: none;
             border-radius: 4px;
+            transition: background-color 0.4s ease;
+            &:hover {
+              background-color: #339ee1;
+            }
           }
           .follow-btn1 {
             text-align: center;
@@ -116,7 +120,13 @@
             border-radius: 4px;
             .icon {
               margin-right: 5px;
-              color: rgb(238, 162, 62);
+              color: grey;
+              transition: color 0.4s ease;
+            }
+            &:hover {
+              .icon {
+                color: rgb(238, 162, 62);
+              }
             }
           }
           .follow-btn2 {
@@ -132,7 +142,7 @@
             background-color: #e3e5e7;
             .icon {
               margin-right: 5px;
-              color: grey;
+              color: rgb(238, 162, 62);
             }
           }
         }

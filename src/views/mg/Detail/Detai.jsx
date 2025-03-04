@@ -3,6 +3,7 @@ import Mgtopnav from "../../../components/mgTop/Topnav"
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { getMgImgs, getChapters, getOneMg, addMgList, updateMgStatus } from "../../../api/mg"
+import message from "../../../components/notice/notice"
 
 function Detail() {
   const params = useParams()
@@ -71,12 +72,15 @@ function Detail() {
   const leavezone = () => {
     timer1 = setTimeout(() => {
       setControlflag(false)
+      setSettingflag(false)
+      setChapterflag(false)
     }, 2000)
   }
 
   // 收藏 or 取消收藏
   const tofavorite = async () => {
     if (mginfo.collected) {
+      // 取消收藏
       const data = {
         mid: mid,
         uid: uid,
@@ -85,9 +89,14 @@ function Detail() {
       }
       const res = await updateMgStatus(data)
       if (res) {
-
+        setMginfo({
+          ...mginfo,
+          collected: false
+        })
+        message.open({type: 'info', content: '取消收藏', flag: true})
       }
     } else {
+      // 添加收藏
       const data = {
         mid: mid,
         uid: uid,
@@ -95,7 +104,11 @@ function Detail() {
       }
       const res = addMgList(data)
       if (res) {
-        
+        setMginfo({
+          ...mginfo,
+          collected: true
+        })
+        message.open({type: 'info', content: '已收藏', flag: true})
       }
     }
   }
@@ -140,11 +153,12 @@ function Detail() {
                   onClick={() => {
                       // 从左到右
                       if (nowindex === Math.ceil(imgs.length)) {
-                        alert("下一章")
+                        message.open({type: 'info', content: '下一章'})
                         return
                       }
                       setSettingflag(false)
                       setControlflag(false)
+                      setChapterflag(false)
                       setNowindex(nowindex + 1)
                   }}
                 ></div>
@@ -160,7 +174,7 @@ function Detail() {
                   style={{backgroundColor: controlflag ? "#00000080" : "transparent"}}
                   onClick={() => {
                       if (nowindex === 0) {
-                        alert("没有前一页了")
+                        message.open({type: 'info', content: '没有前一章了'})
                         return
                       }
                       setSettingflag(false)
@@ -183,12 +197,14 @@ function Detail() {
                 <div className="outb"
                   onClick={tofavorite}
                 >
-                  {
-                    mginfo != null && mginfo.collected ?
-                    <span className="icon iconfont iconsp">&#xe8c6;</span>
-                    :
-                    <span className="icon iconfont">&#xe8c6;</span>
-                  }
+                  <div className="iconbox">
+                    {
+                      mginfo != null && mginfo.collected ?
+                      <span className="iconfont iconfont-active">&#xe8c6;</span>
+                      :
+                      <span className="iconfont">&#xe8c6;</span>
+                    }
+                    </div>
                   <span className="textsp">收藏</span>
                 </div>
               </div>
@@ -199,7 +215,9 @@ function Detail() {
                     setSettingflag(!settingglag)
                   }}
                 >
-                  <span className="icon iconfont">&#xe60b;</span>
+                  <div className="iconbox">
+                    <span className="iconfont">&#xe672;</span>
+                  </div>
                   <span className="textsp">设置</span>
                 </div>
                 <view className={settingglag ? "setting-box setting-box-active" : "setting-box"}>
@@ -209,10 +227,16 @@ function Detail() {
                       <div className="left-sp">阅读模式</div>
                       <div className="right-sp">
                         <div className={readstyle === 1 ? "mode1 mode-active" : "mode1"}
-                          onClick={() => setReadstyle(1)}
+                          onClick={() => {
+                            setSettingflag(false)
+                            setReadstyle(1)
+                          }}
                         >左右翻页</div>
                         <div className={readstyle === 0 ? "mode2 mode-active" : "mode2"}
-                          onClick={() => setReadstyle(0)}                          
+                          onClick={() => {
+                            setSettingflag(false)
+                            setReadstyle(0)
+                          }}                          
                         >上下滚动</div>
                       </div>
                     </div>
@@ -220,10 +244,16 @@ function Detail() {
                       <div className="left-sp">翻页方向</div>
                       <div className="right-sp">
                         <div className={setting2 ? "mode1 mode-active" : "mode1"}
-                          onClick={() => setSteeing2(true)}
+                          onClick={() => {
+                            setSettingflag(false)
+                            setSteeing2(true)
+                          }}
                         >从左向右</div>
                         <div className={!setting2 ? "mode2 mode-active" : "mode2"}
-                          onClick={() => setSteeing2(false)}                          
+                          onClick={() => {
+                            setSettingflag(false)
+                            setSteeing2(false)
+                          }}   
                         >从右向左</div>
                       </div>
                     </div>
@@ -237,7 +267,9 @@ function Detail() {
                     setChapterflag(!chapterflag)
                   }}
                 >
-                  <span className="icon iconfont">&#xe62f;</span>
+                  <div className="iconbox">
+                    <span className="iconfont">&#xe62f;</span>
+                  </div>
                   <span className="textsp">目录</span>
                 </div>
                 <view className={chapterflag ? "menu-box menu-box-active" :"menu-box"}>

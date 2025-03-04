@@ -1,5 +1,6 @@
 import http from ".";
 
+// id: vid,mid....  uid: user id   sort: 0 点赞数  1 时间  type: 类型
 export function getAllComment(id, uid, sort, type) {
   return http({
     method: 'GET',

@@ -12,7 +12,7 @@
   }
 }
 .detail-view {
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   overflow-y: auto;
   .detail-content {
@@ -26,7 +26,6 @@
     overflow-y: overlay;
     .readbox1 {
       width: 100%;
-      height: fit-content;
       height: fit-content;
       .readbox1-mask {
         width: 100%;
@@ -294,22 +293,26 @@
             }
             .outb {
               height: 62px;
+              cursor: pointer;
+              user-select: none;
+              color: #f5f0f0e6;
               display: flex;
               flex-direction: column;
               justify-content: center;
               align-items: center;
-              cursor: pointer;
-              user-select: none;
-              color: #f5f0f0e6;
               &:hover {
                 color: #ffffff;
               }
-              .icon {
-                font-size: 14px;
+              .iconbox {
                 margin-bottom: 7px;
-              }
-              .iconsp {
-                color: #f1b819;
+                .icon {
+                  width: 100%;
+                  font-size: 14px;
+                  text-align: center;
+                }
+                .iconfont-active {
+                  color: #f1b819;
+                }
               }
               .textsp {
                 font-size: 12px;

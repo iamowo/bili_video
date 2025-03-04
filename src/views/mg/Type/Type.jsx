@@ -10,14 +10,14 @@ function Type() {
   const uid = params.uid
 
   const [booktype1, setBooktype1] = useState([
-    {id: 0, text: "热血", value: "null"},
-    {id: 1, text: "热血", value: "热血"},
-    {id: 2, text: "热血", value: "热血"},
-    {id: 3, text: "热血", value: "热血"},
-    {id: 4, text: "热血", value: "热血"},
-    {id: 4, text: "热血", value: "热血"},
-    {id: 5, text: "热血", value: "热血"},
-    {id: 6, text: "热血", value: "热血"}
+    {id: 0, text: "全部", value: "0"},
+    {id: 1, text: "校园", value: "1"},
+    {id: 2, text: "搞笑", value: "2"},
+    {id: 3, text: "爱情", value: "3"},
+    {id: 4, text: "冒险", value: "4"},
+    {id: 4, text: "热血", value: "5"},
+    {id: 5, text: "热血", value: "6"},
+    {id: 6, text: "热血", value: "7"}
   ])
   const [booktype2, setBooktype2] = useState([
     {id: 0, text: "全部", value: -1},
@@ -26,8 +26,8 @@ function Type() {
   ])
   const [booktype3, setBooktype3] = useState([
     {id: 0, text: "全部", value: 0},
-    {id: 1, text: "从新到旧", value: 0},
-    {id: 2, text: "从旧到新", value: 1},
+    {id: 1, text: "从新到旧", value: 1},
+    {id: 2, text: "从旧到新", value: 2},
 
   ])
   const [typeindex1, setTypeindex1] = useState(0),
@@ -37,9 +37,8 @@ function Type() {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await getClassify(null, -1, 0)
-      console.log(res);
-      
+      const res = await getClassify('全部', -1, 0)
+      console.log('res is:'+  res);
       setBooks(res)
     }
     document.title = '漫画分类'
@@ -48,12 +47,12 @@ function Type() {
 
   useEffect(() => {
     const getData = async () => {
-      const type1 = booktype1[typeindex1].value
+      const type1 = booktype1[typeindex1].text
       const type2 = booktype2[typeindex2].value
       const type3 = booktype3[typeindex3].value
       console.log(type1, type2, type3);
-      
       const res = await getClassify(type1, type2, type3)
+      console.log("res: ", res);
       setBooks(res)
     }
     getData()
@@ -103,12 +102,19 @@ function Type() {
                 books.map(item =>
                   <div className="one-boox-box">
                     <img src={item.cover} alt="" className="book-cover"
-                      onClick={() => tothismg(uid, item.mid)}
+                      onClick={() => tothismg(item.mid)}
                     />
                     <div className="book-title"
-                      onClick={() => tothismg(uid, item.mid)}
+                      onClick={() => tothismg(item.mid)}
                     >{item.title}</div>
-                    <div className="book-chapterinfos">{item.chapters}</div>
+                    <div className="book-chapterinfos">
+                      {
+                        item.done === 0 ?
+                        <span>未完结，更新至{item.chapters}章</span>
+                        :
+                        <span>已完结，共{item.chapters}章</span>
+                      }
+                    </div>
                   </div>
                 )
               }

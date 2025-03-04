@@ -1,45 +1,44 @@
 import "./Chapter.scss"
 import Mgtopnav from "../../../components/mgTop/Topnav"
 import { useEffect, useRef, useState } from "react"
-import { getOneMg, getChapters, addMgList, updateMgStatus, getMgs } from "../../../api/mg"
+import { getOneMg, getChapters, addMgList, updateMgStatus, getMgs, getLastWatch } from "../../../api/mg"
 import { useParams } from "react-router-dom"
 import { tothiskeyword, tothismg } from '../../../util/fnc'
 import Comments from "../../../components/comments/comments"
+import message from "../../../components/notice/notice"
 
 const Chapter = () => {
   const params = useParams(),
         mid = params.mid
   const userinfo = JSON.parse(localStorage.getItem('userinfo')),
         uid = userinfo.uid
-  const hisuid = useRef(-1)
+  const hisuid = useRef(-1)             // 上传者的uid
   const [mginfo, setMginfo] = useState(),
         [chapters, setChapters] = useState([]),
         [chapterindex, setChapterindex] = useState(0),
         [chapterlist, setChapterlist] = useState([]),
+        [lastwatch, setLastwatch] = useState(),        // 上次观看的信息
         pagenum = 50
   const [recommendlist, setRecommendlist] = useState([])
   const [ourcomments, OutComments] = useState(0)
 
   useEffect(() => {
     const getData = async () => {
-      const res = await getOneMg(mid, 1)
-      hisuid.current = res.uid
-      console.log(res);
-      setMginfo(res)
+      const res = await Promise.all([getOneMg(mid, uid), getChapters(mid, 0, pagenum), getMgs(6, 2), getLastWatch(mid, uid)])
+      document.title = res[0].title
+      hisuid.current = res[0].uid
+      console.log('res is: ', res);
+      
+      setMginfo(res[0])
       // 章节
       const tempnums = []
-      for(let i = 0; i < Math.ceil(res.chapters/ pagenum) ; i++) {
+      for(let i = 0; i < Math.ceil(res[0].chapters/ pagenum) ; i++) {
         tempnums.push(i)
       }
       setChapters(tempnums)
-
-      const res2 = await getChapters(mid, 0, pagenum)
-      setChapterlist(res2)
-
-      const res3 = await getMgs(6, 2);
-      setRecommendlist(res3)
-
-      document.title = res.title
+      setChapterlist(res[1])
+      setRecommendlist(res[2])
+      setLastwatch(res[3])
     }
     getData()
   },[])
@@ -62,6 +61,7 @@ const Chapter = () => {
       ...mginfo,
       collected: true
     })
+    message.open({type: 'info', content: '已收藏', flag: true})
   }
 
   const todeletesub = async () => {
@@ -76,6 +76,7 @@ const Chapter = () => {
       ...mginfo,
       collected: false
     })
+    message.open({type: 'info', content: '已取消收藏', flag: true})
   }
   return (
     <div>
@@ -110,14 +111,29 @@ const Chapter = () => {
               </div>
               <div className="info-introduce">{mginfo != null ? mginfo.intro : null}</div>
               <div className="btn-line">
-                <div className="read-btn">阅读</div>
+                <div className="read-btn">
+                  {
+                    lastwatch == null ?
+                    <div
+                      onClick={() => window.open(`/detail/${mid}/1`)}
+                    >
+                      <span>阅读</span>
+                    </div>
+                    :
+                    <div>
+                      <span
+                        onClick={() => window.open(`/detail/${mid}/${lastwatch.watchpage + 1}`)}
+                      >上次看到第{lastwatch?.watchpage + 1}话</span>
+                    </div>
+                  }
+                </div>
                 {
                   mginfo != null && mginfo.collected ?
                   <div className="follow-btn2"
                     onClick={todeletesub}
                   >
                     <span className="icon iconfont">&#xe8c6;</span>
-                    <span>取消收藏</span>
+                    <span>已收藏</span>
                   </div>
                   :
                   <div className="follow-btn1"
@@ -176,14 +192,14 @@ const Chapter = () => {
                 recommendlist.map(item =>
                   <div className="one-recommend-book">
                     <img src={item.cover} alt="" className="left-re-cover"
-                      onClick={() => tothismg(uid, item.mid)}
+                      onClick={() => tothismg(item.mid)}
                     />
                     <div className="right-re-infos">
                       <div className="rri-title"
-                        onClick={() => tothismg(uid, item.mid)}
+                        onClick={() => tothismg(item.mid)}
                       >{item.title}</div>
                       <div className="rri-author"
-                        onClick={() => tothiskeyword(uid, item.author)}
+                        onClick={() => tothiskeyword(item.author)}
                       >{item.author}</div>
                     </div>
                   </div>

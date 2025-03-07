@@ -89,14 +89,16 @@ function Mghome() {
                   )
                 }
               </div>
-              <div className="start-to-read icon iconfont">&#xe622;</div>
+              <div className="start-to-read icon iconfont"
+                onClick={() => window.open(`/chapter/${randomImg[nowindex].mid}`)}
+              >&#xe60f;</div>
             </div>
           </div>
           <div className="home-title">
             <div className="title-left">我的收藏</div>
             <div className="more-span icon iconfont"
-              onClick={() => window.open(`/${uid}/userspace/favorite`, "_blank")}
-            >更多 &#xe61f;</div>
+              onClick={() => window.open(`/userspace/${uid}/favorite`, "_blank")}
+            >更多 &#xe649;</div>
           </div>
           <div className="book-line-box">
             {

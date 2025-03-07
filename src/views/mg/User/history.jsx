@@ -3,6 +3,7 @@ import "./User.scss"
 import { useOutletContext } from "react-router-dom"
 import { getMgList, updateMgStatus } from "../../../api/mg"
 import { tothismg } from '../../../util/fnc'
+import message from "../../../components/notice/notice"
 
 document.title = '观看历史'
 
@@ -20,6 +21,7 @@ function UserHistory() {
     getData()
   }, [])
 
+  // 删除全部
   const changemg = async () => {
     const data = {
       uid: uid,
@@ -27,11 +29,10 @@ function UserHistory() {
       type: 1,
       deleted: 1
     }
+
     const res = await updateMgStatus(data)
-    if (res) {
-      const res2 = await getMgList(uid, 0)
-      setBooks(res2)
-    }
+    setBooks([])
+    message.open({type: 'info', content: '删除成功', flag: true})
   }
   return (
     <div className="content-view">

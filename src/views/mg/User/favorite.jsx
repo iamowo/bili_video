@@ -4,6 +4,7 @@ import { getMgList, updateMgStatus  } from "../../../api/mg"
 import { tothismg } from '../../../util/fnc'
 import { useOutletContext } from "react-router-dom"
 import Noresult from "../../../components/NoResult/Noresult"
+import message from "../../../components/notice/notice"
 
 document.title = '漫画收藏'
 
@@ -23,6 +24,7 @@ function UserFavorite() {
     getData()
   }, [])
 
+  // 批量删除
   const todelete = async () => {
     const mids = []
     editornum.forEach((item, index) => {
@@ -31,7 +33,7 @@ function UserFavorite() {
       }
     })
     if (mids.length === 0) {
-      alert('未选中')
+      message.open({type: 'warning', content: '未选中'})
       return
     }
     const data = {
@@ -104,7 +106,7 @@ function UserFavorite() {
                     </div>
                   }
                   <img src={item.cover} alt="" className="top-user-img"
-                    onClick={() => tothismg(uid, item.mid)}
+                    onClick={() => tothismg(item.mid)}
                   />
                 </div>
                 <div className="bottom-user-infos">

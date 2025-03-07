@@ -518,7 +518,7 @@ const Topnav = memo((props) => {
             </div>
             <div className="oneitem">
               <span className='moveanimation'>
-                <Link to={`/channels/番剧`} target='blank'>番剧</Link>
+                <Link to={`/animationpage/${uid}`} target='blank'>番剧</Link>
               </span>
             </div>
             <div className="oneitem">

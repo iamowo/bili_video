@@ -36,74 +36,68 @@ export default Control
 const Lmenu = () => {
   const menuitems = [
     {
-      type: 'group',
-      children: [
-        {
-          key: '0',
-          label: '首页',
-          icon: <HomeFilled />,
-        },
-      ],
+      key: '1',
+      label: '首页',
+      icon: <HomeFilled />,
     },
     {
+      key: '2',
       label: '内容管理',
       icon: <ProductFilled />,
       children: [
         {
-          type: 'group',
+          key: '21',
+          label: '视频',
           children: [
             {
-              label: '视频',
-              children: [
-                {
-                  key: '1',
-                  label: '全部视频',
-                },
-                {
-                  key: '2',
-                  label: '视频列表',
-                },
-                {
-                  key: '3',
-                  label: 'Animations',
-                },
-              ],
+              key: '211',
+              label: '全部视频',
             },
             {
-              label: '动态',
-              children: [
-                {
-                  key: '4',
-                  label: '全部动态',
-                },
-                {
-                  key: '5',
-                  label: '话题',
-                },
-              ],
+              key: '212',
+              label: '视频列表',
             },
             {
-              key: '6',
-              label: '漫画',
+              key: '213',
+              label: 'Animations',
             },
           ],
         },
+        {
+          key: '22',
+          label: '动态',
+          children: [
+            {
+              key: '221',
+              label: '全部动态',
+            },
+            {
+              key: '222',
+              label: '话题',
+            },
+          ],
+        },
+        {
+          key: '23',
+          label: '漫画',
+        }
       ],
     },
     {
+      key: '3',
       label: '用户管理',
       icon: <UserOutlined />,
       children: [
         {
-          key: '7',
+          key: '31',
           label: '全部用户',
         },
         {
-          key: '8',
+          key: '32',
           label: '用户行为统计',
         },
         {
-          key: '9',
+          key: '33',
           label: '黑名单',
         },
       ],
@@ -112,19 +106,30 @@ const Lmenu = () => {
       type: 'divider',
     },
     {
+      key: '4',
       label: '系统管理',
       icon: <SettingFilled />,
       children: [
         {
-          key: '10',
-          label: 'banner',
+          key: '41',
+          label: '轮播管理',
+          children: [
+            {
+              key: '411',
+              label: '视频',
+            },
+            {
+              key: '412',
+              label: '漫画',
+            }
+          ]
         },
         {
-          key: '11',
+          key: '42',
           label: '活动',
         },
         {
-          key: '12',
+          key: '43',
           label: '系统通知',
         },
       ],
@@ -132,31 +137,31 @@ const Lmenu = () => {
   ];
   const navigate = useNavigate()
   const clickbtn = (e) => {
-    if (e.key === '0') {
+    if (e.key === '1') {
       navigate("/control")
-    } else if (e.key === '1') {
+    } else if (e.key === '211') {
       navigate("/control/videos")
-    } else if (e.key === '2') {
+    } else if (e.key === '212') {
       navigate("/control/videos")
-    } else if (e.key === '3') {
+    } else if (e.key === '213') {
       navigate("/control/videos")
-    } else if (e.key === '4') {
+    } else if (e.key === '221') {
       navigate("/control/dynamics")
-    } else if (e.key === '5') {
+    } else if (e.key === '222') {
       navigate("/control/dynamics")
-    } else if (e.key === '6') {
+    } else if (e.key === '223') {
       navigate("/control/users")
-    } else if (e.key === '7') {
+    } else if (e.key === '23') {
       navigate("/control/users")
-    } else if (e.key === '8') {
-      navigate("/control/banners")
-    } else if (e.key === '9') {
+    } else if (e.key === '31') {
+      navigate("/control/users")
+    } else if (e.key === '32') {
       navigate("/control/videos")
-    } else if (e.key === '10') {
+    } else if (e.key === '411') {
       navigate("/control/banners")
-    } else if (e.key === '11') {
+    } else if (e.key === '411') {
       navigate("/control/videos")
-    } else if (e.key === '12') {
+    } else if (e.key === '42') {
       navigate("/control/videos")
     }
   }

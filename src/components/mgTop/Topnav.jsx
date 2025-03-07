@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { baseurl2 } from "../../api"
 import { getMgList } from '../../api/mg'
 import { tothismg } from "../../util/fnc"
+import message from "../notice/notice"
 
 function Mgtopnav(props) {
   const userinfo = JSON.parse(localStorage.getItem('userinfo')),
@@ -30,8 +31,7 @@ function Mgtopnav(props) {
   const navigate = useNavigate()
   
   const [append1flag, setAppend1flag] = useState(false),
-        [append2flag, setAppend2flag] = useState(false),
-        [append3flag, setAppend3flag] = useState(false)
+        [append2flag, setAppend2flag] = useState(false)
 
   const [hislist, setHislist] = useState([]),
         [favlist, setFavlist] = useState([]);
@@ -62,8 +62,6 @@ function Mgtopnav(props) {
   }
 
   const leave2 = () => {
-    console.log('lv2');
-
     timer1 = setTimeout(() => {
       setAppend2flag(false)
     }, 500)
@@ -72,15 +70,17 @@ function Mgtopnav(props) {
   useEffect(() => {
     const getData = async () => {
       const res = await Promise.all([getMgList(uid, 0), getMgList(uid, 1)])
-      setFavlist(res[0])
-      setHislist(res[1])
+      setFavlist(res[0].splice(0, 3))
+      setHislist(res[1].splice(0, 3))
+      console.log('res is: ', res);
+      
     }
     getData()
   },[])
 
   const tosearch = () => {
-    if (keyword.length === "") {
-      alert('输入为空')
+    if (keyword.length <= 0) {
+      message.open({type: 'warning', content: '搜索不能为空'})
       return
     }
     // navigate(`/${uid}/search/${keyword}`)
@@ -163,7 +163,7 @@ function Mgtopnav(props) {
                 <span>历史</span>
               </div>
               <div className={append1flag ? "right-append right-append-active" : "right-append"}
-                style={{height: append1flag ? hislist.length % 3 * 110 + 50 + 'px' : "0"}}
+                style={{height: append1flag ? hislist.length * 110 + 50 + 'px' : "0"}}
               >
               {
                   hislist.length > 0 ?
@@ -211,7 +211,7 @@ function Mgtopnav(props) {
                 <span>收藏</span>
               </div>
               <div className={append2flag ? "right-append right-append-active" : "right-append"}
-                style={{height: append2flag ? favlist.length % 3 * 110 + 50 + 'px' : "0"}}
+                style={{height: append2flag ? favlist.length * 110 + 50 + 'px' : "0"}}
               >
                 {
                   favlist.length > 0 ?

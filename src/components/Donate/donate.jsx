@@ -20,9 +20,10 @@ const Donate = memo((props) => {
       product: index === 0 ? '10￥充电' : '30￥充电',
       totalAmount: index === 0 ? 10 : 30,
     }
+
     const id = await addOrders(data1);
-    console.log('orders id is:', id);
-    
+
+    console.log('=== orders id is:', id);
     // 订单id
     if (id) {
       if ('WebSocket' in window) {

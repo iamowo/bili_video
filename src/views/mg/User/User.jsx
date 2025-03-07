@@ -9,14 +9,15 @@ function Usermg() {
   const userinfo = JSON.parse(localStorage.getItem('userinfo')),
         uid = userinfo?.uid
   const [leftindex, setLeftindex] = useState(() =>{
-    if (location.pathname.includes("/userspace/favorite")) {
+    if (location.pathname.includes("/favorite")) {
       return 1
-    } else if (location.pathname.includes("/userspace/history")) {
+    } else if (location.pathname.includes("/history")) {
       return 2
     } else {
       return 0
     }
   })
+  
   return (
     <div>
       <Mgtopnav />

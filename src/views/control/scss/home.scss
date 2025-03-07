@@ -3,35 +3,57 @@
     width: 100%;
     height: 200px;
     display: flex;
-    flex-direction: row-reverse;
     .date-box {
       width: 200px;
       height: 200px;
       border-radius: 6px;
       background-color: #fff;
     }
-    .tp-box2 {
-      width: 200px;
-      height: 200px;
-      margin-right: 20px;
-      text-align: center;
-      line-height: 100px;
-      .smilebox {
-        width: 100%;
-        height: 100px;
+  }
+  .top-line2 {
+    margin-top: 40px;
+    width: 100%;
+    height: fit-content;
+    background-color: #fff;
+    box-sizing: border-box;
+    padding: 20px;
+    border-radius: 6px;
+    .title-line  {
+      width: 100%;
+      height: 20px;
+      line-height: 20px;
+      span {
+        font-weight: 600;
+        font-size: 16px;
       }
-      .timebox {
-        margin-top: 20px;
+    }
+    .data-content {
+      margin-top: 20px;
+      width: 100%;
+      height: fit-content;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-gap: 20px;
+      .onebox {
         width: 100%;
-        height: 80px;
-        line-height: 80px;
-        text-align: center;
-        background-color: #fff;
+        height: 120px;
+        background-color: #32aeec;
+        box-sizing: border-box;
+        padding: 10px;
         border-radius: 6px;
-        .time {
-          font-size: 36px;
+        color: #fff;
+        position: relative;
+        .textspan {
+          font-size: 20px;
           font-weight: 600;
-          color: #00aeec;
+        }
+        .numspan {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          translate: -50% -50%;
+          font-weight: 600;
+          font-size: 28px;
         }
       }
     }

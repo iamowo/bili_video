@@ -97,6 +97,9 @@ import Topical from "../views/toplical/topical";
 // error
 import Error from "../views/404/error"
 
+// animation
+import AnimationPage from "../views/animation/animationPage";
+
 // mg
 import Mghome from "../views/mg/Home/Home"
 import Chapter from "../views/mg/Chapter/Chapter";
@@ -459,6 +462,10 @@ const router = createBrowserRouter([
         element: <UserFavorite />
       }
     ]
+  },
+  {
+    path: 'animationpage/:uid',
+    element: <AnimationPage />
   },
   {
     path: 'searchmg/:keyword',

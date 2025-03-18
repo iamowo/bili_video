@@ -4,8 +4,8 @@ import axios from 'axios'
 const baseUrl = 'http://127.0.0.1:8082'
 const baseUrl2 = 'http://127.0.0.1:3000'
 
-// const baseUrl = 'http://49.235.146.19:8082'
-// const baseUrl2 = 'http://49.235.146.19:3000'
+// const baseUrl = 'http://123.57.139.0:8082'
+// const baseUrl2 = 'http://123.57.139.0:3000'
 
 export const baseurl = baseUrl
 export const baseurl2 = baseUrl2

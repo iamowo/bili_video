@@ -1,0 +1,593 @@
+.upcover-view {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  background: rgba(0, 0, 0, .3);
+  display: flex;
+  justify-content: center;
+  .upview-box-cover {
+    margin-top: 100px;
+    width: 800px;
+    height: fit-content;
+    background-color: #fff;
+    border-radius: 6px;
+    .ucb-top-title {
+      display: flex;
+      width: 100%;
+      height: 63px;
+      box-sizing: border-box;
+      padding: 0 63px;
+      box-sizing: border-box;
+      border-bottom: 1px solid #e3e5e3;
+      position: relative;
+      .one-top-cvb-box {
+        height: 63px;
+        line-height: 63px;
+        margin-right: 30px;
+        position: relative;
+        .ucb-span {
+          font-size: 16px;
+          color: #18191C;
+          cursor: pointer;
+          user-select: none;
+        }
+        .ucb-active-line {
+          left: 50%;
+          translate: -50% 0;
+          position: absolute;
+          width: 80%;
+          bottom: 4px;
+          height: 4px;
+          border-radius: 2px;
+          background-color: #fff;
+        }
+      }
+      .one-top-cvb-box-active {
+        .ucb-span {
+          color: #32AEEC
+        }
+        .ucb-active-line {
+          background-color: #32aeec;
+        }
+      }
+      .clode-upbox {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        right: 64px;
+        rotate: 45deg;
+        top: 50%;
+        translate: 0 -50%;
+        cursor: pointer;
+        user-select: none;
+      }
+    }
+    .ucb-content {
+      width: 100%;
+      height: fit-content;
+      .ubc-con1 {
+        width: 100%;
+        height: fit-content;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 40px 0 60px 0;
+        .cutpicture-box {
+          width: 100%;
+          height: fit-content;
+          padding: 0 32px;
+          .suit-imgbox {
+            width: 100%;
+            height: 365px;
+            display: flex;
+            .left-changebox {
+              width: 530px;
+              height: 365px;
+              .let-top-text {
+                width: 100%;
+                height: 19px;
+                line-height: 19px;
+                margin-bottom: 17px;
+                display: flex;
+                align-items: center;
+                .ltt {
+                  font-size: 14px;
+                  color: #18191C;
+                  margin-right: 30px;
+                }
+                .ltt2 {
+                  cursor: pointer;
+                  user-select: none;
+                  .outlabel {
+                    position: relative;
+                    .iconsp {
+                      font-size: 13px;
+                      color: #32AEEC;
+                      cursor: pointer;
+                    }
+                    .rightinpfile {
+                      position: absolute;
+                      width: 100%;
+                      height: 100%;
+                      opacity: 0;
+                    }
+                  }
+                  
+                }
+              }
+              .img-suit-part {
+                margin: 0 auto;
+                height: 300px;
+                width: fit-content;
+                .mid-sui-box {
+                  width: fit-content;
+                  height: 300px;
+                  position: relative;
+                  background-color: #000;
+                  .suit-bx {
+                    // 高大于宽
+                    position: absolute;
+                    z-index: 2;
+                    width: 100%;
+                    height: 75%;
+                    box-sizing: border-box;
+                    background-color: transparent;
+                    // border: 2px solid #ff6699;
+                    cursor: move;
+                    .ltpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      top: -3px;
+                      left: -3px;
+                      cursor: se-resize;
+                    }
+                    .lbpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      bottom: -3px;
+                      left: -3px;
+                      cursor: ne-resize;
+                    }
+                    .rtpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      top: -3px;
+                      right: -3px;
+                      cursor: sw-resize;
+                    }
+                    .rbpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      bottom: -3px;
+                      right: -3px;
+                      cursor: nw-resize;
+                    }
+                    .tline {
+                      position: absolute;
+                      width: 100%;
+                      height: 2px;
+                      top: -1px;
+                      background-color: #ff6699;
+                      cursor: n-resize;
+                    }
+                    .rline {
+                      position: absolute;
+                      width: 2px;
+                      height: 100%;
+                      right: -1px;
+                      background-color: #ff6699;
+                      cursor: e-resize;
+                    }
+                    .bline {
+                      position: absolute;
+                      width: 100%;
+                      height: 2px;
+                      bottom: -1px;
+                      background-color: #ff6699;
+                      cursor: s-resize;
+                    }
+                    .lline {
+                      position: absolute;
+                      height: 100%;
+                      width: 2px;
+                      left: -1px;
+                      background-color: #ff6699;
+                      cursor: w-resize;                      
+                    }
+                  }
+                  .wbiggerthenh {
+                    // 宽大于高
+                    height: 100%;
+                    width: 75%;
+                  }
+                  .suit-innerimg2 {
+                    width: 100%;
+                    height: 100%;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    user-select: none;
+                    // clip: rect(0, 0, 0 ,0);
+                  }
+                  .suit-innerimg {
+                    width: 100%;
+                    height: 100%;
+                    // opacity: 0.4;
+                    user-select: none;
+                  }
+                }
+              }
+              .bottom-imginfos {
+                margin-top: 15px;
+                width: 100%;
+                height: 15px;
+                line-height: 15px;
+                font-size: 12px;
+                color: #6A6A6A;
+              }
+            }
+            .right-showbox {
+              height: 365px;
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              .rs-tilte {
+                width: 100%;
+                height: 20px;
+                line-height: 20px;
+                font-size: 13px;
+                color: #949994;
+                text-align: center;
+              }
+              .yuanlanbox {
+                margin-top: 20px;
+                width: 170px;
+                height: 150px;
+                background-color: #949494;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                .inner-yulan {
+                  background-color: #fff;
+                  width: 156px;
+                  height: 117px;
+                }
+              }
+            }
+          }
+          .other-video-img {
+            margin: 50px 0 30px;
+            width: 100%;
+            height: 60px;
+            background-color: red;
+          }
+          .done-line {
+            margin-top: 20px;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            .dl-box1 {
+              width: 128px;
+              height: 40px;
+              box-sizing: border-box;
+              border-radius: 6px;
+              border: 1px solid #18191C;
+              text-align: center;
+              line-height: 40px;
+              font-size: 14px;
+              color: #18191c;
+              cursor: pointer;
+              user-select: none;
+              margin-right: 30px;
+            }
+            .dl-box2 {
+              width: 128px;
+              height: 40px;
+              box-sizing: border-box;
+              border-radius: 6px;
+              text-align: center;
+              line-height: 40px;
+              font-size: 14px;
+              background-color: #00A1D6;
+              color: #fff;
+              cursor: pointer;
+              user-select: none;
+              margin-right: 30px;
+            }
+          }
+        }
+      }
+      .ubc-con2 {
+        width: 100%;
+        height: fit-content;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 40px 0 60px 0;
+        .uo-box-content {
+          width: 498px;
+          height: 258px;
+          border: 1px dashed #00A1D6 ;
+          background-color: #fff;
+          text-align: center;
+          line-height: 258px;
+          position: relative;
+          .rightinpfile {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            opacity: 0;
+          }
+          .ubc-text {
+            font-size: 14px;
+            color: #9499A0;
+          }
+        }
+        .cutpicture-box {
+          width: 100%;
+          height: fit-content;
+          padding: 0 32px;
+          .suit-imgbox {
+            width: 100%;
+            height: 365px;
+            display: flex;
+            .left-changebox {
+              width: 530px;
+              height: 365px;
+              .let-top-text {
+                width: 100%;
+                height: 19px;
+                line-height: 19px;
+                margin-bottom: 17px;
+                display: flex;
+                align-items: center;
+                .ltt {
+                  font-size: 14px;
+                  color: #18191C;
+                  margin-right: 30px;
+                }
+                .ltt2 {
+                  cursor: pointer;
+                  user-select: none;
+                  .outlabel {
+                    position: relative;
+                    .iconsp {
+                      font-size: 13px;
+                      color: #32AEEC;
+                      cursor: pointer;
+                    }
+                    .rightinpfile {
+                      position: absolute;
+                      width: 100%;
+                      height: 100%;
+                      opacity: 0;
+                    }
+                  }
+                  
+                }
+              }
+              .img-suit-part {
+                margin: 0 auto;
+                height: 300px;
+                width: fit-content;
+                .mid-sui-box {
+                  width: fit-content;
+                  height: 300px;
+                  position: relative;
+                  background-color: #000;
+                  .suit-bx {
+                    // 高大于宽
+                    position: absolute;
+                    z-index: 2;
+                    width: 100%;
+                    height: 75%;
+                    box-sizing: border-box;
+                    background-color: transparent;
+                    // border: 2px solid #ff6699;
+                    cursor: move;
+                    .ltpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      top: -3px;
+                      left: -3px;
+                      cursor: se-resize;
+                    }
+                    .lbpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      bottom: -3px;
+                      left: -3px;
+                      cursor: ne-resize;
+                    }
+                    .rtpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      top: -3px;
+                      right: -3px;
+                      cursor: sw-resize;
+                    }
+                    .rbpoint {
+                      position: absolute;
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 5px;
+                      background-color: #ff6699;
+                      bottom: -3px;
+                      right: -3px;
+                      cursor: nw-resize;
+                    }
+                    .tline {
+                      position: absolute;
+                      width: 100%;
+                      height: 2px;
+                      top: -1px;
+                      background-color: #ff6699;
+                      cursor: n-resize;
+                    }
+                    .rline {
+                      position: absolute;
+                      width: 2px;
+                      height: 100%;
+                      right: -1px;
+                      background-color: #ff6699;
+                      cursor: e-resize;
+                    }
+                    .bline {
+                      position: absolute;
+                      width: 100%;
+                      height: 2px;
+                      bottom: -1px;
+                      background-color: #ff6699;
+                      cursor: s-resize;
+                    }
+                    .lline {
+                      position: absolute;
+                      height: 100%;
+                      width: 2px;
+                      left: -1px;
+                      background-color: #ff6699;
+                      cursor: w-resize;                      
+                    }
+                  }
+                  .wbiggerthenh {
+                    // 宽大于高
+                    height: 100%;
+                    width: 75%;
+                  }
+                  .suit-innerimg2 {
+                    width: 100%;
+                    height: 100%;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    user-select: none;
+                    // clip: rect(0, 0, 0 ,0);
+                  }
+                  .suit-innerimg {
+                    width: 100%;
+                    height: 100%;
+                    // opacity: 0.4;
+                    user-select: none;
+                  }
+                }
+              }
+              .bottom-imginfos {
+                margin-top: 15px;
+                width: 100%;
+                height: 15px;
+                line-height: 15px;
+                font-size: 12px;
+                color: #6A6A6A;
+              }
+            }
+            .right-showbox {
+              height: 365px;
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              .rs-tilte {
+                width: 100%;
+                height: 20px;
+                line-height: 20px;
+                font-size: 13px;
+                color: #949994;
+                text-align: center;
+              }
+              .yuanlanbox {
+                margin-top: 20px;
+                width: 170px;
+                height: 150px;
+                background-color: #949494;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                .canvasref {
+                  background-color: #fff;
+                  width: 156px;
+                  height: 117px;
+                }
+                .inner-yulan {
+                  background-color: #fff;
+                  width: 156px;
+                  height: 117px;
+                }
+              }
+            }
+          }
+          .done-line {
+            margin-top: 20px;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            .dl-box1 {
+              width: 128px;
+              height: 40px;
+              box-sizing: border-box;
+              border-radius: 6px;
+              border: 1px solid #18191C;
+              text-align: center;
+              line-height: 40px;
+              font-size: 14px;
+              color: #18191c;
+              cursor: pointer;
+              user-select: none;
+              margin-right: 30px;
+            }
+            .dl-box2 {
+              width: 128px;
+              height: 40px;
+              box-sizing: border-box;
+              border-radius: 6px;
+              text-align: center;
+              line-height: 40px;
+              font-size: 14px;
+              background-color: #00A1D6;
+              color: #fff;
+              cursor: pointer;
+              user-select: none;
+              margin-right: 30px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

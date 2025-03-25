@@ -19,21 +19,35 @@ import icon1static from '../../static/assets/icon1-static.png'
 import icon1 from '../../static/assets/icon1.png'
 import icon2static from '../../static/assets/icon2-static.png'
 import icon2 from '../../static/assets/icon2.png'
-import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
 function VideoPart (props) {
-  const { vid, userinfo, uid, setDmlist, dmlist, thisvid } = props
+  const vid = +props.vid
+  const userinfo = props.userinfo    // 硬币减之后，父组件更新，子组件信息无法更新
+  const uid = props.uid
   const location = useLocation();
 
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
   const [lastwatchednunm, setLswnum] = useState(0)      // 上次观看的时间
   const [wawtchdonefal, setWdone] = useState(0)         // 是否观看完
+  // const [thisvid, setThisvid] = useState({})            // video info
+  const thisvid = props.thisvid
 
   const [nowtime ,setNowTime] = useState('00:00')       // time
   const [videoprogress, setProgress] = useState(0)      // progress
   const [loadprogress, setLoadprogress] = useState(0)   // 预加载进度
   const [fullfalg, setFullflag] = useState(false)           // 全屏
-  
+  const [clearflag, setClear] = useState(false)         // 清晰度
+  const [speedflag, setSpeed] = useState(false)         // 倍速
+  const [settingflag, setSettingflag] = useState(false)  // 设置
+  const [setting1, setSetting1] = useState(false),       // 循环播放
+        [setting2, setSetting2] = useState(false),       // 自动播放下一集
+        [setting3, setSetting3] = useState(true)        // 16：9    4：3
+   // 改变音量
+  const [volumeheight, setVolumeHeight] = useState(100),
+        [volumeopen, setVolumeopen] = useState(true),        // 静音 or 打开 声音
+        [volumeflag, setVolume] = useState(false)        // 声音控制条
+  const [sysflag, setSys] = useState(false)             // 设置
+  const [windoflag, setWindoflag] = useState(false)     // 小屏幕
   const [windoflag2, setWindoflag2] = useState(false)   // 网页宽屏
   const [titleflag, setTitleflag] = useState(false)
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
@@ -47,10 +61,12 @@ function VideoPart (props) {
   const [iconflag, setIconflag] = useState(false)  //  打开 icon 页面
   const [icons, setIcons] = useState(1)            // 投币个数
 
+  //const [dmlist, setDmlist] = useState([])         // 弹幕列表
+  const dmlist = props.dmlist
   const [dmtest, setDmtext] = useState()           // 发送弹幕内容
   const [dmflag, setDmflag] = useState(true)       // 是否打开弹幕
 
-  // const playerboxref = useRef()
+  const playerboxref = useRef()
   const textpart = useRef()                              // 标题ref，判断是都超过宽度
   const favref = useRef()     // 收藏box的ref
   const createref = useRef()  // 新建
@@ -74,7 +90,31 @@ function VideoPart (props) {
 
   useEffect(() => {
     const getData = async () => {
-      const text = thisvid.title
+      const res = (await getByVid(vid, uid))
+      console.log('res is:', res);
+      
+      // 刚开始数据还没加载出来， 无法使用slice
+      res.time = (res.time).slice(0, 10) + ' ' + (res.time).slice(11, 16) // 在{ } 中修改会报错
+      // setThisvid(res)
+      settaglist(res.tags)
+
+      // 弹幕
+      // const res2 = await getDm(vid)
+      // setDmlist(res2)
+
+      // 视频选集
+      const res3 = await getVideoFormList(res.listid)
+      for (let i = 0; i < res3.length; i++) {
+        if (res3[i].vid === vid) {
+          setVlistindex(i + 1)
+        }
+      }
+      console.log('lid:', res.listid);
+      console.log('视频集合:', res3);
+      
+      setVlist(res3)
+
+      const text = res.title      
       const font = '22px PingFang SC'
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
@@ -92,9 +132,9 @@ function VideoPart (props) {
       setAnimationinfo(res4)      
 
       // animation list 信息
-      if (thisvid.aid !== -1 && thisvid.aid != null) {
+      if (res.aid !== -1 && res.aid != null) {
         console.log('=====================');
-        const res5 = await getSeasons(thisvid.aid)
+        const res5 = await getSeasons(res.aid)
         setSeasonlist(res5)
         console.log('======================res4: ', res5);
         
@@ -109,22 +149,113 @@ function VideoPart (props) {
         }
       }
     }
-    if (thisvid != null) {
-      getData()
-    }
-  },[thisvid])
+    getData()
+    const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
+    window.addEventListener('scroll', () => {
+      const top = document.body.scrollTop || document.documentElement.scrollTop
+      if (top > distance) {
+        setBottomScrollflag(true)
+      } else {
+        setBottomScrollflag(false)
+      }
+    })
+  },[])
 
-  // useEffect(() => {
-  //   const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
-  //     window.addEventListener('scroll', () => {
-  //     const top = document.body.scrollTop || document.documentElement.scrollTop
-  //     if (top > distance) {
-  //       setBottomScrollflag(true)
-  //     } else {
-  //       setBottomScrollflag(false)
-  //     }
-  //   })
-  // }, [])
+  let timer1 = null
+  const enter1 = () => {
+    if (timer1 !== null) {
+      setSpeed(false)
+      setVolume(false)
+      setSettingflag(false)
+      clearTimeout(timer1)
+    }
+    setClear(true)
+  }
+
+  const leave1 = () => {
+    timer1 = setTimeout(() => {
+      setClear(false)
+      timer1 = null
+    },500)
+  }
+
+  // 倍速
+  const enter2 = () => {
+    if (timer1 !== null) {
+      setClear(false)
+      setVolume(false)
+      setSettingflag(false)
+      clearTimeout(timer1)
+    }
+    setSpeed(true)
+  }
+
+  const leave2 = () => {
+    timer1 = setTimeout(() => {
+      setSpeed(false)
+      timer1 = null
+    },500)
+  }
+
+  // 音量
+  const enter3 = () => {
+    if (timer1 !== null) {
+      setClear(false)
+      setSpeed(false)
+      setSettingflag(false)
+      clearTimeout(timer1)
+    }
+    setVolume(true)
+  }
+
+  const leave3 = () => {
+    timer1 = setTimeout(() => {
+      setVolume(false)
+      timer1 = null
+    },500)
+  }
+
+  const enter4 = () => {
+    console.log('enter444');
+    
+    if (timer1 !== null) {
+      setClear(false)
+      setSpeed(false)
+      setVolume(false)
+      clearTimeout(timer1)
+    }
+    setSettingflag(true)
+  }
+
+  const leave4 = () => {
+    timer1 = setTimeout(() => {
+      setSettingflag(false)
+      timer1 = null
+    },500)
+  }
+
+  const [speednum, setSpeednum] = useState(1)
+  const changspeed = (e) => {
+    console.log(e.target.dataset.sp);
+    let num = e.target.dataset.sp - '0'
+    setSpeednum(num)
+    videoref.current.playbackRate = (num)
+  }  
+
+  const changevolume = (e) => {
+    const proHeight = 100
+    let height = volumeheight
+    if (e.target.className === "voice-pro1") {
+      height = e.target.getBoundingClientRect().top + proHeight - e.clientY
+    } else if (e.target.className === "voice-pro2"){
+      height = e.target.parentNode.getBoundingClientRect().top + proHeight - e.clientY
+    }
+    setVolumeHeight(height)
+  }
+
+  useEffect(() => {
+    videoref.current.volume = volumeheight * 0.01
+  }, [volumeheight])
 
   // 返回弹幕行
   const [dmlines, setDmlines] = useState(20),
@@ -134,21 +265,140 @@ function VideoPart (props) {
         [dmfontsize, setDmfontsize] = useState('16px'),
         [dmfontcolor, setDmfontcolor] = useState("#fff")
 
+  const fncline = (i) => {
+    console.log('i is: ', i);
+    
+  }
+
   const fonttimer = useRef()
+
+  const dmcontrolenter = () => {
+    if (fonttimer.current != null) {
+      setFontflag(false)
+      clearTimeout(fonttimer.current)
+      fonttimer.current = null
+    }
+    setDmcontrolflag(true)
+  }
+
+  const dmcontrolleave = () => {
+    fonttimer.current = setTimeout(() => {
+      setDmcontrolflag(false)
+    }, 800)
+  }
+
+  const enterfont = () => {
+    if (fonttimer.current != null) {
+      setDmcontrolflag(false)
+      clearTimeout(fonttimer.current)
+      fonttimer.current = null
+    }
+    setFontflag(true)
+  }
+
+  const leavefont = () => {
+    fonttimer.current = setTimeout(() => {
+      setFontflag(false)
+    }, 800)
+  }
 
   // 元数据加载完成
   const videoloadedmated = () => {
-    // 监听全屏改变事件
-    window.addEventListener("fullscreenchange", () => {
-      // 全屏时为全屏元素   退出全屏时为null
-      const fullelement = document.fullscreenElement      
-      if (fullelement !== null && fullfalg === false) {
-        setFullflag(true)
-      } else if (fullelement === null){
-        // 按esc时的情况
-        setFullflag(false)
+  // 监听全屏改变事件
+  window.addEventListener("fullscreenchange", () => {
+    // 全屏时为全屏元素   退出全屏时为null
+    const fullelement = document.fullscreenElement      
+    if (fullelement !== null && fullfalg === false) {
+      setFullflag(true)
+    } else if (fullelement === null){
+      // 按esc时的情况
+      setFullflag(false)
+    }
+  })
+  // 键盘事件
+  window.addEventListener("keydown", (e) => {
+    let temodmflag = true;
+    const k = e.key.toLowerCase()      
+    switch (k) {
+      case " ":
+        e.preventDefault()
+        clickvideo()
+        break;
+      case 'f':
+        console.log('全屏');
+        fullscreenfnc()
+        break;
+      case 'd':
+        console.log('弹幕');
+        setDmflag(!temodmflag)
+        break;
+      case 'm':
+        console.log('静音');
+        break;
+      case ']':
+        console.log('下一集');
+        break;
+      case '[':
+        console.log('上一级');
+        break;
+      case 'arrowup':
+        videoprogresaddnum(5)
+        break;
+      case 'arrowleft':
+        console.log('');
+        break;
+      case 'arrowright':
+        break;
+      case 'arrowdown':
+        setVolumeHeight(volumeheight - 5)
+        break;
+      default:
+        break;
       }
+    
+   })
+  }
+
+  const videoprogresaddnum = (num) => {
+    Promise.resolve().then(() => {
+      setVolumeHeight(() => {
+        if (num > 0) {
+          return volumeheight > 95 ? 100 : volumeheight + 5
+        } else {
+          return volumeheight < 5 ? 0 : volumeheight - 5
+        }
+      })
     })
+  }
+
+  // 开始拖动
+  let dragstart = false,
+      starposition = 0,                                       // 鼠标开始的位置
+      moveY = 0,                                              // y轴移动的距离
+      endpositon = 0,                                         // 结束时y位置
+      boxY = 0                                                // 音量距离位置
+
+  const dragstartfnc = (e) => {
+    dragstart = true
+    starposition = e.clientY
+    boxY = 
+    console.log('start',starposition);
+    document.addEventListener("mouseup", dragend)              // 拖拽结束
+    document.addEventListener("mouseover", draging)            // 拖拽结束
+  }
+  const draging = (e) => {
+    if (dragstart) {
+      console.log('draging');
+      moveY= e.clientX-starposition;
+      console.log(moveY);
+      
+    }
+  }
+
+  const dragend = () => {
+    dragstart = false
+    console.log('dragend');
+    document.removeEventListener("mouseup", dragend)
   }
 
   const videobox = useRef()                                     // 视频区域
@@ -158,6 +408,12 @@ function VideoPart (props) {
   const [playflag, setPlayflag] = useState(false)
   const [endflag, setEndflag] = useState(false)                 // 视频结束
   const [vidoopationflag, setVidoopationflag] = useState(true)  // 显示控制栏 true显示 false不显示
+
+  // canplay
+  const videoloaded = () => {
+    console.log('canplay');
+    setLoadflag(true)
+  }
 
   const videoprogressfnc = () => {
     console.log('progressing');
@@ -277,7 +533,91 @@ function VideoPart (props) {
     }
   }
 
+  // 双击
+  const handledoubleclick = () => {
+    fullscreenfnc()
+  }
+
+  // 全屏事件
+  const fullscreenfnc = () => {   
+    if (document.fullscreenEnabled) {      
+      if (!fullfalg && document.fullscreenElement === null) {        
+        videobox.current.requestFullscreen()
+        setFullflag(true)
+      } else {        
+        if (document.fullscreenElement !== null) {
+          document.exitFullscreen()
+          setFullflag(false)
+        }
+      }
+    }    
+  }
+  
+  // 移动事件
+  const bottomopationTimer = useRef()
+  let enterflag = false
+  // 鼠标在视频中移动时间
+  const mousemoveonmask = () => {
+    setVidoopationflag(true)
+    if (bottomopationTimer.current != null) {
+      clearTimeout(bottomopationTimer.current)
+      bottomopationTimer.current = null
+      return
+    }
+    bottomopationTimer.current = setTimeout(() => {
+      setVidoopationflag(false)
+    }, 2000)
+  }
+
+  // mover2
+  const mover2 = (e) => {
+    e.stopPropagation()
+    if (!vidoopationflag) {
+      setVidoopationflag(true)
+    }
+  }
+
+  // 进入底部操作框
+  const entervop = () => {
+    setVidoopationflag(true)
+    clearTimeout(bottomopationTimer.current)
+    enterflag = true  
+  }
+
+  // 离开底部操作框
+  const leaveop = () => {
+    enterflag = false
+    bottomopationTimer.current = setTimeout(() => {        
+      setVidoopationflag(false)
+    },2000)
+  }
+
+  // 离开视频区域
+  const leavevideopart = () => {    
+    enterflag = false
+    bottomopationTimer.current = setTimeout(() => {        
+      setVidoopationflag(false)
+    },2000)
+  }
+
   const progressref = useRef()
+  // 点击进度条,跳转
+  const tothitime = (e) => {
+    // 里面有各种位置信息 
+    const proLength = progressref.current.clientWidth     // 进度条条宽度
+    const clickX = e.clientX                              // 点击位置距离屏幕左侧距离
+    const progressrefLeft = progressref.current.getBoundingClientRect().left
+    const clickPositon = clickX - progressrefLeft         // 点击位置，距离左侧的距离
+    let pro = (clickPositon / proLength)                  // 进度
+    const duration = videoref.current.duration
+    videoref.current.currentTime = Math.floor(duration * pro)
+    if (videoref.current.pause) {
+      setTimeout(() => {
+        videoref.current.play()
+      }, 150)
+    }
+  }
+
   // 点赞 投币 收藏 转发
   const clickbtn = async (e) => {
     e.stopPropagation()
@@ -372,6 +712,42 @@ function VideoPart (props) {
           message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
         }
       }
+    }
+  }
+
+// 关闭页面是触发
+  window.addEventListener('beforeunload', async() => {
+    // document.addEventListener('visibilitychange', async() => {
+      // 如果播放了视频，更新数据， 否则不用
+        if (clicked) {
+          const data = {
+            uid: userinfo.uid,
+            vid: vid,
+            type: 0,
+            lastwatched: videoref.current.currentTime,
+            done: wawtchdonefal
+          }
+          await updateinfo(data)
+        }
+        return
+  })
+
+  const switchfnc = () => {
+    switch (speednum) {
+      case 2.0:
+        return <span>2.0</span>
+      case 1.5:
+        return <span>1.5</span>
+      case 1.25:
+        return <span>1.25</span>
+      case 1:
+        return <span>倍速</span>
+      case 0.75:
+        return <span>0.75</span>
+      case 0.5:
+        return <span>0.5</span>
+      default:
+        return <span>倍速</span>
     }
   }
   
@@ -568,7 +944,7 @@ function VideoPart (props) {
       
       if (res) {
         console.log('send dm successfuly');
-        setDmlist(res)
+        props.setDmlist(res)
         setDmtext("")
       }
     }
@@ -680,12 +1056,6 @@ function VideoPart (props) {
       message.open({type: 'info', content: '取消追番', flag: true})
     }
   }
-
-  // canplay
-  const videoloaded = () => {
-    console.log('canplay');
-    setLoadflag(true)
-  }
   return (
     <>
       <Totop 
@@ -721,14 +1091,553 @@ function VideoPart (props) {
           </div>
         </div>
       </div>
-      <VideoPlayer 
-        userinfo={userinfo}
-        thisvid={thisvid}
-        vid={vid}
-        uid={uid}
-        dmlist={dmlist}
-        setDmlist={setDmlist}
-      />
+      <div className={props.widthscreen ? "playerbox playerbox-active" : "playerbox"}
+        ref={playerboxref}
+        // style={{width: props.widthscreen ? '1495px' : '100%',
+        //         height: props.widthscreen ? '824px' : 'fit-content'}}
+        >
+        <div className="videobox" ref={videobox}
+        // style={{height: props.widthscreen ? '768px' : '600px'}}
+        >
+            <div className="loadingsp" style={{display: playflag ? 'none' : 'flex'}}>
+              <div className='lltext'>加载中</div>
+              <div className="rightanima">
+                <div className='icon iconfont nb1'>&#xec1e;</div>
+                <div className='icon iconfont nb2'>&#xec1e;</div>
+                <div className='icon iconfont nb3'>&#xec1e;</div>
+                <div className='icon iconfont nb4'>&#xec1e;</div>
+              </div>
+          </div>
+          <div className="vodepinnerbox">
+            <video
+              src={thisvid != null ? thisvid.path : null}
+              ref={videoref}
+              onCanPlay={videoloaded}
+              onProgress={videoprogressfnc}
+              onTimeUpdate={videotimeupdate}
+              onPlaying={videoplating}
+              // onSeeking={videoseeking}
+              // onSeeked={videoseeked}
+              onWaiting={videowating}
+              onEnded={playend}
+              onPlay={videoplay}
+              onPause={videopause}
+              onError={videoerror}
+              onLoadedMetadata={videoloadedmated}
+              className='videosrc'>
+            </video>
+          </div>
+          {
+            !playflag &&
+            <span className="pausespan icon iconfont">&#xe6ab;</span>
+          }
+          <div className="vide-mask-over"
+            onMouseMove={mousemoveonmask}
+            onClick={clickvideo}
+            onDoubleClick={handledoubleclick}
+            onMouseLeave={leavevideopart}
+            >
+              {
+                endflag &&
+                <div className="end-view"
+                  onClick={replayvideo}
+                >
+                  <div className="video-end-box">
+                    <div className="userinfo-line">
+                      <div className="recom-img-box">
+                        <img src={upinfo.avatar} alt="" className="user-reco-avatar"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(`/${upinfo?.uid}`, "blank")
+                          }}
+                        />
+                      </div>
+                      <div className="reco-info2">
+                        <div className="reco-user-name">
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              window.open(`/${upinfo?.uid}`, "blank")
+                            }}
+                          >
+                          {upinfo?.name}
+                          </span>
+                        </div>
+                        {
+                          upinfo?.followed ?
+                          <div className="reco-sub-btn spbtnfollow"
+                            data-uid2={upinfo?.uid}
+                            onClick={canclefollowuser}
+                          >取消关注</div>
+                          :
+                          <div className="reco-sub-btn"
+                            data-uid2={upinfo?.uid}
+                            onClick={tofollowuser}
+                          >+ 关注</div>
+                        }
+                      </div>
+                      <div className="remo-right-info">
+                        <div className="repaly-box">
+                          <div className="iconbox-a"
+                            onClick={replayvideo}
+                          >
+                            <span className="icon iconfont">&#xe615;</span>
+                            <span className="icon-text-sp">重播</span>
+                          </div>
+                        </div>
+                        <div className="onter-icons"
+                          onClick={clickbtn}
+                        >
+                          <div className="iconbox-a"
+                            data-type="1"
+                            style={{color: thisvid?.liked ? '#32aeec' : '#fff'}}
+                          >
+                            <span className="icon iconfont">&#xe61c;</span>
+                            <span className="icon-text-sp">点赞</span>
+                          </div>
+                          <div className="iconbox-a"
+                            data-type="2"
+                            style={{color: thisvid?.iconed ? '#32aeec' : '#fff'}}
+                          >
+                            <span className="icon iconfont">&#xe617;</span>
+                            <span className="icon-text-sp">投币</span>
+                          </div>
+                          <div className="iconbox-a"
+                            data-type="3"
+                            style={{color: thisvid?.faved ? '#32aeec' : '#fff'}}
+                          >
+                            <span className="icon iconfont">&#xe630;</span>
+                            <span className="icon-text-sp">收藏</span>
+                          </div>
+                          <div className="iconbox-a"
+                            data-type="4"
+                          >
+                            <span className="icon iconfont">&#xe633;</span>
+                            <span className="icon-text-sp">转发</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="recommend-box">
+                      <div className="remoccend-title">相关推荐</div>
+                      <div className="recom-videos">
+                        {
+                          recommendlist.map(item =>
+                            <div className="one-reco-video"
+                              key={item.vid}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                window.open(`/video/${item.vid}`, "_blank")
+                              }}
+                            >
+                              <img src={item.cover} alt="" className="recommend-cover" />
+                              <div className="vidoebox-mask"></div>
+                              <div className="reco-titlebox">{item.cover}</div>
+                            </div>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+              {
+                dmflag && dmlist.map((item, index) =>
+                  item.type === 0 ?
+                    <div className="danmu-div"
+                      key={item.id}
+                      style={{animationPlayState: playflag ? 'running' : 'paused',
+                            color: (item.color) + '',
+                            textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                            top: (index % 20 * 25 + 10) + 'px',
+                            fontSize: '16px',
+                            display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+                    }}
+                    onMouseEnter={(e) =>
+                      e.target.style.animationPlayState = 'paused'
+                    }
+                    onMouseLeave={(e) => 
+                      e.target.style.animationPlayState = 'running'                      
+                    }
+                    >{item.text}</div>
+                  :
+                    <div className="danmu-div" key={item.id}
+                    style={{animationPlayState: playflag ? 'running' : 'paused',
+                            color: (item.color) + '',
+                            textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                            top: (index % 20 * 25 + 10) + 'px',
+                            fontSize: '16px'
+                    }}>{item.text}</div> 
+                )
+              }
+          </div>
+          {/* 视频控制 */}
+          {
+            !endflag &&
+            <div className="topmask"
+              style={{opacity: vidoopationflag ? '1' : '0'}}
+            ></div>
+          }
+          <div
+            className={fullfalg ? "videobottomcof videobottomcof-active" : "videobottomcof"}
+            style={{opacity: vidoopationflag ? '1' : '0'}}
+            onMouseMove={mover2}
+            onMouseEnter={entervop}
+            onMouseLeave={leaveop}
+            >
+            <div className="progressbox"
+              ref={progressref}
+              onClick={tothitime}
+            >
+              <div className="loadprogress"
+                onClick={tothitime}
+                style={{width: loadprogress + "%"}}
+              ></div>
+              <div className="done-box"
+                onClick={tothitime}
+                style={{width: videoprogress + '%'}}
+              ></div>
+            </div>
+            <div className="videoopationbox">
+              <div className="vidconleft">
+                {
+                  vlist.length > 0 && vlistindex - 1 > 0 &&
+                  <div className="out111">
+                    <div className="leftinnerspan icon iconfont"
+                      style={{rotate: '-180deg'}}
+                      onClick={prvvideo}
+                    >&#xe609;</div>
+                  </div>
+                }
+                {
+                  chapterlist.length > 0 && chapterindex  > 0 &&
+                  <div className="out111">
+                    <div className="leftinnerspan icon iconfont"
+                      style={{rotate: '-180deg'}}
+                      onClick={prvanima}
+                    >&#xe609;</div>
+                  </div>
+                }
+                {
+                  playflag ?
+                  <span className="icon iconfont"
+                    onClick={clickvideo}
+                  >&#xea81;</span>
+                  :
+                  <span className="icon iconfont"
+                    onClick={clickvideo}
+                  >&#xe60f;</span>
+                }
+                {
+                  vlist.length > 0 && vlistindex < vlist.length &&
+                    <div className="nextvideo icon iconfont"
+                      onClick={nextvideo}
+                    >&#xe609;</div>
+                }
+                {
+                  chapterlist.length > 0 && chapterindex < chapterlist.length - 1 &&
+                    <div className="nextvideo icon iconfont"
+                      onClick={nextanima}
+                    >&#xe609;</div>
+                }
+                <span className="timerspan">
+                  {nowtime} / {thisvid.vidlong}
+                </span>
+              </div>
+              <div className="mid-dm-box">
+                {
+                  fullfalg &&
+                  <div className="mid-dm">
+                    <div className="danmuopen icon iconfont" onClick={() => setDmflag(!dmflag)}>&#xe61f;
+                      {
+                        dmflag ?
+                        <div className="innericon icon iconfont">&#xe69e;</div>
+                        :
+                        <div className="innericon2 icon iconfont">&#xe7b7;</div>
+                      }
+                    </div>
+                    <div className="danmuopen icon iconfont">
+                      <span className='icon iconfont'
+                        onMouseEnter={dmcontrolenter}
+                        onMouseLeave={dmcontrolleave}
+                      >&#xe60d;</span>
+                      {
+                        dmcontrolflag &&
+                        <div className="fontcontrol-box"
+                          onMouseEnter={dmcontrolenter}
+                          onMouseLeave={dmcontrolleave}
+                        >
+                          <div className="con-box-title1">弹幕字体大小</div>
+                          <input type="range" className="changfont" />
+                            <div className="con-box-title1">弹幕速度</div>
+                          <input type="range" className="changfont" />
+                            <div className="con-box-title1">弹幕行数</div>
+                          <input type="range" className="changfont" />
+                        </div> 
+                      }
+                    </div>
+                    <div className="danmusnedbox">
+                      {
+                        dmflag &&
+                        <div className="leftfonts">
+                          <span className='icon iconfont'
+                            onMouseEnter={enterfont}
+                            onMouseLeave={leavefont}
+                          >&#xe64d;</span>
+                        </div>
+                      }
+                      {
+                        fontflag &&
+                        <div className="dmfontcontrol-box"
+                          onMouseEnter={enterfont}
+                          onMouseLeave={leavefont}
+                        >
+                          <div className="tit-line1">
+                            <span>颜色</span>
+                            <div className="colorbox"
+                              style={{backgroundColor: dmfontcolor + ""}}
+                            ></div>
+                          </div>
+                          <input type="text" className="inpcolor"
+                            value={dmfontcolor}
+                            onChange={(e) => setDmfontcolor(e.target.value)}
+                          />
+                        </div>
+                      }
+                      {
+                        dmflag ?
+                        <input type="text" className="inputdanmu"
+                          value={dmtest}
+                          onChange={(e) => {
+                            e.preventDefault()
+                            setDmtext(e.target.value)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {tosendm()}
+                          }}
+                        placeholder='发一条弹幕吧~'/>
+                        :
+                        <div className="dm-close-box">弹幕已关闭</div>
+                      }
+                      <div className={dmflag ? "rightbtn" : "rightbtn notsend"} onClick={tosendm}>发送</div>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div className="vidconright">
+                <div className='outtbox'>
+                  <div className='textspan' onMouseEnter={enter1} onMouseLeave={leave1}>清晰度</div>
+                  {clearflag && 
+                    <div className="appendbox1"  onMouseEnter={enter1} onMouseLeave={leave1}>
+                      <div className="onevv">1080P 高清</div>
+                      <div className="onevv">720P 高清</div>
+                      <div className="onevv">360P 流畅</div>
+                    </div>
+                  }
+                </div>
+                <div className='outtbox outbox2'>
+                  <div className='textspan'
+                    onMouseEnter={enter2}
+                    onMouseLeave={leave2}>
+                      { 
+                        switchfnc(speednum)
+                      }
+                    </div>
+                  {
+                    speedflag && 
+                    <div className="appendbox2" 
+                      onMouseEnter={enter2}
+                      onMouseLeave={leave2}
+                      onClick={changspeed}
+                      >
+                      <div className="onevv" data-sp='2.0'>2.0x</div>
+                      <div className="onevv" data-sp='1.5'>1.5x</div>
+                      <div className="onevv" data-sp='1.25'>1.25x</div>
+                      <div className="onevv" data-sp='1.0'>1.0x</div>
+                      <div className="onevv" data-sp='0.75'>0.75x</div>
+                      <div className="onevv" data-sp='0.5'>0.5x</div>
+                    </div>
+                  }
+                </div>
+                <div className='outtbox'>
+                  {
+                    volumeopen ?
+                    <span className='icon iconfont sp11'
+                      onMouseEnter={enter3}
+                      onMouseLeave={leave3}
+                      onClick={() => {
+                        setVolumeopen(false)
+                        videoref.current.volume = 0
+                      }}
+                    >&#xea11;</span>
+                    :
+                    <span className='icon iconfont sp12'
+                      onMouseEnter={enter3}
+                      onMouseLeave={leave3}
+                      onClick={() => {
+                        setVolumeopen(true)
+                        videoref.current.volume = (volumeheight * 0.01)
+                      }}
+                      >&#xea0f;</span> 
+                  }
+                  {
+                    volumeflag && 
+                      <div className="appendbox3"
+                        onMouseEnter={enter3}
+                        onMouseLeave={leave3}
+                        onClick={changevolume}
+                    >
+                      <div className="voicenum">{volumeheight}</div>
+                      <div className="voiceprogress">
+                        <div className="voice-pro1">
+                          <div className="voice-pro2"
+                            style={{height: `${volumeheight}%`}}
+                          >
+                            <div className="drag-btn"
+                              onMouseDown={dragstartfnc}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div className='outtbox'>
+                  <span className='icon iconfont sp21'
+                    onMouseEnter={enter4}
+                    onMouseLeave={leave4}
+                  >&#xe602;</span>
+                  {
+                    settingflag &&
+                    <div className="appendbox4"
+                      onMouseEnter={enter4}
+                      onMouseLeave={leave4}
+                    >
+                      <div className="one-setting-line">
+                        <span className="settingtext">循环播放</span>
+                        <div className={setting1 ? "changebox changebox-active" : "changebox"}
+                          onClick={() => setSetting1(!setting1)}
+                        >
+                          <div className="one-switch-box"></div>
+                        </div>
+                      </div>
+                      <div className="one-setting-line">
+                        <span className="settingtext">连续播放</span>
+                        <div className={setting2 ? "changebox changebox-active" : "changebox"}
+                          onClick={() => setSetting2(!setting2)}
+                        >
+                          <div className="one-switch-box"></div>
+                        </div>
+                      </div>
+                      <div className="one-setting-line">
+                        <div className={setting3 ? "one-ssbox one-ssbox-active" : "one-ssbox"}
+                          onClick={() => setSetting3(!setting3)}
+                        >16:9</div>
+                        <div className={!setting3 ? "one-ssbox one-ssbox-active" : "one-ssbox"}
+                          onClick={() => setSetting3(!setting3)}
+                        >4:3</div>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div className='appnedtext1 outtbox'>
+                  <span className='icon iconfont sp31'
+                    onClick={() => setLittlewindow(!littlewindow)}
+                  >&#xe61b;</span>
+                </div>
+                <div className='appnedtext2 outtbox'>
+                  <div className='icon iconfont sp41'
+                    onClick={props.onChnageWidth}>&#xe61a;</div>
+                </div>
+                <div className='appnedtext3 outtbox'>
+                  {
+                    false ?
+                    <div onClick={fullscreenfnc} className='icon iconfont sp51'>&#xe7bc;</div>
+                    :
+                    <div onClick={fullscreenfnc} className='icon iconfont sp52'>&#xe68a;</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="videoconbox">
+          {/* <div className="conleft">已经装填{thisvid.danmus}条弹幕</div> */}
+          <div className="conleft">已经装填{dmlist.length}条弹幕</div>
+          <div className="conright">
+            <div className="danmuopen icon iconfont" onClick={() => setDmflag(!dmflag)}>&#xe61f;
+              {
+                dmflag ?
+                <div className="innericon icon iconfont">&#xe69e;</div>
+                :
+                <div className="innericon2 icon iconfont">&#xe7b7;</div>
+              }
+            </div>
+            <div className="danmuopen icon iconfont">
+              <span className='icon iconfont'
+                onMouseEnter={dmcontrolenter}
+                onMouseLeave={dmcontrolleave}
+              >&#xe60d;</span>
+              {
+                dmcontrolflag &&
+                <div className="fontcontrol-box"
+                  onMouseEnter={dmcontrolenter}
+                  onMouseLeave={dmcontrolleave}
+                >
+                  <div className="con-box-title1">弹幕字体大小</div>
+                  <input type="range" className="changfont" />
+                    <div className="con-box-title1">弹幕速度</div>
+                  <input type="range" className="changfont" />
+                    <div className="con-box-title1">弹幕行数</div>
+                  <input type="range" className="changfont" />
+                </div> 
+              }
+            </div>
+            <div className="danmusnedbox">
+              {
+                dmflag &&
+                <div className="leftfonts">
+                  <span className='icon iconfont'
+                    onMouseEnter={enterfont}
+                    onMouseLeave={leavefont}
+                  >&#xe64d;</span>
+                </div>
+              }
+              {
+                fontflag &&
+                <div className="dmfontcontrol-box"
+                  onMouseEnter={enterfont}
+                  onMouseLeave={leavefont}
+                >
+                  <div className="tit-line1">
+                    <span>颜色</span>
+                    <div className="colorbox"
+                      style={{backgroundColor: dmfontcolor + ""}}
+                    ></div>
+                  </div>
+                  <input type="text" className="inpcolor"
+                    value={dmfontcolor}
+                    onChange={(e) => setDmfontcolor(e.target.value)}
+                  />
+                </div>
+              }
+              {
+                dmflag ?
+                <input type="text" className="inputdanmu"
+                  value={dmtest}
+                  onChange={(e) => setDmtext(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {tosendm()}
+                  }}
+                placeholder='发一条弹幕吧~'/>
+                :
+                <div className="dm-close-box">弹幕已关闭</div>
+              }
+              <div className={dmflag ? "rightbtn" : "rightbtn notsend"} onClick={tosendm}>发送</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="videoinfos"
         onClick={clickbtn}
       >

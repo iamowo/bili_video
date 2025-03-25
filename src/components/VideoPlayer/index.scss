@@ -1,0 +1,1142 @@
+.playerbox {
+    box-shadow: 0 0 8px #C9CCD0;
+    width: 100%;
+    height: fit-content;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    .videobox {
+      width: 100%;
+      // height: 600px;
+      height: 100%;
+      background-color: rgb(17, 16, 16);
+      position: relative;
+      display: flex;
+      .vodepinnerbox {
+        width: 100%;
+        // height: fit-content;
+        object-fit: contain;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        position: relative;
+        .videosrc {
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .loadingsp {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        translate: -50% -50%;
+        display: flex;
+        flex-direction: row;
+        .lltext {
+          color: #fff;
+          font-size: 15px;
+          letter-spacing: 1px;
+          margin-right: 5px;
+        }
+        .rightanima {
+          display: flex;
+          div {
+            margin-right: 10px;
+          }
+          .nb1 {
+            color: #fff;
+            font-size: 15px;
+            translate: 0 10px;
+            animation: upDown 1.5s ease-in-out infinite;
+          }
+          .nb2 {
+            color: #fff;
+            font-size: 15px;
+            animation: upDown 1.5s ease-in-out infinite 0.4s;
+          }
+          .nb3 {
+            color: #fff;
+            font-size: 15px;
+            animation: upDown 1.5s ease-in-out infinite 0.8s;
+          }
+          .nb4 {
+            color: #fff;
+            font-size: 15px;
+            animation: upDown 1.5s ease-in-out infinite 1.2s;
+          }
+        }
+      }
+      .pausespan {
+        position: absolute;
+        right: 30px;
+        bottom: 80px;
+        font-size: 60px;
+        color: #e4dfdf;
+        user-select: none;
+      }
+      .vide-mask-over {
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0);
+        box-sizing: border-box;
+        // padding: 10px 0;
+        overflow: hidden;
+        .end-view {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+          background: rgba(37, 37, 37, 0.432);
+	        -webkit-backdrop-filter: blur(10px);
+	        backdrop-filter: blur(10px);
+          .video-end-box {
+            width: 709px;
+            height: fit-content;
+            color: #fff;
+            font-size: 14px;
+            .userinfo-line {
+              display: flex;
+              width: 100%;
+              height: 56px;
+              .recom-img-box {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                box-sizing: border-box;
+                border: 2px solid #fff;
+                margin-right: 20px;
+                .user-reco-avatar {
+                  width: 100%;
+                  height: 100%;
+                  border-radius: 50%;
+                  margin-right: 20px;
+                  cursor: pointer;
+                }
+                &:hover {
+                  border-color: #32aeec;
+                }
+              }
+              .reco-info2 {
+                flex: 1;
+                height: 56px;
+                .reco-user-name {
+                  width: 100%;
+                  height: 18px;
+                  line-height: 18px;
+                  font-size: 16px;
+                  color: #fff;
+                  margin-bottom: 6px;
+                  cursor: pointer;
+                  span {
+                    cursor: pointer;
+                  }
+                }
+                .reco-sub-btn {
+                  width: 92px;
+                  height: 32px;
+                  border-radius: 4px;
+                  background-color: #32aeec;
+                  color: #fff;
+                  text-align: center;
+                  line-height: 32px;
+                  font-size: 14px;
+                  cursor: pointer;
+                  user-select: none;
+                }
+                .spbtnfollow {
+                  background-color: #e3e5e7;
+                  color: #9499a0;
+                }
+              }
+              .remo-right-info {
+                width: fit-content;
+                height: 56px;
+                display: flex;
+                .repaly-box {
+                  width: 70px;
+                  box-sizing: border-box;
+                  padding-right: 40px;
+                  border-right: 1px solid #fff;
+                  .iconbox-a {
+                    width: 30px;
+                    height: 56px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    cursor: pointer;
+                    user-select: none;
+                    .icon {
+                      margin: 0 0 5px;
+                      font-size: 22px;
+                    }
+                    &:hover {
+                      color: #32aeec;
+                    }
+                  }
+                }
+                .onter-icons {
+                  flex: 1;
+                  height: 56px;
+                  display: flex;
+                  margin-left: 20px;
+                  .iconbox-a {
+                    margin-left: 20px;
+                    width: 30px;
+                    height: 56px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    cursor: pointer;
+                    user-select: none;
+                    .icon {
+                      margin: 0 0 5px;
+                      font-size: 22px;
+                    }
+                    &:hover {
+                      color: #32aeec;
+                    }
+                  }
+                }
+              }
+            }
+            .recommend-box {
+              margin-top: 20px;
+              width: 100%;
+              height: fit-content;
+              .remoccend-title {
+                width: 100%;
+                height: 20px;
+                line-height: 20px;
+                font-size: 16px;
+                color: #fff;
+                margin-bottom: 10px;
+              }
+              .recom-videos {
+                width: 100%;
+                height: fit-content;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                column-gap: 20px;
+                row-gap: 20px;
+                .one-reco-video {
+                  width: 223px;
+                  height: 140px;
+                  background-color: rgb(223, 223, 230);
+                  position: relative;
+                  border-radius: 4px;
+                  .recommend-cover {
+                    position: absolute;
+                    top: 0;
+                    width: 223px;
+                    height: 140px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                  }
+                  .reco-titlebox {
+                    position: absolute;
+                    z-index: 2;
+                    bottom: 0;
+                    width: 100%;
+                    height: 20px;
+                    box-sizing: border-box;
+                    padding: 0 5px;
+                    line-height: 20px;
+                    font-size: 14px;
+
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    word-break: break-all;
+                    white-space: nowrap;
+
+                    transition: height 0.3s ease;
+                  }
+                  .vidoebox-mask {
+                    position: absolute;
+                    z-index: 1;
+                    bottom: 0;
+                    width: 100%;
+                    height: 70px;
+                    background: linear-gradient(to top, #141414bd, #5f5e5e00);
+                  }
+                  &:hover {
+                    .recommend-cover {
+                      border: 2px solid #FFF;
+                      translate: -2px -2px;
+                    }
+                    .reco-titlebox {
+                      height: 45px;
+                      line-height: 20px;
+
+                      text-overflow: normal;
+                      white-space: normal;
+                      
+                      display: -webkit-box;
+                      -webkit-line-clamp: 2;
+                      -webkit-box-orient: vertical;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        .danmu-div {
+          right: -10px;
+          translate: 110% 0;
+          position: absolute;
+          z-index: 5;
+          color: #fff;
+          font-weight: 540;
+          line-height: 20px;
+          box-sizing: border-box;
+          text-underline-offset:3px;
+          font-family: '-apple';
+          animation: danmumove 8s linear;
+          font-weight: 550;
+          user-select: none;
+        }
+      }
+      @keyframes danmumove {
+        0% {
+          right: -10;
+          translate: 100% 0;
+        }
+        100% {
+          right: 110%;
+          translate: -110% 0;
+        }
+      }
+      .topmask{
+        position: absolute;
+        width: 100%;
+        height: 30%;
+        background: linear-gradient(to bottom, #1d1d1d9f, #fffefe00);
+        transition: opacity 0.3s ease;
+        top: 0;
+        z-index: 2;
+      }
+      .videobottomcof {
+        width: 100%;
+        height: 80px;
+        position: absolute;
+        z-index: 2;
+        bottom: 0;
+        background: linear-gradient(to top, #1d1d1da1 40%, #1d1d1d4f 80%,#14141400);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-sizing: border-box;
+        padding: 25px 12px 0;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+        .progressbox {
+          width: 100%;
+          height: 4px;
+          background-color: hsla(0, 0%, 100%, .2);
+          cursor: pointer;
+          position: relative;
+          z-index: 3;
+          transition: height 0.2s ease 0.2s;
+          &:hover {
+            height: 6px;
+          }
+          .loadprogress {
+            position: absolute;
+            z-index: 2;
+            width: 0;
+            height: 100%;
+            background-color: rgb(179, 174, 174);
+          }
+          .done-box {
+            position: absolute;
+            z-index: 2;
+            width: 0;
+            height: 100%;
+            background-color: #32AEEC;
+          }
+        }
+        .videoopationbox {
+          width: 100%;
+          height: 35px;
+          display: flex;
+          justify-content: space-between;
+          box-sizing: border-box;
+          padding: 0 10px;
+          .vidconleft {
+            height: 35px;
+            display: flex;
+            .leftinnerspan {
+              position: relative;
+              z-index: 3;
+              margin: 0;
+              &:hover::after {
+                rotate: (180deg);
+                content: '上一集( [ )';
+                position: absolute;
+                left: 50%;
+                top: 30px;
+                width: 65px;
+                text-align: center;
+                translate: -50% 0;
+                height: 24px;
+                line-height: 24px;
+                font-size: 13px;
+                color: #fff;
+                border-radius: 4px;
+                background-color: #000000D0;
+              }
+            }
+            .nextvideo {
+              position: relative;
+              z-index: 3;
+              &:hover::after {
+                content: '下一集( ] )';
+                position: absolute;
+                left: 50%;
+                top: -30px;
+                width: 65px;
+                text-align: center;
+                translate: -50% 0;
+                height: 24px;
+                line-height: 24px;
+                font-size: 13px;
+                color: #fff;
+                border-radius: 4px;
+                background-color: #000000D0;
+              }
+            }
+            .icon {
+              cursor: pointer;
+              color: #e4dfdf;
+              font-size: 22px;
+              margin-right: 15px;
+              &:hover {
+                color: #fff;
+              }
+            }
+            .timerspan {
+              translate: 0 4px;
+              color: #e4dfdf;
+              font-size: 12px;
+            }
+          }
+          // 弹幕框   (全屏时候)
+          .mid-dm-box {
+            .mid-dm {
+              width: 730px;
+              height: 35px;
+              display: flex;
+              align-items: center;
+              .danmuopen {
+                width: 24px;
+                margin-right: 18px;
+                font-size: 24px;
+                color: #686666;
+                position: relative;
+                cursor: pointer;
+                user-select: none;
+                .icon {
+                  font-size: 24px;
+                  cursor: pointer;
+                  user-select: none;
+                }
+                .fontcontrol-box {
+                  z-index: 5;
+                  left: 50%;
+                  bottom: 70px;
+                  translate: -50% 0;
+                  position: absolute;
+                  width: 200px;
+                  height: fit-content;
+                  background-color: #141414E6;
+                  box-sizing: border-box;
+                  padding: 20px 20px;
+                  border-radius: 4px;
+                  .con-box-title1 {
+                    font-size: 14px;
+                    color: #fff;
+                  }
+                  .changfont {
+                    margin: 10px 0 20px;
+                    width: 100%;
+                    height: 20px;
+                  }
+                }
+                .dmcontrol-box2 {
+                  left: 50%;
+                  translate: -50% -50%;
+                  position: absolute;
+                  width: 200px;
+                  height: 300px;
+                  background-color: red;
+                }
+                &:hover {
+                  color: #32aeec;
+                  .innericon {
+                    color: #32AEEC;
+                  }
+                  .innericon2 {
+                    color: #32aaec;
+                  }
+                }
+                .innericon {
+                  position: absolute;
+                  width: 12px;
+                  height: 12px;
+                  border-radius: 6px;
+                  background-color: #fff;
+                  color: #32AEEC;
+                  font-size: 12px;
+                  bottom: 4px;
+                  right: -7px;
+                }
+                 .innericon2 {
+                  position: absolute;
+                  width: 12px;
+                  height: 12px;
+                  border-radius: 6px;
+                  background-color: #fff;
+                  color: #686666;
+                  font-size: 12px;
+                  bottom: 4px;
+                  right: -7px;
+                }
+              }
+              .danmusnedbox {
+                flex: 1;
+                height: 35px;
+                background-color: hsla(0, 0%, 100%, .3);
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                position: relative;
+                .leftfonts {
+                  width: 30px;
+                  height: 40px;
+                  text-align: center;
+                  line-height: 40px;
+                  text-align: center;
+                  line-height: 40px;
+                  .icon {
+                    margin: 0;
+                    cursor: pointer;
+                    user-select: none;
+                  }
+                }
+                .dmfontcontrol-box {
+                  position: absolute;
+                  width: 100%;
+                  left: -10%;
+                  height: 100px;
+                  width: 200px;
+                  background-color: #141414E6;
+                  bottom: 70px;
+                  box-sizing: border-box;
+                  padding: 20px;
+                  z-index: 5;
+                  border-radius: 4px;
+                  .tit-line1 {
+                    width: 100%;
+                    height: 20px;
+                    line-height: 20px;
+                    font-size: 14px;
+                    color: #ffffff;
+                    display: flex;
+                    align-items: center;
+                    .colorbox {
+                      margin-left: 10px;
+                      width: 30px;
+                      height: 15px;
+                      border-radius: 4px;
+                    }
+                  }
+                  .inpcolor {
+                    margin-top: 15px;
+                    width: 100%;
+                    height: 20px;
+                    border: 0;
+                    outline: 0;
+                    box-sizing: border-box;
+                    padding: 0 5px;
+                    color: #fff;
+                    background-color: #928e8e;
+                    border-radius: 4px;
+                  }
+                }
+                .inputdanmu {
+                  height: 70%;
+                  flex: 1;
+                  box-sizing: border-box;
+                  margin: 0 6px;
+                  outline: none;
+                  border: 0;
+                  background-color: transparent;
+                  color: #fff;
+                }
+                .inputdanmu::placeholder {
+                  color: #fff;
+                }
+                .dm-close-box {
+                  flex: 1;
+                  height: 35px;
+                  box-sizing: border-box;
+                  padding-left: 6px;
+                  line-height: 35px;
+                  font-size: 14px;
+                  color: #999;
+                }
+                .rightbtn {
+                  cursor: pointer;
+                  width: 64px;
+                  height: 35px;
+                  text-align: center;
+                  line-height: 35px;
+                  text-align: center;
+                  background-color: #00AEEC;
+                  color: #fff;
+                  font-size: 14px;
+                  border-top-right-radius: 6px;
+                  border-bottom-right-radius: 6px;
+                  user-select: none;
+                }
+                .notsend {
+                  background-color: #cbcdce;
+                  color: #999;
+                  cursor: not-allowed;
+                }
+              }
+            }
+          }
+          .vidconright {
+            display: flex;
+            .outbox2 {
+              width: 30px;
+              line-height: 20px;
+            }
+            .appnedtext1 {
+              position: relative;
+              z-index: 3;
+              &:hover::after {
+                content: '画中画模式';
+                position: absolute;
+                left: 50%;
+                top: -30px;
+                width: 85px;
+                text-align: center;
+                translate: -60% 0;
+                height: 24px;
+                line-height: 24px;
+                font-size: 13px;
+                color: #fff;
+                border-radius: 4px;
+                background-color: #000000D0;
+              }
+            }
+            .appnedtext2 {
+              position: relative;
+              z-index: 3;
+              &:hover::after {
+                content: '宽屏模式';
+                position: absolute;
+                left: 50%;
+                top: -30px;
+                width: 75px;
+                text-align: center;
+                translate: -60% 0;
+                height: 24px;
+                line-height: 24px;
+                font-size: 13px;
+                color: #fff;
+                border-radius: 4px;
+                background-color: #000000D0;
+              }
+            }
+            .appnedtext3 {
+              position: relative;
+              z-index: 3;
+              &:hover::after {
+                content: '全屏模式 f';
+                position: absolute;
+                left: 50%;
+                top: -30px;
+                width: 80px;
+                text-align: center;
+                translate: -60% 0;
+                height: 24px;
+                line-height: 24px;
+                font-size: 13px;
+                color: #fff;
+                border-radius: 4px;
+                background-color: #000000D0;
+              }
+            }
+            .outtbox {
+              user-select: none;
+              margin-left: 20px;
+              position: relative;
+              .textspan {
+                font-size: 13px;
+                color: #e4dfdf;
+                cursor: pointer;
+                &:hover {
+                  color: #fff;
+                }
+              }
+              .icon {
+                font-size: 18px;
+                color: #e4dfdf;
+                cursor: pointer;
+                &:hover {
+                  color: #fff;
+                }
+              }
+              .sp11 {
+
+              }
+              .sp12 {
+              }
+              .sp21 {
+                font-size: 21px;
+              }
+              .sp31 {
+                font-size: 21px;
+              }
+              .sp41 {
+                translate: 0 1px;
+              }
+              .sp52 {
+                // translate: 0 2px;
+                font-size: 21px;
+              }
+            }
+            // 清晰度盒子
+            .appendbox1 {
+              position: absolute;
+              width: 120px;
+              height: fit-content;
+              bottom: 70px;
+              border-radius: 2px;
+              background-color: hsla(0, 0%, 8%, .9);
+              right: 50%;
+              translate: 50% 0;
+              .onevv {
+                box-sizing: border-box;
+                padding: 0 12px;
+                margin: 0;
+                width: 100%;
+                height: 36px;
+                font-size: 12px;
+                color: #e4dfdf;
+                text-align: center;
+                line-height: 36px;
+                cursor: pointer;
+                &:hover {
+                  background-color: #5a5a5ae2;
+                  border-radius: 2px;
+                }
+              }
+            }
+            // 倍速
+            .appendbox2 {
+              position: absolute;
+              width: 70px;
+              height: fit-content;
+              bottom: 70px;
+              border-radius: 2px;
+              background-color: hsla(0, 0%, 8%, .9);
+              right: 50%;
+              translate: 50% 0;
+              .onevv {
+                box-sizing: border-box;
+                padding: 0 12px;
+                margin: 0;
+                width: 100%;
+                height: 36px;
+                font-size: 12px;
+                color: #e4dfdf;
+                text-align: center;
+                line-height: 36px;
+                cursor: pointer;
+                &:hover {
+                  background-color: #5a5a5ae2;
+                  border-radius: 2px;
+                }
+              }
+            }
+            // 音量
+            .appendbox3 {
+              position: absolute;
+              width: 32px;
+              height: fit-content;
+              bottom: 70px;
+              border-radius: 2px;
+              background-color: hsla(0, 0%, 8%, .9);
+              right: 50%;
+              translate: 50% 0;
+              box-sizing: border-box;
+              padding: 10px 0;
+              cursor: normal;
+              .voicenum {
+                margin: 0;
+                width: 100%;
+                height: 20px;
+                text-align: center;
+                line-height: 20px;
+                font-size: 12px;
+                color: #e4dfdf;
+                margin-bottom: 5px;
+              }
+              .voiceprogress {
+                margin: 0;
+                width: 100%;
+                height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .voice-pro1 {
+                  width: 2px;
+                  height: 100px;
+                  background-color: #e4dfdf;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: end;
+                  cursor: pointer;
+                  .voice-pro2 {
+                    width: 2px;
+                    height: 100%;
+                    background-color: #32aeec;
+                    position: relative;
+                  }
+                  .drag-btn {
+                    position: absolute;
+                    top: -6px;
+                    left: -5px;
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background-color: #32aeec;
+                  }
+                }
+              }
+            }
+            .appendbox4 {
+              position: absolute;
+              width: 140px;
+              height: fit-content;
+              bottom: 70px;
+              border-radius: 2px;
+              background-color: hsla(0, 0%, 8%, .9);
+              right: 50%;
+              translate: 50% 0;
+              box-sizing: border-box;
+              padding: 10px;
+              cursor: normal;
+              .one-setting-line {
+                width: 100%;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 14px;
+                color: #e4dfdf;
+                margin-bottom: 10px;
+                .changebox {
+                  width: 43px;
+                  height: 26px;
+                  background-color: rgb(218, 211, 211);
+                  border-radius: 13px;
+                  position: relative;
+                  cursor: pointer;
+                  user-select: none;
+                  transition: background-color 0.3s ease;
+                  .one-switch-box {
+                    position: absolute;
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 11px;
+                    // left: 1px;
+                    top: 50%;
+                    translate: 3px -50%;
+                    background-color: #fff;
+                    transition: translate 0.3s ease;
+                  }
+                }
+                .changebox-active {
+                  background-color: #32aeec;
+                  .one-switch-box {
+                    translate: 19px -50%;
+                  }
+                }
+                .one-ssbox {
+                  width: 45%;
+                  height: 25px;
+                  border-radius: 4px;
+                  text-align: center;
+                  line-height: 25px;
+                  cursor: pointer;
+                  user-select: none;
+                  font-size: 13px;
+                  background-color: rgba(75, 73, 73, 0.61);
+                }
+                .one-ssbox-active {
+                  background-color: #32aeec;
+                  color: #fff;
+                }
+              }
+            }
+          }
+        }
+      }
+    // 全屏后，底部控制盒子变高
+      .videobottomcof-active {
+        height: 94px;
+        .videoopationbox {
+          height: 45px;
+          margin-bottom: 3px;
+          .vidconleft {
+            .icon {
+              font-size: 28px;
+            }
+            .timerspan {
+              translate: 0 6px;
+              font-size: 14px;
+            }
+          }
+          .vidconright {
+            .outtbox {
+              .icon {
+                font-size: 25px;
+              }
+              .textspan {
+                translate: 0 3px;
+                font-size: 14px;
+              }
+              .sp11 {
+
+              }
+              .sp12 {
+              }
+              .sp21 {
+                font-size: 27px;
+              }
+              .sp31 {
+                font-size: 28px;
+              }
+              .sp41 {
+                font-size: 23px;
+                translate: 0 2px;
+              }
+              .sp51 {
+                translate: 0 2px;
+                font-size: 26px;
+              }
+            }
+          }
+        }
+      }
+    }
+    .videoconbox {
+      width: 100%;
+      height: 56px;
+      box-sizing: border-box;
+      padding: 0 10px;
+      display: flex;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      .conleft {
+        width: 200px;
+        height: 56px;
+        line-height: 56px;
+        font-size: 14px;
+        color: #61666D;
+      }
+      .conright {
+        height: 56px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        .danmuopen {
+          width: 24px;
+          margin-right: 18px;
+          font-size: 24px;
+          color: #686666;
+          position: relative;
+          cursor: pointer;
+          user-select: none;
+          .icon {
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+          }
+          .fontcontrol-box {
+            z-index: 5;
+            left: 50%;
+            bottom: 50px;
+            translate: -50% 0;
+            position: absolute;
+            width: 200px;
+            height: fit-content;
+            background-color: #141414E6;
+            box-sizing: border-box;
+            padding: 20px 20px;
+            border-radius: 4px;
+            .con-box-title1 {
+              font-size: 14px;
+              color: #fff;
+            }
+            .changfont {
+              margin: 10px 0 20px;
+              width: 100%;
+              height: 20px;
+            }
+          }
+          &:hover {
+              color: #32aeec;
+              .innericon {
+                color: #32AEEC;
+              }
+              .innericon2 {
+                color: #32aaec;
+              }
+            }
+            .innericon {
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              border-radius: 6px;
+              background-color: #fff;
+              color: #32AEEC;
+              font-size: 12px;
+              bottom: 4px;
+              right: -7px;
+            }
+             .innericon2 {
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              border-radius: 6px;
+              background-color: #fff;
+              color: #686666;
+              font-size: 12px;
+              bottom: 4px;
+              right: -7px;
+            }
+        }
+        .danmusnedbox {
+          flex: 1;
+          height: 40px;
+          background-color: #F1F2F3;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          position: relative;
+          .leftfonts {
+            width: 30px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            text-align: center;
+            line-height: 40px;
+            .icon {
+              margin: 0;
+              cursor: pointer;
+              user-select: none;
+            }
+          }
+          .dmfontcontrol-box {
+            position: absolute;
+            width: 100%;
+            left: -10%;
+            height: 100px;
+            width: 200px;
+            background-color: #141414E6;
+            bottom: 50px;
+            box-sizing: border-box;
+            padding: 20px;
+            z-index: 5;
+            border-radius: 4px;
+            .tit-line1 {
+              width: 100%;
+              height: 20px;
+              line-height: 20px;
+              font-size: 14px;
+              color: #ffffff;
+              display: flex;
+              align-items: center;
+              .colorbox {
+                margin-left: 10px;
+                width: 30px;
+                height: 15px;
+                border-radius: 4px;
+              }
+            }
+            .inpcolor {
+              margin-top: 15px;
+              width: 100%;
+              height: 20px;
+              border: 0;
+              outline: 0;
+              box-sizing: border-box;
+              padding: 0 5px;
+              color: #fff;
+              background-color: #928e8e;
+              border-radius: 4px;
+            }
+          }
+          .inputdanmu {
+            height: 70%;
+            flex: 1;
+            box-sizing: border-box;
+            margin: 0 6px;
+            outline: none;
+            border: 0;
+            background-color: #F1F2F3;
+          }
+          .dm-close-box {
+            flex: 1;
+            height: 40px;
+            box-sizing: border-box;
+            padding-left: 6px;
+            line-height: 40px;
+            font-size: 14px;
+            color: #999;
+          }
+          .rightbtn {
+            cursor: pointer;
+            width: 64px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            text-align: center;
+            background-color: #00AEEC;
+            color: #fff;
+            font-size: 14px;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            user-select: none;
+          }
+          .notsend {
+            background-color: #e0e3e6;
+            color: #999;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+  // active 放在下面
+  .playerbox-active {
+    width: 1495px;
+    height: 824px;
+    .videobox {
+      height: 768px;
+    }
+  }

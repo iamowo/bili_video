@@ -1,6 +1,6 @@
 import './test.scss'
 import message from '../../components/notice/notice'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { click } from '@testing-library/user-event/dist/click'
 import { getAllVideo, getByVid, getDm } from '../../api/video'
 import axios from 'axios'
@@ -31,6 +31,39 @@ function Test() {
     
     getData()
   },[])
+
+  const clickTimeout = useRef(null);
+  const clickCount = useRef(0);
+   const handleClick2 = () => {
+    clickCount.current += 1;
+    
+    if (clickCount.current === 1) {
+      clickTimeout.current = setTimeout(() => {
+        // 单击处理
+        if (clickCount.current === 1) {
+          console.log('单击事件');
+        }
+        clickCount.current = 0;
+      }, 200);
+    } else if (clickCount.current === 2) {
+      // 双击处理
+      clearTimeout(clickTimeout.current);
+       console.log('双击事件');
+      clickCount.current = 0;
+    }
+  };
+
+  const handleClick = () => {
+    if (clickTimeout.current != null) {
+      clearTimeout(clickTimeout.current)
+      console.log('双击');
+      return
+    }
+    clickTimeout.current = setTimeout(() => {
+      console.log('单击');
+    }, 200)
+  }
+
   return (
     <div>
       <div className="text-view">
@@ -51,6 +84,16 @@ function Test() {
         dmlist={dmlist}
         setDmlist={setDmlist}
       />
+      <div
+        style={{margin: '40px 0'}}
+      >================================================================================</div>
+      <div className="clickbox"
+        onClick={handleClick}
+      >
+      </div>
+      <div
+        style={{margin: '40px 0'}}
+      >================================================================================</div>
     </div>
   )
 }

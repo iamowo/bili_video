@@ -179,15 +179,6 @@ function VideoPart (props) {
     console.log('加载完成playing');
     
   }
-
-  const videoseeking = () => {
-    console.log('开始跳跃');
-  }
-
-  const videoseeked = () => {
-    console.log('end跳跃');
-  }
-
   // play 播放时触发
   const videoplay = () => {
     setPlayflag(true)

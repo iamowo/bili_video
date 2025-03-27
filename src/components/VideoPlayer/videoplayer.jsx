@@ -10,7 +10,7 @@ import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from
 import { useLocation, useNavigate } from "react-router-dom"
 
 const VideoPlayer = (props) => {  
-  const { vid, userinfo, uid, thisvid, setThisvid, dmlist, setDmlist   } = props
+  const { vid, userinfo, uid, thisvid, upinfo, setThisvid, recommendlist, dmlist, setDmlist   } = props
   const location = useLocation();
 
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
@@ -62,16 +62,12 @@ const VideoPlayer = (props) => {
         [chapterindex, setChapterindex] = useState(0)
   const [littlewindow, setLittlewindow] = useState(false)
   const [animationinfo, setAnimationinfo] = useState({})           // anmation 的信息
-  const recommendlist = props.recommendlist
-  const upinfo = props.upinfo
 
   useEffect(() => {
-    const getData = async () => {
-      console.log('thisvid: ', thisvid);
-      
+    const getData = async () => {      
       const res = thisvid
       // 刚开始数据还没加载出来， 无法使用slice
-      res.time = (res.time).slice(0, 10) + ' ' + (res.time).slice(11, 16) // 在{ } 中修改会报错
+      res.time = res?.time?.slice(0, 10) + ' ' + res?.time?.slice(11, 16) // 在{ } 中修改会报错
       // 视频选集
       const res3 = await getVideoFormList(res.listid)
       for (let i = 0; i < res3.length; i++) {
@@ -79,20 +75,15 @@ const VideoPlayer = (props) => {
           setVlistindex(i + 1)
         }
       }
-      console.log('lid:', res.listid);
-      console.log('视频集合:', res3);
-      
       setVlist(res3)
-
       const res4 = await getAnimationByVid(vid, uid)
       setAnimationinfo(res4)      
-
       // animation list 信息
       if (res.aid !== -1 && res.aid != null) {
-        console.log('=====================');
+        // console.log('=====================');
         const res5 = await getSeasons(res.aid)
         setSeasonlist(res5)
-        console.log('======================res4: ', res5);
+        // console.log('======================res4: ', res5);
         
         for (let i = 0; i < res5.length; i++) {
           for (let j = 0; j < res5[i].length; j++) {
@@ -105,7 +96,8 @@ const VideoPlayer = (props) => {
         }
       }
     }
-    if (thisvid != null) {
+    // thisvid 非空 非null
+    if (thisvid != null && Object.keys(thisvid).length === '{}') {
       getData()
     }
   },[thisvid])

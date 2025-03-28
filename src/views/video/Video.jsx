@@ -22,7 +22,7 @@ import icon2 from '../../static/assets/icon2.png'
 import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
 function VideoPart (props) {
-  const { vid, userinfo, uid, setDmlist, dmlist, thisvid } = props
+  const { vid, userinfo, uid, setDmlist, dmlist, thisvid, onChnageWidth } = props
   const location = useLocation();
 
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
@@ -719,6 +719,9 @@ function VideoPart (props) {
         uid={uid}
         dmlist={dmlist}
         setDmlist={setDmlist}
+        windoflag2={windoflag2}
+        setWindoflag2={setWindoflag2}
+        onChnageWidth={onChnageWidth}
       />
       <div className="videoinfos"
         onClick={clickbtn}
@@ -1398,7 +1401,8 @@ function Video () {
   const uid = parseInt(userinfo != null ? userinfo.uid : -1)
   const [widthscreen, setWidth] = useState(false)
   const [recommendlist, setRecommendlist] = useState([])            // 相关推荐视频
-  const changwidth = () => {    
+  const changwidth = () => {
+    // 宽屏模式
     setWidth(!widthscreen)
   }
 

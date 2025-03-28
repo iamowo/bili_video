@@ -10,7 +10,9 @@ import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from
 import { useLocation, useNavigate } from "react-router-dom"
 
 const VideoPlayer = (props) => {  
-  const { vid, userinfo, uid, thisvid, upinfo, setThisvid, recommendlist, dmlist, setDmlist   } = props
+  const { vid, userinfo, uid, thisvid, upinfo, 
+          setThisvid, recommendlist, dmlist, setDmlist, 
+          windoflag2, setWindoflag2, onChnageWidth } = props
   const location = useLocation();
 
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
@@ -33,7 +35,6 @@ const VideoPlayer = (props) => {
         [volumeflag, setVolume] = useState(false)        // 声音控制条
   const [sysflag, setSys] = useState(false)             // 设置
   const [windoflag, setWindoflag] = useState(false)     // 小屏幕
-  const [windoflag2, setWindoflag2] = useState(false)   // 网页宽屏
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
   const [favflag, setFavflag] = useState(false)         // 打开收藏框
   const [favlist, setFavlist] = useState([])             // 收藏夹列表
@@ -1466,7 +1467,7 @@ const VideoPlayer = (props) => {
               </div>
               <div className='appnedtext2 outtbox'>
                 <div className='icon iconfont sp41'
-                  onClick={props.onChnageWidth}>&#xe61a;</div>
+                  onClick={onChnageWidth}>&#xe61a;</div>
               </div>
               <div className='appnedtext3 outtbox'>
                 {

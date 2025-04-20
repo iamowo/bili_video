@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addOne, addSome, subOne } from '../../store/modules/countStore'
 import { addLater } from '../../store/modules/countStore'
 
-import VideoPlayer from '../../components/VideoPlayer/videoplayer'
+import VideoPlayer from '../../components/VideoPlayer/videoplayer.jsx.bak'
 
 function Test() {
    // ===================================== videoplayer===========================

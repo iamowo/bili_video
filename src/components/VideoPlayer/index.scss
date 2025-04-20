@@ -11,7 +11,7 @@
       background-color: rgb(17, 16, 16);
       position: relative;
       display: flex;
-      .vodepinnerbox {
+      .pili-player {
         width: 100%;
         // height: fit-content;
         object-fit: contain;
@@ -19,7 +19,12 @@
         justify-content: center;
         display: flex;
         position: relative;
-        .videosrc {
+        &.fullscreen {
+          max-width: none;
+          width: 100vw;
+          height: 100vh;
+        }
+        video {
           align-items: center;
           justify-content: center;
           width: 100%;
@@ -317,11 +322,23 @@
       .topmask{
         position: absolute;
         width: 100%;
-        height: 30%;
+        height: 60px;
         background: linear-gradient(to bottom, #1d1d1d9f, #fffefe00);
         transition: opacity 0.3s ease;
         top: 0;
         z-index: 2;
+        .topline {
+          width: 100%;
+          height: 20px;
+          line-height: 20px;
+          box-sizing: border-box;
+          margin-top: 20px;
+          padding: 0 12px;
+          span {
+            font-size: 18px;
+            color: #fff;
+          }
+        }
       }
       .videobottomcof {
         width: 100%;
@@ -335,9 +352,57 @@
         justify-content: space-between;
         box-sizing: border-box;
         padding: 25px 12px 0;
-        opacity: 1;
         transition: opacity 0.3s ease;
-        .progressbox {
+        // 全屏后，底部控制盒子变高
+        &.full-active {
+          height: 90px;
+          width: 100%;
+          z-index: 3;
+          .videoopationbox {
+            height: 45px;
+            margin-bottom: 3px;
+            .vidconleft {
+              .icon {
+                font-size: 28px;
+              }
+              .timerspan {
+                translate: 0 6px;
+                font-size: 14px;
+              }
+            }
+            .vidconright {
+              .outtbox {
+                .icon {
+                  font-size: 25px;
+                }
+                .textspan {
+                  translate: 0 3px;
+                  font-size: 14px;
+                }
+                .sp11 {
+
+                }
+                .sp12 {
+                }
+                .sp21 {
+                  font-size: 27px;
+                }
+                .sp31 {
+                  font-size: 28px;
+                }
+                .sp41 {
+                  font-size: 23px;
+                  translate: 0 2px;
+                }
+                .sp51 {
+                  translate: 0 2px;
+                  font-size: 26px;
+                }
+              }
+            }
+          }
+        }
+        .progress-bar {
           width: 100%;
           height: 4px;
           background-color: hsla(0, 0%, 100%, .2);
@@ -348,14 +413,14 @@
           &:hover {
             height: 6px;
           }
-          .loadprogress {
+          .buffered {
             position: absolute;
             z-index: 2;
             width: 0;
             height: 100%;
             background-color: rgb(179, 174, 174);
           }
-          .done-box {
+          .progress {
             position: absolute;
             z-index: 2;
             width: 0;
@@ -890,53 +955,6 @@
                   background-color: #32aeec;
                   color: #fff;
                 }
-              }
-            }
-          }
-        }
-      }
-    // 全屏后，底部控制盒子变高
-      .videobottomcof-active {
-        height: 94px;
-        .videoopationbox {
-          height: 45px;
-          margin-bottom: 3px;
-          .vidconleft {
-            .icon {
-              font-size: 28px;
-            }
-            .timerspan {
-              translate: 0 6px;
-              font-size: 14px;
-            }
-          }
-          .vidconright {
-            .outtbox {
-              .icon {
-                font-size: 25px;
-              }
-              .textspan {
-                translate: 0 3px;
-                font-size: 14px;
-              }
-              .sp11 {
-
-              }
-              .sp12 {
-              }
-              .sp21 {
-                font-size: 27px;
-              }
-              .sp31 {
-                font-size: 28px;
-              }
-              .sp41 {
-                font-size: 23px;
-                translate: 0 2px;
-              }
-              .sp51 {
-                translate: 0 2px;
-                font-size: 26px;
               }
             }
           }

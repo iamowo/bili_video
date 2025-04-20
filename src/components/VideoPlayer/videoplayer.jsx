@@ -10,42 +10,46 @@ import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from
 import { useLocation, useNavigate } from "react-router-dom"
 
 const VideoPlayer = (props) => {  
-  const { vid, userinfo, uid, thisvid, upinfo, 
-          setThisvid, recommendlist, dmlist, setDmlist, 
+  const { vid, uid, thisvid,
+          userinfo, setUserinfo, upinfo, widthscreen,
+          setThisvid, recommendlist, dmlist, setDmlist, updateuser,
+          setUpinfo,
           windoflag2, setWindoflag2, onChnageWidth } = props
   const location = useLocation();
 
   const videoRef = useRef(null)
-  const videobox = useRef(null)                                     // 视频区域
+  const playerRef = useRef(null)
+  const videoBoxRef = useRef(null)
+  const progressRef = useRef(null)
   // 视频相关函数
-  const [loadflag, setLoadflag] = useState(false)               // 加载完成
-  const [isPlaying, setIsPlaying] = useState(false)             // 播放状态
-  const [endflag, setEndflag] = useState(false)                 // 视频结束
-  const [vidoopationflag, setVidoopationflag] = useState(true)  // 显示控制栏 true显示 false不显示
+  const [isLoading, setIsLoading] = useState(false)               // 加载完成
+  const [isPlaying, setIsPlaying] = useState(false)               // 是否在播放
+  const [isEnded, setIsEnded] = useState(false)                 // 视频结束
+  const [showControls, setShowControls] = useState(true)  // 显示底部控制栏
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
   const [lastwatchednunm, setLswnum] = useState(0)      // 上次观看的时间
   const [wawtchdonefal, setWdone] = useState(0)         // 是否观看完
-  const [isLoading, setIsLoading] = useState(false)     // 是否加载
-  const [nowtime ,setNowTime] = useState('00:00')       // 当前时间
-  const [buffered, setBuffered] = useState(0)           // 
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0)           // 视频时长
-  const [videoprogress, setProgress] = useState(0)      // progress
-  const [loadprogress, setLoadprogress] = useState(0)   // 预加载进度
-  const [isFullscreen, setIsFullscreen] = useState(false)       // 全屏flag
-  const [clearflag, setClear] = useState(false)         // 清晰度flag
-  const [speedflag, setSpeed] = useState(false)         // 倍速
+  
+  const [currentTime ,setCurrentTime] = useState(0)       // 当前视频时间
+  const [duration, setDuration] = useState(0)             //时长
+  const [progress, setProgress] = useState(0)       // 视频进度
+  const [buffered, setBuffered] = useState(0)       // 缓冲
+  const [isFullscreen, setIsFullscreen] = useState(false)           // 全屏
+  const [videoClear, setVideoClear] = useState(false)         // 清晰度
+  const [playbackRate, setPlaybackRate] = useState(1)
+  const [showRate, setShowRate] = useState(false)         // 显示倍速
   const [settingflag, setSettingflag] = useState(false)  // 设置
   const [setting1, setSetting1] = useState(false),       // 循环播放
         [setting2, setSetting2] = useState(false),       // 自动播放下一集
-        [setting3, setSetting3] = useState(true)         // 16：9    4：3
+        [setting3, setSetting3] = useState(true)        // 16：9    4：3
    // 改变音量
-  const [volume, setVolume] = useState(100),
-        [isMuted, setIsMuted] = useState(true),        // 静音 or 打开 声音
-        [volumeflag, setVolumeflag] = useState(false)        // 声音控制条
+  const [volume, setVolume] = useState(100),           // 音量大小
+        [isMuted, setIsMuted] = useState(true),      // 静音 or 打开 声音
+        [volumeControler, setVolumeControler] = useState(false)        // 声音控制条
   const [sysflag, setSys] = useState(false)             // 设置
   const [windoflag, setWindoflag] = useState(false)     // 小屏幕
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
+
   const [favflag, setFavflag] = useState(false)         // 打开收藏框
   const [favlist, setFavlist] = useState([])             // 收藏夹列表
 
@@ -74,58 +78,6 @@ const VideoPlayer = (props) => {
   const [littlewindow, setLittlewindow] = useState(false)
   const [animationinfo, setAnimationinfo] = useState({})           // anmation 的信息
 
-  // 初始化视频元数据
-  useEffect(() => {
-    const video = videoRef.current;
-
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration);
-    };
-
-    const handleProgress = () => {
-      if (video.buffered.length > 0) {
-        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-        const bufferedPercent = (bufferedEnd / video.duration) * 100;
-        setBuffered(bufferedPercent);
-      }
-    };
-
-    const handleWaiting = () => {
-      // setIsLoading(true);
-      // Only show loading if video has started playing
-      if (!video.paused) {
-        setIsLoading(true);
-      }
-    };
-
-    const handlePlaying = () => {
-      setIsLoading(false);
-    };
-
-    const handleSeeking = () => {
-      setIsLoading(true);
-    };
-
-    const handleSeeked = () => {
-      setIsLoading(false);
-    };
-
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("progress", handleProgress);
-    video.addEventListener("waiting", handleWaiting);
-    video.addEventListener("playing", handlePlaying);
-    video.addEventListener("seeking", handleSeeking);
-    video.addEventListener("seeked", handleSeeked);
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("progress", handleProgress);
-      video.removeEventListener("waiting", handleWaiting);
-      video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("seeking", handleSeeking);
-      video.removeEventListener("seeked", handleSeeked);
-    };
-  }, []);
 
   // 获取数据
   useEffect(() => {
@@ -167,79 +119,107 @@ const VideoPlayer = (props) => {
     }
   },[thisvid])
 
-  // 
+  // 初始化视频元数据
   useEffect(() => {
-    const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
-    window.addEventListener('scroll', () => {
+    const video = videoRef.current;
+    const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight // 滚动距离
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+    };
+
+    const handleProgress = () => {
+      if (video.buffered.length > 0) {
+        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+        const bufferedPercent = (bufferedEnd / video.duration) * 100;
+        setBuffered(bufferedPercent);
+      }
+    };
+
+    const handleWaiting = () => {
+      // setIsLoading(true);
+      // Only show loading if video has started playing
+      if (!video.paused) {
+        setIsLoading(true);
+      }
+    };
+
+    const handlePlaying = () => {
+      setIsLoading(false);
+    };
+
+    const handleSeeking = () => {
+      setIsLoading(true);
+    };
+
+    const handleSeeked = () => {
+      setIsLoading(false);
+    };
+
+    const handleEnded = () => {
+      setIsEnded(true)
+    }
+
+    const scrollFnc = () => {
       const top = document.body.scrollTop || document.documentElement.scrollTop
       if (top > distance) {
         setBottomScrollflag(true)
       } else {
         setBottomScrollflag(false)
       }
-    })
-  }, [])
+    }
 
-  // 更新进度条
-  useEffect(() => {
-    const video = videoRef.current;
-
-    const handleTimeUpdate = () => {
-      if (!isNaN(video.duration)) {
-        const progress = (video.currentTime / video.duration) * 100;
-        setProgress(progress);
-        setCurrentTime(video.currentTime);
+    // 关闭页面是触发
+    const updateInfo = async () => {
+      // 如果播放了视频，更新数据， 否则不用
+      if (clicked) {
+        const data = {
+          uid: userinfo.uid,
+          vid: vid,
+          type: 0,
+          lastwatched: videoRef.current.currentTime,
+          done: wawtchdonefal
+        }
+        await updateinfo(data)
       }
-    };
+      return
+    }
 
-    video.addEventListener("timeupdate", handleTimeUpdate);
+    document.addEventListener("scroll", scrollFnc)
+    document.addEventListener("beforeunload", updateInfo)
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
+    video.addEventListener("progress", handleProgress);
+    video.addEventListener("waiting", handleWaiting);
+    video.addEventListener("playing", handlePlaying);
+    video.addEventListener("seeking", handleSeeking);
+    video.addEventListener("seeked", handleSeeked);
+    video.addEventListener("ended", handleEnded);
 
     return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate);
+      document.removeEventListener("scroll", scrollFnc)
+      document.removeEventListener("beforeunload", updateInfo)
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("progress", handleProgress);
+      video.removeEventListener("waiting", handleWaiting);
+      video.removeEventListener("playing", handlePlaying);
+      video.removeEventListener("seeking", handleSeeking);
+      video.removeEventListener("seeked", handleSeeked);
+      video.removeEventListener("ended", handleEnded);
     };
   }, []);
 
-  // 控制栏显示/隐藏逻辑
-  // useEffect(() => {
-  //   const resetControlsTimeout = () => {
-  //     clearTimeout(controlsTimeoutRef.current);
-
-  //     if (!isHoveringControls) {
-  //       setShowControls(true);
-  //       controlsTimeoutRef.current = setTimeout(() => {
-  //         setShowControls(false);
-  //       }, 3000);
-  //     }
-  //   };
-
-  //   const player = playerRef.current;
-  //   player.addEventListener("mousemove", resetControlsTimeout);
-
-  //   return () => {
-  //     player.removeEventListener("mousemove", resetControlsTimeout);
-  //     clearTimeout(controlsTimeoutRef.current);
-  //   };
-  // }, [isHoveringControls]);
-
   // 键盘事件处理
   useEffect(() => {
-    console.log("当前全屏", isFullscreen);
-
     const handleKeyDown = (e) => {
       const video = videoRef.current;
-
       const key = e.key.toLowerCase();
+
       if (isFullscreen && key === "escape") {
         e.preventDefault();
         e.stopPropagation(); // 阻止事件冒泡
+        setIsFullscreen(false)
         return; // 直接返回，不执行任何操作
       }
-
       switch (key) {
-        case "escape":
-          e.preventDefault();
-          break;
-
         case "[":
           break;
 
@@ -258,47 +238,47 @@ const VideoPlayer = (props) => {
           break;
 
         // 左箭头后退5秒
-        // case "arowleft":
-        //   e.preventDefault();
-        //   skip(-5);
-        //   if (!isPlaying) {
-        //     togglePlay();
-        //   }
-        //   break;
+        case "arowleft":
+          e.preventDefault();
+          skip(-5);
+          if (!isPlaying) {
+            togglePlay();
+          }
+          break;
 
         // 右箭头前进5秒
-        // case "arrowright":
-        //   e.preventDefault();
-        //   skip(5);
-        //   // 长按1秒后3倍速播放
-        //   if (!e.repeat) {
-        //     const timer = setTimeout(() => {
-        //       if (e.key === "arrowRight") {
-        //         changePlaybackRate(3);
-        //       }
-        //     }, 1000);
+        case "arrowright":
+          e.preventDefault();
+          skip(5);
+          // 长按1秒后3倍速播放
+          if (!e.repeat) {
+            const timer = setTimeout(() => {
+              if (e.key === "arrowRight") {
+                changePlaybackRate(3);
+              }
+            }, 1000);
 
-        //     // 清理定时器
-        //     const handleKeyUp = () => {
-        //       clearTimeout(timer);
-        //       changePlaybackRate(1); // 恢复正常速度
-        //       document.removeEventListener("keyup", handleKeyUp);
-        //     };
+            // 清理定时器
+            const handleKeyUp = () => {
+              clearTimeout(timer);
+              changePlaybackRate(1); // 恢复正常速度
+              document.removeEventListener("keyup", handleKeyUp);
+            };
 
-        //     document.addEventListener("keyup", handleKeyUp);
-        //   } else {
-        //     if (!isPlaying) {
-        //       togglePlay();
-        //     }
-        //   }
-        //   break;
+            document.addEventListener("keyup", handleKeyUp);
+          } else {
+            if (!isPlaying) {
+              togglePlay();
+            }
+          }
+          break;
 
         // 上箭头增加5%音量
         case "ArrowUp":
           e.preventDefault();
           const newVolumeUp = Math.min(volume + 0.05, 1);
           video.volume = newVolumeUp;
-          setVolumeflag(newVolumeUp);
+          setVolume(newVolumeUp);
           setIsMuted(false);
           break;
 
@@ -307,7 +287,7 @@ const VideoPlayer = (props) => {
           e.preventDefault();
           const newVolumeDown = Math.max(volume - 0.05, 0);
           video.volume = newVolumeDown;
-          setVolumeflag(newVolumeDown);
+          setVolume(newVolumeDown);
           setIsMuted(newVolumeDown === 0);
           break;
 
@@ -324,20 +304,26 @@ const VideoPlayer = (props) => {
     };
   }, [isFullscreen, volume, isPlaying]);
 
+  // 上一节/下一节
+  const skip = (seconds) => {
+    const video = videoRef.current;
+    video.currentTime += seconds;
+  };
+
   let timer1 = null
   const enter1 = () => {
     if (timer1 !== null) {
-      setSpeed(false)
-      setVolumeflag(false)
+      setShowRate(false)
+      setVolumeControler(false)
       setSettingflag(false)
       clearTimeout(timer1)
     }
-    setClear(true)
+    setVideoClear(true)
   }
 
   const leave1 = () => {
     timer1 = setTimeout(() => {
-      setClear(false)
+      setVideoClear(false)
       timer1 = null
     },500)
   }
@@ -345,17 +331,17 @@ const VideoPlayer = (props) => {
   // 倍速
   const enter2 = () => {
     if (timer1 !== null) {
-      setClear(false)
-      setVolumeflag(false)
+      setVideoClear(false)
+      setVolumeControler(false)
       setSettingflag(false)
       clearTimeout(timer1)
     }
-    setSpeed(true)
+    setShowRate(true)
   }
 
   const leave2 = () => {
     timer1 = setTimeout(() => {
-      setSpeed(false)
+      setShowRate(false)
       timer1 = null
     },500)
   }
@@ -363,17 +349,17 @@ const VideoPlayer = (props) => {
   // 音量
   const enter3 = () => {
     if (timer1 !== null) {
-      setClear(false)
-      setSpeed(false)
+      setVideoClear(false)
+      setShowRate(false)
       setSettingflag(false)
       clearTimeout(timer1)
     }
-    setVolumeflag(true)
+    setVolumeControler(true)
   }
 
   const leave3 = () => {
     timer1 = setTimeout(() => {
-      setVolumeflag(false)
+      setVolumeControler(false)
       timer1 = null
     },500)
   }
@@ -382,9 +368,9 @@ const VideoPlayer = (props) => {
     console.log('enter444');
     
     if (timer1 !== null) {
-      setClear(false)
-      setSpeed(false)
-      setVolumeflag(false)
+      setVideoClear(false)
+      setShowRate(false)
+      setVolumeControler(false)
       clearTimeout(timer1)
     }
     setSettingflag(true)
@@ -397,11 +383,20 @@ const VideoPlayer = (props) => {
     },500)
   }
 
-  const [speednum, setSpeednum] = useState(1)
+  const [speednum, setShowRatenum] = useState(1)
+
+  // 播放速率切换
+  const changePlaybackRate = (rate) => {
+    const video = videoRef.current;
+    video.playbackRate = rate;
+    setPlaybackRate(rate);
+  };
+
+  // 倍速
   const changspeed = (e) => {
     console.log(e.target.dataset.sp);
     let num = e.target.dataset.sp - '0'
-    setSpeednum(num)
+    setShowRatenum(num)
     videoRef.current.playbackRate = (num)
   }  
 
@@ -465,63 +460,6 @@ const VideoPlayer = (props) => {
     }, 800)
   }
 
-  // // 元数据加载完成
-  // const videoloadedmated = () => {
-  // // 监听全屏改变事件
-  // window.addEventListener("fullscreenchange", () => {
-  //   // 全屏时为全屏元素   退出全屏时为null
-  //   const fullelement = document.fullscreenElement      
-  //   if (fullelement !== null && isFullscreen === false) {
-  //     setIsFullscreen(true)
-  //   } else if (fullelement === null){
-  //     // 按esc时的情况
-  //     setIsFullscreen(false)
-  //   }
-  // })
-  // // 键盘事件
-  // window.addEventListener("keydown", (e) => {
-  //   let temodmflag = true;
-  //   const k = e.key.toLowerCase()      
-  //   switch (k) {
-  //     case " ":
-  //       e.preventDefault()
-  //       togglePlay()
-  //       break;
-  //     case 'f':
-  //       console.log('全屏');
-  //       fullscreenfnc()
-  //       break;
-  //     case 'd':
-  //       console.log('弹幕');
-  //       setDmflag(!temodmflag)
-  //       break;
-  //     case 'm':
-  //       console.log('静音');
-  //       break;
-  //     case ']':
-  //       console.log('下一集');
-  //       break;
-  //     case '[':
-  //       console.log('上一级');
-  //       break;
-  //     case 'arrowup':
-  //       videoprogresaddnum(5)
-  //       break;
-  //     case 'arrowleft':
-  //       console.log('');
-  //       break;
-  //     case 'arrowright':
-  //       break;
-  //     case 'arrowdown':
-  //       setVolume(volume - 5)
-  //       break;
-  //     default:
-  //       break;
-  //     }
-    
-  //  })
-  // }
-
   const videoprogresaddnum = (num) => {
     Promise.resolve().then(() => {
       setVolume(() => {
@@ -564,91 +502,40 @@ const VideoPlayer = (props) => {
     document.removeEventListener("mouseup", dragend)
   }
 
-  // canplay
-  const videoloaded = () => {
-    console.log('canplay');
-    setLoadflag(true)
-  }
+  // 格式化时间显示
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
 
-  const videoprogressfnc = () => {
-    console.log('progressing');
-
-    const duration = videoRef.current.duration
-    if (duration > 0) {
-      for (let i = 0; i <videoRef.current.buffered.length; i++) {
-        if (videoRef.current.buffered.start(videoRef.current.buffered.length - 1 - i) < videoRef.current.currentTime) {
-            const loadpro = (videoRef.current.buffered.end(videoRef.current.buffered.length - 1 - i) * 100) / duration
-            setLoadprogress(loadpro)
-          }
+  // 更新进度条
+  useEffect(() => {
+    const video = videoRef.current;
+    const handleTimeUpdate = () => {
+      if (!isNaN(video.duration)) {
+        const progress = (video.currentTime / video.duration) * 100;
+        setProgress(progress);
+        setCurrentTime(video.currentTime);
       }
-    }
-    
-  }
+    };
 
-  // playing 	当音频/视频在因缓冲而暂停或停止后已就绪时触发。
-  const videoplating = () => {
-    console.log('加载完成playing');
-    
-  }
+    video.addEventListener("timeupdate", handleTimeUpdate);
 
-  const videoseeking = () => {
-    console.log('开始跳跃');
-  }
-
-  const videoseeked = () => {
-    console.log('end跳跃');
-  }
-
-  // play 播放时触发
-  const videoplay = () => {
-    setIsPlaying(true)
-  }
-  // pause  手动暂停  跳转时加载暂停
-  const videopause = () => {
-    console.log('pause');  
-  }
-
-  // 视频加载等待。当视频由于需要缓冲下一帧而停止，等待时触发
-  const videowating = () => {
-    console.log('正在缓冲',videoRef.current.buffered);
-  }
-  
-  const videoerror = () => {
-    // 视频error
-    console.log('video error');
-    // setLoadflag(false)
-  }
-
-  // opupdate 当目前的播放位置已更改时触发。
-  const videotimeupdate  = () => {    
-    const duration = videoRef.current.duration
-    const now = videoRef.current.currentTime
-    setTimeprogress(now)
-    // console.log('now: ', now);
-    
-    setLswnum(now)
-    setProgress(now / duration * 100)
-
-    let mm = Math.floor(now / 60) > 10 ? '' + Math.floor(now / 60) : '0' + Math.floor(now / 60)
-    let ss = now % 60 > 10 ? '' + Math.floor(now % 60) : '0' + Math.floor(now % 60)
-    if (now >= 3600) {
-      let hh = Math.floor(now / 3600) > 10 ? '' + Math.floor(now / 3600) : '0' + Math.floor(now/ 3600)
-      setNowTime(hh + ":" + mm + ":" + ss)
-    } else {
-      setNowTime(+ mm + ":" + ss)
-    }
-
-  }
+    return () => {
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+    };
+  }, []);
 
   // pleyend  视频播放完
   const playend = () => {
-    setEndflag(true)
+    setIsEnded(true)
   }
 
   const [clicked, setcliceked] = useState(false)  // 播放了视频
   const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
   // 播放/暂停
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const video = videoRef.current;
 
     if (video.paused) {
@@ -660,75 +547,108 @@ const VideoPlayer = (props) => {
       video.pause();
       setIsPlaying(false);
     }
-  };
-  // 播放old
-  // const togglePlay = async () => {
-  //   console.log('点击了视频 播放or暂停');
-    
-  //   if (clicktimer != null) {
-  //     clearTimeout(clicktimer)
-  //     clicktimer = null
-  //     return
-  //   }
-  //   if (loadflag === true) {
-  //     if (videoRef.current.paused) {
-  //       setTimeout(async () => {
-  //         videoRef.current.play()
-  //         setIsPlaying(true)
-  //         setcliceked(true)
-  //         if (thisvid.lastweatched === 0) {
-  //           const data = {
-  //             uid: userinfo.uid,
-  //             vid: vid,
-  //             type: 0,
-  //             lastwatched: 1,
-  //             done: 0
-  //           }
-  //           const res = await updateinfo(data)
-  //           console.log('res: ', res);
+
+    // if (clicktimer != null) {
+    //   clearTimeout(clicktimer)
+    //   clicktimer = null
+    //   return
+    // }
+    // if (isLoading === true) {
+    //   if (videoRef.current.paused) {
+    //     setTimeout(async () => {
+    //       videoRef.current.play()
+    //       setIsPlaying(true)
+    //       setcliceked(true)
+    //       if (thisvid.lastweatched === 0) {
+    //         const data = {
+    //           uid: userinfo.uid,
+    //           vid: vid,
+    //           type: 0,
+    //           lastwatched: 1,
+    //           done: 0
+    //         }
+    //         const res = await updateinfo(data)
+    //         console.log('res: ', res);
             
-  //           if (res === 0) {
-  //             props.setThisvid({
-  //               ...thisvid,
-  //               plays: thisvid.plays + 1,
-  //               lastwatched: 1
-  //             })
-  //           }
-  //         }
-  //       }, 150)
-  //     } else if (videoRef.current.play) {
-  //       videoRef.current.pause()
-  //       setIsPlaying(false)
-  //     }
-  //   }
-  // }
-
-   // 格式化时间显示
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-
-
-  // 双击
-  const handledoubleclick = () => {
-    fullscreenfnc()
+    //         if (res === 0) {
+    //           setThisvid({
+    //             ...thisvid,
+    //             plays: thisvid.plays + 1,
+    //             lastwatched: 1
+    //           })
+    //         }
+    //       }
+    //     }, 150)
+    //   } else if (videoRef.current.play) {
+    //     videoRef.current.pause()
+    //     setIsPlaying(false)
+    //   }
+    // }
   }
 
-  // 全屏事件
-  const fullscreenfnc = () => {   
-    if (document.fullscreenEnabled) {      
-      if (!isFullscreen && document.fullscreenElement === null) {        
-        videobox.current.requestFullscreen()
-        setIsFullscreen(true)
-      } else {        
-        if (document.fullscreenElement !== null) {
-          document.exitFullscreen()
-          setIsFullscreen(false)
-        }
+  // 处理全屏变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const fullscreenElement =
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+
+      setIsFullscreen(!!fullscreenElement);
+
+      if (!fullscreenElement && videoBoxRef.current) {
+        videoBoxRef.current.style.height = "auto";
       }
-    }    
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
+
+  // 全屏切换
+  const toggleFullscreen = () => {   
+    if (!isFullscreen) {
+      if (videoBoxRef.current.requestFullscreen) {
+        videoBoxRef.current.requestFullscreen();
+      } else if (videoRef.current.webkitRequestFullscreen) {
+        videoBoxRef.current.webkitRequestFullscreen();
+      } else if (videoRef.current.mozRequestFullScreen) {
+        videoBoxRef.current.mozRequestFullScreen();
+      } else if (videoRef.current.msRequestFullscreen) {
+        videoBoxRef.current.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
+    }   
   }
   
   // 移动事件
@@ -736,28 +656,28 @@ const VideoPlayer = (props) => {
   let enterflag = false
   // 鼠标在视频中移动时间
   const mousemoveonmask = () => {
-    setVidoopationflag(true)
+    setShowControls(true)
     if (bottomopationTimer.current != null) {
       clearTimeout(bottomopationTimer.current)
       bottomopationTimer.current = null
       return
     }
     bottomopationTimer.current = setTimeout(() => {
-      setVidoopationflag(false)
+      setShowControls(false)
     }, 2000)
   }
 
   // mover2
   const mover2 = (e) => {
     e.stopPropagation()
-    if (!vidoopationflag) {
-      setVidoopationflag(true)
+    if (!showControls) {
+      setShowControls(true)
     }
   }
 
   // 进入底部操作框
   const entervop = () => {
-    setVidoopationflag(true)
+    setShowControls(true)
     clearTimeout(bottomopationTimer.current)
     enterflag = true  
   }
@@ -766,7 +686,7 @@ const VideoPlayer = (props) => {
   const leaveop = () => {
     enterflag = false
     bottomopationTimer.current = setTimeout(() => {        
-      setVidoopationflag(false)
+      setShowControls(false)
     },2000)
   }
 
@@ -774,26 +694,21 @@ const VideoPlayer = (props) => {
   const leavevideopart = () => {    
     enterflag = false
     bottomopationTimer.current = setTimeout(() => {        
-      setVidoopationflag(false)
+      setShowControls(false)
     },2000)
   }
 
-  const progressref = useRef()
-  // 点击进度条,跳转
-  const tothitime = (e) => {
-    // 里面有各种位置信息 
-    const proLength = progressref.current.clientWidth     // 进度条条宽度
-    const clickX = e.clientX                              // 点击位置距离屏幕左侧距离
-    const progressrefLeft = progressref.current.getBoundingClientRect().left
-    const clickPositon = clickX - progressrefLeft         // 点击位置，距离左侧的距离
-    let pro = (clickPositon / proLength)                  // 进度
-    const duration = videoRef.current.duration
-    videoRef.current.currentTime = Math.floor(duration * pro)
-    if (videoRef.current.pause) {
-      setTimeout(() => {
-        videoRef.current.play()
-      }, 150)
-    }
+  // 进度条点击跳转
+  const handleProgressClick = (e) => {
+    const video = videoRef.current;
+    const progressBar = progressRef.current;
+    const rect = progressBar.getBoundingClientRect();
+    const clickPosition = e.clientX - rect.left;
+    const progressBarWidth = rect.width;
+    const seekTime = (clickPosition / progressBarWidth) * video.duration;
+
+    video.currentTime = seekTime;
+    setProgress((seekTime / video.duration) * 100);
   }
 
   // 点赞 投币 收藏 转发
@@ -849,14 +764,14 @@ const VideoPlayer = (props) => {
         if (res === 1) {
           // 点赞
           if (thisvid.liked === false) {
-            props.setThisvid({
+            setThisvid({
               ...thisvid,
               likes: thisvid.likes + 1,
               liked: !thisvid.liked
             })
             message.open({ type: 'info', content: '点赞', flag: true})
           } else {
-            props.setThisvid({
+            setThisvid({
               ...thisvid,
               likes: thisvid.likes - 1,
               liked: !thisvid.liked
@@ -883,7 +798,7 @@ const VideoPlayer = (props) => {
           aux.select();
           document.execCommand("copy"); 
           document.body.removeChild(aux);
-          props.setThisvid({
+          setThisvid({
             ...thisvid,
             shares: thisvid.shares + 1 
           })
@@ -892,23 +807,6 @@ const VideoPlayer = (props) => {
       }
     }
   }
-
-// 关闭页面是触发
-  window.addEventListener('beforeunload', async() => {
-    // document.addEventListener('visibilitychange', async() => {
-      // 如果播放了视频，更新数据， 否则不用
-        if (clicked) {
-          const data = {
-            uid: userinfo.uid,
-            vid: vid,
-            type: 0,
-            lastwatched: videoRef.current.currentTime,
-            done: wawtchdonefal
-          }
-          await updateinfo(data)
-        }
-        return
-  })
 
   const switchfnc = () => {
     switch (speednum) {
@@ -1026,7 +924,7 @@ const VideoPlayer = (props) => {
       if (res) {
         message.open({ type: 'info', content: num > 0 ? '添加收藏' : '取消收藏', flag: true})
         closefavbox()  // 关闭收藏页面
-        props.setThisvid({
+        setThisvid({
           ...thisvid,
           favorites: thisvid.favorites + num,
           faved: !thisvid.faved
@@ -1058,7 +956,7 @@ const VideoPlayer = (props) => {
       }
       const res = await updateinfo(data)
       if (res) {
-        props.setThisvid({
+        setThisvid({
           ...thisvid,
           icons: thisvid.icons + icons,
           iconed: true               // 投币不能撤回
@@ -1067,7 +965,7 @@ const VideoPlayer = (props) => {
       // 更新视频信息
 
      // 子传父 更新用户信息
-      props.updateuser()
+      updateuser()
       setIconflag(0)
       message.open({ type: 'info', content: '已投币~', falg: true})
     } else {
@@ -1113,7 +1011,8 @@ const VideoPlayer = (props) => {
         text: dmtest,
         uid: uid,
         vid: vid,
-        sendtime: timeprogress,
+        // sendtime: timeprogress,
+        sendtime: progress,
         color: dmfontcolor,
         type: 0,
       }
@@ -1158,13 +1057,13 @@ const VideoPlayer = (props) => {
     e.stopPropagation()
     videoRef.current.currentTime = 0;
     videoRef.current.play()
-    setEndflag(false)
+    setIsEnded(false)
   }
 
   useEffect(() => {
-    console.log('???', endflag);
+    console.log('???', isEnded);
     
-  },[endflag])
+  },[isEnded])
   // 关注
   const tofollowuser = async (e) => {
     e.stopPropagation()
@@ -1178,16 +1077,16 @@ const VideoPlayer = (props) => {
       return
     }
     const res = await toFollow(uid2, uid)
-    props.setUpinfo({
+    setUpinfo({
       ...upinfo,
       followed: true
     })
-    props.setUserinfo({
-      ...props.userinfo,
-      follows: props.userinfo.follows + 1
+    setUserinfo({
+      ...userinfo,
+      follows: userinfo.follows + 1
     })
-    props.userinfo.follows = props.userinfo.follows + 1
-    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    userinfo.follows = userinfo.follows + 1
+    localStorage.setItem('userinfo', JSON.stringify(userinfo))
     message.open({type: 'info', content: '已关注', flag: true})
   }
 
@@ -1200,16 +1099,16 @@ const VideoPlayer = (props) => {
     }
     const uid2 = e.target.dataset.uid2
     const res = await toUnfollow(uid2, uid)
-    props.setUpinfo({
+    setUpinfo({
       ...upinfo,
       followed: false,
     })
-    props.setUserinfo({
-      ...props.userinfo,
-      follows: props.userinfo.follows - 1
+    setUserinfo({
+      ...userinfo,
+      follows: userinfo.follows - 1
     })
-    props.userinfo.follows = props.userinfo.follows - 1
-    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    userinfo.follows = userinfo.follows - 1
+    localStorage.setItem('userinfo', JSON.stringify(userinfo))
     message.open({type: 'info', content: '取消关注', flag: true})
   }
 
@@ -1234,14 +1133,13 @@ const VideoPlayer = (props) => {
       message.open({type: 'info', content: '取消追番', flag: true})
     }
   }
+  
   return (
-    <div className={props.widthscreen ? "playerbox playerbox-active" : "playerbox"}
+    <div className={widthscreen ? "playerbox playerbox-active" : "playerbox"}
       ref={playerboxref}
-      // style={{width: props.widthscreen ? '1495px' : '100%',
-      //         height: props.widthscreen ? '824px' : 'fit-content'}}
-      >
-      <div className="videobox" ref={videobox}
-      // style={{height: props.widthscreen ? '768px' : '600px'}}
+    >
+      <div className="videobox"
+        ref={videoBoxRef}
       >
           <div className="loadingsp" style={{display: isPlaying ? 'none' : 'flex'}}>
             <div className='lltext'>加载中</div>
@@ -1252,24 +1150,16 @@ const VideoPlayer = (props) => {
               <div className='icon iconfont nb4'>&#xec1e;</div>
             </div>
         </div>
-        <div className="vodepinnerbox">
+        <div className={`pili-player ${isFullscreen ? 'fullscreen' : ''}`}
+          ref={playerRef}
+        >
           <video
-            src={thisvid != null ? thisvid.path : null}
+            src={thisvid?.path}
             ref={videoRef}
-            onCanPlay={videoloaded}
-            onProgress={videoprogressfnc}
-            onTimeUpdate={videotimeupdate}
-            onPlaying={videoplating}
-            // onSeeking={videoseeking}
-            // onSeeked={videoseeked}
-            onWaiting={videowating}
-            onEnded={playend}
-            onPlay={videoplay}
-            onPause={videopause}
-            onError={videoerror}
-            onLoadedMetadata={videoloadedmated}
-            className='videosrc'>
-          </video>
+            controls={false} // 禁用原生控件
+            tabIndex="0"
+            style={{ height: isFullscreen ? "100vh" : "100%" }}
+          />
         </div>
         {
           !isPlaying &&
@@ -1278,18 +1168,17 @@ const VideoPlayer = (props) => {
         <div className="vide-mask-over"
           onMouseMove={mousemoveonmask}
           onClick={togglePlay}
-          onDoubleClick={handledoubleclick}
           onMouseLeave={leavevideopart}
           >
             {
-              endflag &&
+              isEnded &&
               <div className="end-view"
                 onClick={replayvideo}
               >
                 <div className="video-end-box">
                   <div className="userinfo-line">
                     <div className="recom-img-box">
-                      <img src={upinfo.avatar} alt="" className="user-reco-avatar"
+                      <img src={upinfo?.avatar} alt="" className="user-reco-avatar"
                         onClick={(e) => {
                           e.stopPropagation()
                           window.open(`/${upinfo?.uid}`, "blank")
@@ -1366,7 +1255,7 @@ const VideoPlayer = (props) => {
                     <div className="remoccend-title">相关推荐</div>
                     <div className="recom-videos">
                       {
-                        recommendlist.map(item =>
+                        recommendlist?.map(item =>
                           <div className="one-reco-video"
                             key={item.vid}
                             onClick={(e) => {
@@ -1395,7 +1284,8 @@ const VideoPlayer = (props) => {
                           textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
                           top: (index % 20 * 25 + 10) + 'px',
                           fontSize: '16px',
-                          display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+                          // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+                          display: item.sendtime <= progress && item.sendtime + 10 >= progress ? "block" : "none"
                   }}
                   onMouseEnter={(e) =>
                     e.target.style.animationPlayState = 'paused'
@@ -1417,30 +1307,28 @@ const VideoPlayer = (props) => {
         </div>
         {/* 视频控制 */}
         {
-          !endflag &&
+          !isEnded &&
           <div className="topmask"
-            style={{opacity: vidoopationflag ? '1' : '0'}}
-          ></div>
+            style={{opacity: showControls ? '1' : '0'}}
+          >
+            <div className="topline">
+              <span>{thisvid?.title}</span>
+            </div>
+          </div>
         }
         <div
-          className={isFullscreen ? "videobottomcof videobottomcof-active" : "videobottomcof"}
-          style={{opacity: vidoopationflag ? '1' : '0'}}
+          className={`videobottomcof ${ isFullscreen ? "full-active" : ""}`}
+          style={{opacity: showControls ? '1' : '0'}}
           onMouseMove={mover2}
           onMouseEnter={entervop}
           onMouseLeave={leaveop}
           >
-          <div className="progressbox"
-            ref={progressref}
-            onClick={tothitime}
+          <div className="progress-bar"
+            ref={progressRef}
+            onClick={handleProgressClick}
           >
-            <div className="loadprogress"
-              onClick={tothitime}
-              style={{width: loadprogress + "%"}}
-            ></div>
-            <div className="done-box"
-              onClick={tothitime}
-              style={{width: videoprogress + '%'}}
-            ></div>
+            <div className="buffered" style={{width: `${buffered}%`}}></div>
+            <div className="progress" style={{width: `${progress}%`}}></div>
           </div>
           <div className="videoopationbox">
             <div className="vidconleft">
@@ -1448,18 +1336,16 @@ const VideoPlayer = (props) => {
                 vlist.length > 0 && vlistindex - 1 > 0 &&
                 <div className="out111">
                   <div className="leftinnerspan icon iconfont"
-                    style={{rotate: '-180deg'}}
                     onClick={prvvideo}
-                  >&#xe609;</div>
+                  >&#xf078;</div>
                 </div>
               }
               {
                 chapterlist.length > 0 && chapterindex  > 0 &&
                 <div className="out111">
                   <div className="leftinnerspan icon iconfont"
-                    style={{rotate: '-180deg'}}
                     onClick={prvanima}
-                  >&#xe609;</div>
+                  >&#xf078;</div>
                 </div>
               }
               {
@@ -1485,7 +1371,7 @@ const VideoPlayer = (props) => {
                   >&#xe609;</div>
               }
               <span className="timerspan">
-                {nowtime} / {thisvid?.vidlong}
+                {formatTime(currentTime)} / {formatTime(duration)}
               </span>
             </div>
             <div className="mid-dm-box">
@@ -1571,7 +1457,7 @@ const VideoPlayer = (props) => {
             <div className="vidconright">
               <div className='outtbox'>
                 <div className='textspan' onMouseEnter={enter1} onMouseLeave={leave1}>清晰度</div>
-                {clearflag && 
+                {videoClear && 
                   <div className="appendbox1"  onMouseEnter={enter1} onMouseLeave={leave1}>
                     <div className="onevv">1080P 高清</div>
                     <div className="onevv">720P 高清</div>
@@ -1588,7 +1474,7 @@ const VideoPlayer = (props) => {
                     }
                   </div>
                 {
-                  speedflag && 
+                  showRate && 
                   <div className="appendbox2" 
                     onMouseEnter={enter2}
                     onMouseLeave={leave2}
@@ -1625,7 +1511,7 @@ const VideoPlayer = (props) => {
                     >&#xea0f;</span> 
                 }
                 {
-                  volumeflag && 
+                  volumeControler && 
                     <div className="appendbox3"
                       onMouseEnter={enter3}
                       onMouseLeave={leave3}
@@ -1696,9 +1582,9 @@ const VideoPlayer = (props) => {
               <div className='appnedtext3 outtbox'>
                 {
                   false ?
-                  <div onClick={fullscreenfnc} className='icon iconfont sp51'>&#xe7bc;</div>
+                  <div onClick={toggleFullscreen} className='icon iconfont sp51'>&#xe7bc;</div>
                   :
-                  <div onClick={fullscreenfnc} className='icon iconfont sp52'>&#xe68a;</div>
+                  <div onClick={toggleFullscreen} className='icon iconfont sp52'>&#xe68a;</div>
                 }
               </div>
             </div>

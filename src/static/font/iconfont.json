@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "38321779",
+      "name": "音量-F",
+      "font_class": "yinliang-F",
+      "unicode": "e67a",
+      "unicode_decimal": 59002
+    },
+    {
+      "icon_id": "38321780",
+      "name": "静音-F",
+      "font_class": "jingyin-F",
+      "unicode": "e67e",
+      "unicode_decimal": 59006
+    },
+    {
       "icon_id": "683287",
       "name": "书",
       "font_class": "shu",
@@ -1313,6 +1327,13 @@
       "font_class": "tuichudenglu",
       "unicode": "e676",
       "unicode_decimal": 58998
+    },
+    {
+      "icon_id": "44070650",
+      "name": "上一集",
+      "font_class": "xiayiji-copy",
+      "unicode": "f078",
+      "unicode_decimal": 61560
     }
   ]
 }

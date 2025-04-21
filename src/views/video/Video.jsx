@@ -1,7 +1,7 @@
 import './Video.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { getByVid, updateinfo, getVideoLikely, getDm, sendDm } from '../../api/video'
 import { debounce } from '../../util/fnc'
 import Totop from '../../components/toTop/totop'
@@ -21,8 +21,9 @@ import icon2static from '../../static/assets/icon2-static.png'
 import icon2 from '../../static/assets/icon2.png'
 import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
-function VideoPart (props) {
-  const { vid, userinfo, uid, setDmlist, dmlist, thisvid, onChnageWidth } = props
+const VideoPart = memo((props) => {
+  const { vid, userinfo, uid, setDmlist, dmlist, thisvid, 
+          widthscreen, setWidthScreen } = props
   const location = useLocation();
 
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
@@ -721,7 +722,8 @@ function VideoPart (props) {
         setDmlist={setDmlist}
         windoflag2={windoflag2}
         setWindoflag2={setWindoflag2}
-        onChnageWidth={onChnageWidth}
+        widthscreen={widthscreen}
+        setWidthScreen={setWidthScreen}
       />
       <div className="videoinfos"
         onClick={clickbtn}
@@ -952,21 +954,22 @@ function VideoPart (props) {
       }
     </>
   )
-}
+})
 
-function RightPart (props) {
-  console.log('right part...');
-  
-  const vid = +props.vid
-  const userinfo = props.userinfo  // 我的个人信息
-  const uid = props.uid            // myuid
+const RightPart = memo((props) => {
+  const {vid, userinfo, uid, upinfo, dmlist,
+    setUpinfo, setUserinfo,
+    widthscreen
+  } = props
+  // const vid = +props.vid
+  // const userinfo = props.userinfo  // 我的个人信息
+  // const uid = props.uid            // myuid
   // f1 0 头像   f1 1 名字
   const [userinfoflag, setUserinfoflag] = useState({f1: -1, f2: -1, f3: -1})
   const [thisvid, setThisvid] = useState({})
   const [videouser, setVideouser] = useState()
   const [recommendlist, setRecommendlist] = useState([])          // 推荐列表
   // const [upinfo, setUpinfo] = useState()                          // up主的信息
-  const upinfo = props.upinfo                                     // up主的信息
   const [videoinfo, setVideoinfo] = useState()                    // 视频信息
 
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
@@ -985,7 +988,6 @@ function RightPart (props) {
   const recommendref = useRef()
 
   // const [dmlist, setDmlist] = useState([])         // 弹幕列表
-  const dmlist = props.dmlist
 
   const [playalongflag, setPlayaloneflag] = useState(false)   // 连续播放标志
   // 弹幕列表flag
@@ -1038,11 +1040,8 @@ function RightPart (props) {
       // setDmlist(res[2])
 
       if (res[0].aid !== -1 && res[0].aid != null) {
-        console.log('=====================');
         const res5 = await getSeasons(res[0].aid)
-        setSeasonlist(res5)
-        console.log('=========res4: ', res5);
-        
+        setSeasonlist(res5)        
         for (let i = 0; i < res5.length; i++) {
           for (let j = 0; j < res5[i].length; j++) {
             if (res5[i][j].vid === vid) {
@@ -1101,16 +1100,16 @@ function RightPart (props) {
       return
     }
     const res = await toFollow(uid2, uid)
-    props.setUpinfo({
+    setUpinfo({
       ...upinfo,
       followed: true
     })
-    props.setUserinfo({
-      ...props.userinfo,
-      follows: props.userinfo.follows + 1
+    setUserinfo({
+      ...userinfo,
+      follows: userinfo.follows + 1
     })
-    props.userinfo.follows = props.userinfo.follows + 1
-    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    userinfo.follows = userinfo.follows + 1
+    localStorage.setItem('userinfo', JSON.stringify(userinfo))
     message.open({type: 'info', content: '已关注', flag: true})
   }
 
@@ -1122,16 +1121,16 @@ function RightPart (props) {
     }
     const uid2 = e.target.dataset.uid2
     const res = await toUnfollow(uid2, uid)
-    props.setUpinfo({
+    setUpinfo({
       ...upinfo,
       followed: false,
     })
-    props.setUserinfo({
-      ...props.userinfo,
-      follows: props.userinfo.follows - 1
+    setUserinfo({
+      ...userinfo,
+      follows: userinfo.follows - 1
     })
-    props.userinfo.follows = props.userinfo.follows - 1
-    localStorage.setItem('userinfo', JSON.stringify(props.userinfo))
+    userinfo.follows = userinfo.follows - 1
+    localStorage.setItem('userinfo', JSON.stringify(userinfo))
     message.open({type: 'info', content: '取消关注', flag: true})
   }
 
@@ -1239,7 +1238,7 @@ function RightPart (props) {
       </div>
     }
     <div className="danmulist"
-      style={{height: danmulistflag ? '44px' : '656px', marginTop: props.widthscreen ? '855px' : '0'}}>
+      style={{height: danmulistflag ? '44px' : '656px', marginTop: widthscreen ? '855px' : '0'}}>
       <div className="danmulisttop"  onClick={handleList}>
         <div className="danmlistleft">
           <span>弹幕列表</span>
@@ -1389,9 +1388,9 @@ function RightPart (props) {
     </div>
     </>
   )
-}
+})
 
-function Video () {
+const Video = () => {
   console.log('top father...');
   
   const params = useParams()
@@ -1399,13 +1398,8 @@ function Video () {
   const userinfos = JSON.parse(localStorage.getItem('userinfo'))
   const [userinfo, setUserinfo] = useState(() => userinfos)         // 未登录时null, 用户的信息
   const uid = parseInt(userinfo != null ? userinfo.uid : -1)
-  const [widthscreen, setWidth] = useState(false)
+  const [widthscreen, setWidthScreen] = useState(false)             // 宽屏模式
   const [recommendlist, setRecommendlist] = useState([])            // 相关推荐视频
-  const changwidth = () => {
-    // 宽屏模式
-    setWidth(!widthscreen)
-  }
-
   const [thisvid, setThisvid] = useState({})                        // 视频信息
   const [dmlist, setDmlist] = useState([])                          // 弹幕列表, 视频部分和右侧列表要用
   const [upinfo, setUpinfo] = useState()                            // up主的信息
@@ -1439,7 +1433,7 @@ function Video () {
             uid={uid}
             userinfo={userinfo}
             setUserinfo={setUserinfo}
-            onChnageWidth={changwidth}
+            setWidthScreen={setWidthScreen}
             widthscreen={widthscreen}
             updateuser={updateuser}
             thisvid={thisvid}

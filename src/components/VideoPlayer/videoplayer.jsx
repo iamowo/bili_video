@@ -1,5 +1,5 @@
 import "./index.scss"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, memo } from "react"
 import { getVideoFormList } from "../../api/videolist"
 import message from "../notice/notice"
 import { baseurl2 } from "../../api"
@@ -9,18 +9,24 @@ import { getFavlist, addOneFavlist, addOneVideo } from "../../api/favlist"
 import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from "../../api/animation"
 import { useLocation, useNavigate } from "react-router-dom"
 
-const VideoPlayer = (props) => {  
+const VideoPlayer = memo((props) => {  
   const { vid, uid, thisvid,
-          userinfo, setUserinfo, upinfo, widthscreen,
+          userinfo, setUserinfo, upinfo, 
+          widthscreen, setWidthScreen,
           setThisvid, recommendlist, dmlist, setDmlist, updateuser,
           setUpinfo,
-          windoflag2, setWindoflag2, onChnageWidth } = props
+          windoflag2, setWindoflag2 } = props
+  
   const location = useLocation();
-
-  const videoRef = useRef(null)
+  const videoRef = useRef(null),
+        hiddenVideoRef = useRef(null); // 隐藏视频（用于捕获）
   const playerRef = useRef(null)
   const videoBoxRef = useRef(null)
   const progressRef = useRef(null)
+  const previewRef = useRef(null)
+  const canvasRef = useRef(null);
+
+  const [capturedImage, setCapturedImage] = useState(null) // 当前帧数图片
   // 视频相关函数
   const [isLoading, setIsLoading] = useState(false)               // 加载完成
   const [isPlaying, setIsPlaying] = useState(false)               // 是否在播放
@@ -29,23 +35,36 @@ const VideoPlayer = (props) => {
   const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
   const [lastwatchednunm, setLswnum] = useState(0)      // 上次观看的时间
   const [wawtchdonefal, setWdone] = useState(0)         // 是否观看完
-  
   const [currentTime ,setCurrentTime] = useState(0)       // 当前视频时间
   const [duration, setDuration] = useState(0)             //时长
   const [progress, setProgress] = useState(0)       // 视频进度
   const [buffered, setBuffered] = useState(0)       // 缓冲
   const [isFullscreen, setIsFullscreen] = useState(false)           // 全屏
   const [videoClear, setVideoClear] = useState(false)         // 清晰度
-  const [playbackRate, setPlaybackRate] = useState(1)
-  const [showRate, setShowRate] = useState(false)         // 显示倍速
+
+  const [playbackRate, setPlaybackRate] = useState(1),      // 倍速
+        [showRate, setShowRate] = useState(false),         // 显示倍速
+        rateList = [
+          {text: '2.0X', rate: 2},
+          {text: '1.5X', rate: 1.5},
+          {text: '1.25X', rate: 1.25},
+          {text: '1X', rate: 1},
+          {text: '0.5X', rate: 0.5},
+        ]
   const [settingflag, setSettingflag] = useState(false)  // 设置
   const [setting1, setSetting1] = useState(false),       // 循环播放
         [setting2, setSetting2] = useState(false),       // 自动播放下一集
         [setting3, setSetting3] = useState(true)        // 16：9    4：3
-   // 改变音量
+
   const [volume, setVolume] = useState(100),           // 音量大小
         [isMuted, setIsMuted] = useState(true),      // 静音 or 打开 声音
         [volumeControler, setVolumeControler] = useState(false)        // 声音控制条
+
+  // 进度条交互
+  const [hoverTime, setHoverTime] = useState(0),  // 悬浮时间
+        [showPreview, setShowPreview] = useState(false),  // 预览图
+        [previewPosition, setPreviewPosition] = useState(0)  // 预览图位置
+
   const [sysflag, setSys] = useState(false)             // 设置
   const [windoflag, setWindoflag] = useState(false)     // 小屏幕
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
@@ -63,7 +82,7 @@ const VideoPlayer = (props) => {
   const [dmtest, setDmtext] = useState()           // 发送弹幕内容
   const [dmflag, setDmflag] = useState(true)       // 是否打开弹幕
 
-  const playerboxref = useRef()
+  const playerboxRef = useRef()
   const favref = useRef()     // 收藏box的ref
   const createref = useRef()  // 新建
   const [newFavtitle, setNewfavtitle] = useState()
@@ -97,11 +116,8 @@ const VideoPlayer = (props) => {
       setAnimationinfo(res4)      
       // animation list 信息
       if (res.aid !== -1 && res.aid != null) {
-        // console.log('=====================');
         const res5 = await getSeasons(res.aid)
-        setSeasonlist(res5)
-        // console.log('======================res4: ', res5);
-        
+        setSeasonlist(res5)        
         for (let i = 0; i < res5.length; i++) {
           for (let j = 0; j < res5[i].length; j++) {
             if (res5[i][j].vid === vid) {
@@ -122,8 +138,9 @@ const VideoPlayer = (props) => {
   // 初始化视频元数据
   useEffect(() => {
     const video = videoRef.current;
-    const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight // 滚动距离
+    const distance = playerboxRef.current.scrollTop + playerboxRef.current.clientHeight // 滚动距离
     const handleLoadedMetadata = () => {
+      console.log('video loaded');
       setDuration(video.duration);
     };
 
@@ -183,7 +200,6 @@ const VideoPlayer = (props) => {
       }
       return
     }
-
     document.addEventListener("scroll", scrollFnc)
     document.addEventListener("beforeunload", updateInfo)
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -219,10 +235,11 @@ const VideoPlayer = (props) => {
         setIsFullscreen(false)
         return; // 直接返回，不执行任何操作
       }
+      console.log('key is: ', key);
+      
       switch (key) {
         case "[":
           break;
-
         case "]":
           break;
         // 全屏切换
@@ -230,13 +247,17 @@ const VideoPlayer = (props) => {
           e.preventDefault();
           toggleFullscreen();
           break;
-
         // 空格键播放/暂停
         case " ":
           e.preventDefault(); // 防止页面滚动
           togglePlay();
           break;
-
+        case "k":
+          console.log('233333');
+          
+          e.preventDefault()
+          setWidthScreen(!widthscreen)
+          break;
         // 左箭头后退5秒
         case "arowleft":
           e.preventDefault();
@@ -302,7 +323,7 @@ const VideoPlayer = (props) => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isFullscreen, volume, isPlaying]);
+  }, [isFullscreen, volume, isPlaying, widthscreen]);
 
   // 上一节/下一节
   const skip = (seconds) => {
@@ -383,22 +404,11 @@ const VideoPlayer = (props) => {
     },500)
   }
 
-  const [speednum, setShowRatenum] = useState(1)
-
   // 播放速率切换
   const changePlaybackRate = (rate) => {
-    const video = videoRef.current;
-    video.playbackRate = rate;
+    videoRef.current.playbackRate = rate;
     setPlaybackRate(rate);
   };
-
-  // 倍速
-  const changspeed = (e) => {
-    console.log(e.target.dataset.sp);
-    let num = e.target.dataset.sp - '0'
-    setShowRatenum(num)
-    videoRef.current.playbackRate = (num)
-  }  
 
   const changevolume = (e) => {
     const proHeight = 100
@@ -586,6 +596,62 @@ const VideoPlayer = (props) => {
     // }
   }
 
+  // 当前帧数图片
+  const generateImg = (time) => {
+    const video = hiddenVideoRef.current;
+    const canvas = canvasRef.current;
+    video.currentTime = time;
+
+    // 尚未加载完成
+    console.log('video: ', video);
+    console.log('video.readState: ', video.readyState);
+    console.log('video.readState: ', videoRef.current.readyState);
+    
+    if (!video || video.readyState < 2) {      
+      return;
+    }
+
+    console.log('xxxxxxxxxxxxxxxxxxxxx');
+    
+    const onSeeked = () => {
+      // 设置canvas尺寸
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // 绘制当前帧到canvas
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // 将canvas转换为图片URL
+      try {
+        const imageURL = canvas.toDataURL('image/png');
+        setCapturedImage(imageURL);
+      } catch (err) {
+        console.error("捕获帧错误:", err);
+      }
+      video.removeEventListener('seeked', onSeeked);
+    };
+    
+    video.addEventListener('seeked', onSeeked);
+  };
+
+  // 进度条交互
+  const handleProgressHover = (e) => {
+    const progressBar = progressRef.current;
+    const rect = progressBar.getBoundingClientRect();
+    const hoverPosition = e.clientX - rect.left;
+    const percent = hoverPosition / rect.width;
+    setHoverTime(percent * duration);
+    setPreviewPosition(hoverPosition);
+    setShowPreview(true);
+    generateImg(hoverTime)
+  };
+
+  const handleProgressLeave = () => {
+    setShowPreview(false);
+  };
+  
+
   // 处理全屏变化
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -598,7 +664,11 @@ const VideoPlayer = (props) => {
       setIsFullscreen(!!fullscreenElement);
 
       if (!fullscreenElement && videoBoxRef.current) {
-        videoBoxRef.current.style.height = "auto";
+        if (widthscreen) {
+          videoBoxRef.current.style.height = "824px";
+        } else {
+          videoBoxRef.current.style.height = "768px";
+        }
       }
     };
 
@@ -623,6 +693,21 @@ const VideoPlayer = (props) => {
       );
     };
   }, []);
+
+  // 小窗模式
+  const changePip = async () => {
+    if (!videoRef.current) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await videoRef.current.requestPictureInPicture();
+      }
+      setLittlewindow(!littlewindow)
+    } catch (error) {
+      message.error({content: '小窗模式启动失败', flag: true})
+    }
+  }
 
   // 全屏切换
   const toggleFullscreen = () => {   
@@ -653,7 +738,7 @@ const VideoPlayer = (props) => {
   
   // 移动事件
   const bottomopationTimer = useRef()
-  let enterflag = false
+  const enterFlag = useRef(false)
   // 鼠标在视频中移动时间
   const mousemoveonmask = () => {
     setShowControls(true)
@@ -679,12 +764,12 @@ const VideoPlayer = (props) => {
   const entervop = () => {
     setShowControls(true)
     clearTimeout(bottomopationTimer.current)
-    enterflag = true  
+    enterFlag.current = true  
   }
 
   // 离开底部操作框
   const leaveop = () => {
-    enterflag = false
+    enterFlag.current = false
     bottomopationTimer.current = setTimeout(() => {        
       setShowControls(false)
     },2000)
@@ -692,7 +777,7 @@ const VideoPlayer = (props) => {
 
   // 离开视频区域
   const leavevideopart = () => {    
-    enterflag = false
+    enterFlag.current = false
     bottomopationTimer.current = setTimeout(() => {        
       setShowControls(false)
     },2000)
@@ -706,9 +791,11 @@ const VideoPlayer = (props) => {
     const clickPosition = e.clientX - rect.left;
     const progressBarWidth = rect.width;
     const seekTime = (clickPosition / progressBarWidth) * video.duration;
-
     video.currentTime = seekTime;
     setProgress((seekTime / video.duration) * 100);
+    if (!isPlaying) {
+      togglePlay()
+    }
   }
 
   // 点赞 投币 收藏 转发
@@ -805,25 +892,6 @@ const VideoPlayer = (props) => {
           message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
         }
       }
-    }
-  }
-
-  const switchfnc = () => {
-    switch (speednum) {
-      case 2.0:
-        return <span>2.0</span>
-      case 1.5:
-        return <span>1.5</span>
-      case 1.25:
-        return <span>1.25</span>
-      case 1:
-        return <span>倍速</span>
-      case 0.75:
-        return <span>0.75</span>
-      case 0.5:
-        return <span>0.5</span>
-      default:
-        return <span>倍速</span>
     }
   }
   
@@ -1135,8 +1203,8 @@ const VideoPlayer = (props) => {
   }
   
   return (
-    <div className={widthscreen ? "playerbox playerbox-active" : "playerbox"}
-      ref={playerboxref}
+    <div className={`playerbox ${widthscreen ? "playerbox-active" : ""}`}
+      ref={playerboxRef}
     >
       <div className="videobox"
         ref={videoBoxRef}
@@ -1169,7 +1237,7 @@ const VideoPlayer = (props) => {
           onMouseMove={mousemoveonmask}
           onClick={togglePlay}
           onMouseLeave={leavevideopart}
-          >
+        >
             {
               isEnded &&
               <div className="end-view"
@@ -1305,7 +1373,30 @@ const VideoPlayer = (props) => {
               )
             }
         </div>
-        {/* 视频控制 */}
+        {/* 预览图 */}
+        <video 
+          ref={hiddenVideoRef}
+          scr={thisvid?.path}
+          style={{ display: 'none' }}
+          crossOrigin="anonymous" // 绘制帧图片时候跨域
+        />
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+        {showPreview && (
+          <div
+            className={`preview-thumbnail`}
+            ref={previewRef}
+            style={{ left: `${previewPosition}px` }}
+          >
+            <div className="preview-image">
+              <img 
+                src={capturedImage} 
+                alt="Captured frame" 
+              />
+            </div>
+            <div className="preview-time">{formatTime(hoverTime)}</div>
+          </div>
+        )}
+        {/* 顶部信息控制 */}
         {
           !isEnded &&
           <div className="topmask"
@@ -1316,6 +1407,7 @@ const VideoPlayer = (props) => {
             </div>
           </div>
         }
+        {/* 视频底部控制 */}
         <div
           className={`videobottomcof ${ isFullscreen ? "full-active" : ""}`}
           style={{opacity: showControls ? '1' : '0'}}
@@ -1325,6 +1417,8 @@ const VideoPlayer = (props) => {
           >
           <div className="progress-bar"
             ref={progressRef}
+            onMouseMove={handleProgressHover}
+            onMouseLeave={handleProgressLeave}
             onClick={handleProgressClick}
           >
             <div className="buffered" style={{width: `${buffered}%`}}></div>
@@ -1470,7 +1564,7 @@ const VideoPlayer = (props) => {
                   onMouseEnter={enter2}
                   onMouseLeave={leave2}>
                     { 
-                      switchfnc(speednum)
+                      <span>{playbackRate === 1 ? '倍速' : playbackRate}</span>
                     }
                   </div>
                 {
@@ -1478,14 +1572,14 @@ const VideoPlayer = (props) => {
                   <div className="appendbox2" 
                     onMouseEnter={enter2}
                     onMouseLeave={leave2}
-                    onClick={changspeed}
-                    >
-                    <div className="onevv" data-sp='2.0'>2.0x</div>
-                    <div className="onevv" data-sp='1.5'>1.5x</div>
-                    <div className="onevv" data-sp='1.25'>1.25x</div>
-                    <div className="onevv" data-sp='1.0'>1.0x</div>
-                    <div className="onevv" data-sp='0.75'>0.75x</div>
-                    <div className="onevv" data-sp='0.5'>0.5x</div>
+                  >
+                    {
+                      rateList.map(item =>
+                        <div className="onevv"
+                              onClick={() => changePlaybackRate(item.rate)}
+                        >{item.text}</div>
+                      )
+                    }
                   </div>
                 }
               </div>
@@ -1533,7 +1627,7 @@ const VideoPlayer = (props) => {
                 }
               </div>
               <div className='outtbox'>
-                <span className='icon iconfont sp21'
+                <span className='iconfont sp-setting'
                   onMouseEnter={enter4}
                   onMouseLeave={leave4}
                 >&#xe602;</span>
@@ -1570,21 +1664,25 @@ const VideoPlayer = (props) => {
                   </div>
                 }
               </div>
+              {/* 画中画 */}
               <div className='appnedtext1 outtbox'>
                 <span className='icon iconfont sp31'
-                  onClick={() => setLittlewindow(!littlewindow)}
+                  // onClick={() => setLittlewindow(!littlewindow)}
+                  onClick={changePip}
                 >&#xe61b;</span>
               </div>
+              {/* 宽屏 */}
               <div className='appnedtext2 outtbox'>
                 <div className='icon iconfont sp41'
-                  onClick={onChnageWidth}>&#xe61a;</div>
+                  onClick={() => setWidthScreen(!widthscreen)}>&#xe61a;</div>
               </div>
+              {/* 全屏 */}
               <div className='appnedtext3 outtbox'>
                 {
-                  false ?
-                  <div onClick={toggleFullscreen} className='icon iconfont sp51'>&#xe7bc;</div>
-                  :
+                  isFullscreen ?
                   <div onClick={toggleFullscreen} className='icon iconfont sp52'>&#xe68a;</div>
+                  :
+                  <div onClick={toggleFullscreen} className='icon iconfont sp51'>&#xe7bc;</div>
                 }
               </div>
             </div>
@@ -1669,6 +1767,6 @@ const VideoPlayer = (props) => {
       </div>
     </div>
   )
-}
+})
 
 export default VideoPlayer

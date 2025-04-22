@@ -8,6 +8,7 @@ import { updateinfo, sendDm } from "../../api/video"
 import { getFavlist, addOneFavlist, addOneVideo } from "../../api/favlist"
 import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from "../../api/animation"
 import { useLocation, useNavigate } from "react-router-dom"
+import { debounceWithCancel } from "../../util/fnc"
 
 const VideoPlayer = memo((props) => {  
   const { vid, uid, thisvid,
@@ -24,10 +25,16 @@ const VideoPlayer = memo((props) => {
   const videoBoxRef = useRef(null)
   const progressRef = useRef(null)
   const previewRef = useRef(null)
-  const canvasRef = useRef(null);
+  const canvasRef = useRef(null)
+  const bottomTimer = useRef(null)
+  const moveTimer = useRef(false)
+  const bottomFlag = useRef(false) // 是都在底部操作栏
+  const rightConTimmer = useRef(null) // 清晰度 音量 ...
+  const fontTimer = useRef()
+  const createbox = useRef()
+  const firstPlay = useRef(false) // 第一次播放
 
   const [capturedImage, setCapturedImage] = useState(null) // 当前帧数图片
-  // 视频相关函数
   const [isLoading, setIsLoading] = useState(false)               // 加载完成
   const [isPlaying, setIsPlaying] = useState(false)               // 是否在播放
   const [isEnded, setIsEnded] = useState(false)                 // 视频结束
@@ -61,6 +68,8 @@ const VideoPlayer = memo((props) => {
         [showPreview, setShowPreview] = useState(false),  // 预览图
         [previewPosition, setPreviewPosition] = useState(0)  // 预览图位置
 
+  const [sahreflag, setShareflag] = useState(true)
+  const [createflag, setCreateflag] = useState(true)
   const [sysflag, setSys] = useState(false)             // 设置
   const [windoflag, setWindoflag] = useState(false)     // 小屏幕
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
@@ -231,7 +240,6 @@ const VideoPlayer = memo((props) => {
         return; // 直接返回，不执行任何操作
       }
       console.log('key is: ', key);
-      
       switch (key) {
         case "[":
           break;
@@ -261,7 +269,6 @@ const VideoPlayer = memo((props) => {
             togglePlay();
           }
           break;
-
         // 右箭头前进5秒
         case "arrowright":
           e.preventDefault();
@@ -291,27 +298,22 @@ const VideoPlayer = memo((props) => {
           //   }
           // }
           break;
-
         // 上箭头增加5%音量
         case "arrowup":
           e.preventDefault();
           skipVolume(10)
           break;
-
         // 下箭头减少5%音量
         case "arrowdown":
           e.preventDefault();
           skipVolume(-10)
           break;
-
         default:
           break;
       }
     };
-
     // 添加事件监听，使用capture阶段捕获 注意第三个参数true
     document.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -350,19 +352,12 @@ const VideoPlayer = memo((props) => {
     setIsMuted(!isMuted)
   }
 
-  const rightConTimmer = useRef(null)
-
   const enterRightController = (type) => {
     if (rightConTimmer.current !== null) {
-      console.log("sbsbsbsbsbs");
-      
       clearTimeout(rightConTimmer.current)
       rightConTimmer.current = null
-    } else {
-      console.log(typeof(type));
-      console.log(type);
-      setRightShow(type + 0)
     }
+    setRightShow(type + 0)
   }
 
   const leaveRightController = (type) => {
@@ -372,86 +367,14 @@ const VideoPlayer = memo((props) => {
     }, 500)
   }
 
-  // let timer1 = null
-  // const enter1 = () => {
-  //   if (timer1 !== null) {
-  //     setShowRate(false)
-  //     setVolumeControler(false)
-  //     setSettingflag(false)
-  //     clearTimeout(timer1)
-  //   }
-  //   setVideoClear(true)
-  // }
-
-  // const leave1 = () => {
-  //   timer1 = setTimeout(() => {
-  //     setVideoClear(false)
-  //     timer1 = null
-  //   },500)
-  // }
-
-  // // 倍速
-  // const enter2 = () => {
-  //   if (timer1 !== null) {
-  //     setVideoClear(false)
-  //     setVolumeControler(false)
-  //     setSettingflag(false)
-  //     clearTimeout(timer1)
-  //   }
-  //   setShowRate(true)
-  // }
-
-  // const leave2 = () => {
-  //   timer1 = setTimeout(() => {
-  //     setShowRate(false)
-  //     timer1 = null
-  //   },500)
-  // }
-
-  // // 音量
-  // const enter3 = () => {
-  //   if (timer1 !== null) {
-  //     setVideoClear(false)
-  //     setShowRate(false)
-  //     setSettingflag(false)
-  //     clearTimeout(timer1)
-  //   }
-  //   setVolumeControler(true)
-  // }
-
-  // const leave3 = () => {
-  //   timer1 = setTimeout(() => {
-  //     setVolumeControler(false)
-  //     timer1 = null
-  //   },500)
-  // }
-
-  // const enter4 = () => {
-  //   console.log('enter444');
-    
-  //   if (timer1 !== null) {
-  //     setVideoClear(false)
-  //     setShowRate(false)
-  //     setVolumeControler(false)
-  //     clearTimeout(timer1)
-  //   }
-  //   setSettingflag(true)
-  // }
-
-  // const leave4 = () => {
-  //   timer1 = setTimeout(() => {
-  //     setSettingflag(false)
-  //     timer1 = null
-  //   },500)
-  // }
-
   // 播放速率切换
   const changePlaybackRate = (rate) => {
     videoRef.current.playbackRate = rate;
     setPlaybackRate(rate);
   };
 
-  const changevolume = (e) => {
+  // 改变音量
+  const changeVolume = (e) => {
     const proHeight = 100
     let height = volume
     if (e.target.className === "voice-pro1") {
@@ -475,34 +398,32 @@ const VideoPlayer = memo((props) => {
     
   }
 
-  const fonttimer = useRef()
-
   const dmcontrolenter = () => {
-    if (fonttimer.current != null) {
+    if (fontTimer.current != null) {
       setFontflag(false)
-      clearTimeout(fonttimer.current)
-      fonttimer.current = null
+      clearTimeout(fontTimer.current)
+      fontTimer.current = null
     }
     setDmcontrolflag(true)
   }
 
   const dmcontrolleave = () => {
-    fonttimer.current = setTimeout(() => {
+    fontTimer.current = setTimeout(() => {
       setDmcontrolflag(false)
     }, 800)
   }
 
   const enterfont = () => {
-    if (fonttimer.current != null) {
+    if (fontTimer.current != null) {
       setDmcontrolflag(false)
-      clearTimeout(fonttimer.current)
-      fonttimer.current = null
+      clearTimeout(fontTimer.current)
+      fontTimer.current = null
     }
     setFontflag(true)
   }
 
   const leavefont = () => {
-    fonttimer.current = setTimeout(() => {
+    fontTimer.current = setTimeout(() => {
       setFontflag(false)
     }, 800)
   }
@@ -571,8 +492,14 @@ const VideoPlayer = memo((props) => {
   const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
   // 播放/暂停
   const togglePlay = async () => {
+    // 第一次播放点击之后，如果没有其它操作下方控制栏消失
+    if (!firstPlay.current) {
+      firstPlay.current = true
+      moveTimer.current = setTimeout(() => {
+        setShowControls(false)
+      }, 2000)
+    }
     const video = videoRef.current;
-
     if (video.paused) {
       video.play().catch((e) => {
         setIsLoading(true);
@@ -755,52 +682,74 @@ const VideoPlayer = memo((props) => {
     }   
   }
   
-  // 移动事件
-  const bottomopationTimer = useRef()
-  const enterFlag = useRef(false)
   // 鼠标在视频中移动时间
-  const mousemoveonmask = () => {
-    setShowControls(true)
-    if (bottomopationTimer.current != null) {
-      clearTimeout(bottomopationTimer.current)
-      bottomopationTimer.current = null
-      return
+  const mouseMoveOnMask = () => {
+    console.log('moving');
+    if (!bottomFlag.current) {
+      setShowControls(true)
+      if (moveTimer.current != null) {
+        clearTimeout(moveTimer.current)
+        moveTimer.current = null
+      }
+      moveTimer.current = setTimeout(() => {
+        setShowControls(false)
+      }, 3000);
     }
-    bottomopationTimer.current = setTimeout(() => {
-      setShowControls(false)
-    }, 2000)
   }
 
-  // mover2
-  const mover2 = (e) => {
-    e.stopPropagation()
-    if (!showControls) {
-      setShowControls(true)
+  //出视频之后，仍会执行一次
+  // const [mouseMoveOnMask, cancelMouseMove] = debounceWithCancel(() => {
+  //   if (!bottomFlag.current) {
+  //     setShowControls(true);
+  //     // 清除之前的 moveTimer（如果存在）
+  //     if (moveTimer.current) {
+  //       clearTimeout(moveTimer.current);
+  //     }
+  //     // 设置新的 moveTimer（3秒后隐藏控制栏）
+  //     moveTimer.current = setTimeout(() => {
+  //       setShowControls(false);
+  //     }, 3000);
+  //   }
+  // }, 500);
+
+  // 离开视频区域
+  const leaveVideoPart = () => {
+    console.log('离开视频区域')
+    setShowControls(false)
+    // 取消防抖函数的待执行操作
+    // cancelMouseMove();
+    if (moveTimer.current) {
+      clearTimeout(moveTimer.current);
+      moveTimer.current = null;
+    }
+    if (bottomTimer.current) {
+      clearTimeout(bottomTimer.current);
+      bottomTimer.current = null;
     }
   }
 
   // 进入底部操作框
-  const entervop = () => {
+  const enterBottomControl = () => {
+    bottomFlag.current = true
+    if (bottomTimer.current != null) {
+      clearTimeout(bottomTimer.current)
+      bottomTimer.current = null
+    }
+    if (moveTimer.current != null) {
+      clearTimeout(moveTimer.current)
+      moveTimer.current = null
+    }
     setShowControls(true)
-    clearTimeout(bottomopationTimer.current)
-    enterFlag.current = true  
   }
 
   // 离开底部操作框
-  const leaveop = () => {
-    enterFlag.current = false
-    bottomopationTimer.current = setTimeout(() => {        
+  const leaveBottomControl = () => {
+    bottomFlag.current = false
+    bottomTimer.current = setTimeout(() => {
       setShowControls(false)
-    },2000)
+    }, 3000)
   }
 
-  // 离开视频区域
-  const leavevideopart = () => {    
-    enterFlag.current = false
-    bottomopationTimer.current = setTimeout(() => {        
-      setShowControls(false)
-    },2000)
-  }
 
   // 进度条点击跳转
   const handleProgressClick = (e) => {
@@ -959,10 +908,6 @@ const VideoPlayer = memo((props) => {
     }
     
   }
-
-  const [sahreflag, setShareflag] = useState(true)
-  const [createflag, setCreateflag] = useState(true)
-  const createbox = useRef()
 
   const clickcreatebox = (e) => {    
     // if (createbox.current.contains(e.target)) {
@@ -1226,6 +1171,8 @@ const VideoPlayer = memo((props) => {
       ref={playerboxRef}
     >
       <div className="videobox"
+        onMouseMove={mouseMoveOnMask}
+        onMouseLeave={leaveVideoPart}
         ref={videoBoxRef}
       >
           <div className="loadingsp" style={{display: isPlaying ? 'none' : 'flex'}}>
@@ -1253,9 +1200,7 @@ const VideoPlayer = memo((props) => {
           <span className="pausespan icon iconfont">&#xe6ab;</span>
         }
         <div className="vide-mask-over"
-          onMouseMove={mousemoveonmask}
           onClick={togglePlay}
-          onMouseLeave={leavevideopart}
         >
             {
               isEnded &&
@@ -1422,8 +1367,7 @@ const VideoPlayer = memo((props) => {
             style={{opacity: showControls ? '1' : '0'}}
           >
             <div className="topline">
-              {/* <span>{thisvid?.title}</span> */}
-              <span>rightShow: {rightShow}</span>
+              <span>{thisvid?.title}</span>
             </div>
           </div>
         }
@@ -1431,9 +1375,8 @@ const VideoPlayer = memo((props) => {
         <div
           className={`videobottomcof ${ isFullscreen ? "full-active" : ""}`}
           style={{opacity: showControls ? '1' : '0'}}
-          onMouseMove={mover2}
-          onMouseEnter={entervop}
-          onMouseLeave={leaveop}
+          onMouseEnter={enterBottomControl}
+          onMouseLeave={leaveBottomControl}
           >
           <div className="progress-bar"
             ref={progressRef}
@@ -1630,7 +1573,7 @@ const VideoPlayer = memo((props) => {
                     <div className="appendbox3"
                      onMouseEnter={() => enterRightController(3)} 
                       onMouseLeave={() => leaveRightController(3)}
-                      onClick={changevolume}
+                      onClick={changeVolume}
                   >
                     <div className="voicenum">{volume}</div>
                     <div className="voiceprogress">

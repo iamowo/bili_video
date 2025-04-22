@@ -13,6 +13,24 @@ export function debounce (fn, delay) {
   }
 }
 
+// 可取消的防抖函数（返回防抖函数 + 取消方法）
+export function debounceWithCancel(func, wait) {
+  let timeoutId;
+  
+  const debounced = (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, wait);
+  };
+  
+  const cancel = () => {
+    clearTimeout(timeoutId);
+  };
+  
+  return [debounced, cancel];
+}
+
 // 节流
 // (按照一定时间间隔执行， 而不是每次触发都执行)
 // 页面滚动， 点击按钮

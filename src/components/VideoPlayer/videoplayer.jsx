@@ -40,10 +40,8 @@ const VideoPlayer = memo((props) => {
   const [progress, setProgress] = useState(0)       // 视频进度
   const [buffered, setBuffered] = useState(0)       // 缓冲
   const [isFullscreen, setIsFullscreen] = useState(false)           // 全屏
-  const [videoClear, setVideoClear] = useState(false)         // 清晰度
-
+  const [rightShow, setRightShow] = useState(0) // 1 清晰度 2 倍速 3 音量 4 设置
   const [playbackRate, setPlaybackRate] = useState(1),      // 倍速
-        [showRate, setShowRate] = useState(false),         // 显示倍速
         rateList = [
           {text: '2.0X', rate: 2},
           {text: '1.5X', rate: 1.5},
@@ -51,14 +49,12 @@ const VideoPlayer = memo((props) => {
           {text: '1X', rate: 1},
           {text: '0.5X', rate: 0.5},
         ]
-  const [settingflag, setSettingflag] = useState(false)  // 设置
   const [setting1, setSetting1] = useState(false),       // 循环播放
         [setting2, setSetting2] = useState(false),       // 自动播放下一集
         [setting3, setSetting3] = useState(true)        // 16：9    4：3
 
   const [volume, setVolume] = useState(100),           // 音量大小
-        [isMuted, setIsMuted] = useState(true),      // 静音 or 打开 声音
-        [volumeControler, setVolumeControler] = useState(false)        // 声音控制条
+        [isMuted, setIsMuted] = useState(true)      // 静音 or 打开 声音
 
   // 进度条交互
   const [hoverTime, setHoverTime] = useState(0),  // 悬浮时间
@@ -103,7 +99,7 @@ const VideoPlayer = memo((props) => {
     const getData = async () => {      
       const res = thisvid
       // 刚开始数据还没加载出来， 无法使用slice
-      res.time = res?.time?.slice(0, 10) + ' ' + res?.time?.slice(11, 16) // 在{ } 中修改会报错
+      res.time = res?.time?.slice(0, 10) + ' ' + res?.time.slice(11, 16) // 在{ } 中修改会报错
       // 视频选集
       const res3 = await getVideoFormList(res.listid)
       for (let i = 0; i < res3.length; i++) {
@@ -140,7 +136,6 @@ const VideoPlayer = memo((props) => {
     const video = videoRef.current;
     const distance = playerboxRef.current.scrollTop + playerboxRef.current.clientHeight // 滚动距离
     const handleLoadedMetadata = () => {
-      console.log('video loaded');
       setDuration(video.duration);
     };
 
@@ -259,9 +254,9 @@ const VideoPlayer = memo((props) => {
           setWidthScreen(!widthscreen)
           break;
         // 左箭头后退5秒
-        case "arowleft":
+        case "arrowleft":
           e.preventDefault();
-          skip(-5);
+          skipTime(-5);
           if (!isPlaying) {
             togglePlay();
           }
@@ -270,46 +265,43 @@ const VideoPlayer = memo((props) => {
         // 右箭头前进5秒
         case "arrowright":
           e.preventDefault();
-          skip(5);
-          // 长按1秒后3倍速播放
-          if (!e.repeat) {
-            const timer = setTimeout(() => {
-              if (e.key === "arrowRight") {
-                changePlaybackRate(3);
-              }
-            }, 1000);
-
-            // 清理定时器
-            const handleKeyUp = () => {
-              clearTimeout(timer);
-              changePlaybackRate(1); // 恢复正常速度
-              document.removeEventListener("keyup", handleKeyUp);
-            };
-
-            document.addEventListener("keyup", handleKeyUp);
-          } else {
-            if (!isPlaying) {
-              togglePlay();
-            }
+          skipTime(5);
+           if (!isPlaying) {
+            togglePlay();
           }
+          // 长按1秒后3倍速播放
+          // if (!e.repeat) {
+          //   const timer = setTimeout(() => {
+          //     if (e.key === "arrowRight") {
+          //       changePlaybackRate(3);
+          //     }
+          //   }, 1000);
+
+          //   // 清理定时器
+          //   const handleKeyUp = () => {
+          //     clearTimeout(timer);
+          //     changePlaybackRate(1); // 恢复正常速度
+          //     document.removeEventListener("keyup", handleKeyUp);
+          //   };
+
+          //   document.addEventListener("keyup", handleKeyUp);
+          // } else {
+          //   if (!isPlaying) {
+          //     togglePlay();
+          //   }
+          // }
           break;
 
         // 上箭头增加5%音量
-        case "ArrowUp":
+        case "arrowup":
           e.preventDefault();
-          const newVolumeUp = Math.min(volume + 0.05, 1);
-          video.volume = newVolumeUp;
-          setVolume(newVolumeUp);
-          setIsMuted(false);
+          skipVolume(10)
           break;
 
         // 下箭头减少5%音量
-        case "ArrowDown":
+        case "arrowdown":
           e.preventDefault();
-          const newVolumeDown = Math.max(volume - 0.05, 0);
-          video.volume = newVolumeDown;
-          setVolume(newVolumeDown);
-          setIsMuted(newVolumeDown === 0);
+          skipVolume(-10)
           break;
 
         default:
@@ -325,84 +317,133 @@ const VideoPlayer = memo((props) => {
     };
   }, [isFullscreen, volume, isPlaying, widthscreen]);
 
-  // 上一节/下一节
-  const skip = (seconds) => {
+  // 时间进退
+  const skipTime = (seconds) => {
     const video = videoRef.current;
     video.currentTime += seconds;
   };
 
-  let timer1 = null
-  const enter1 = () => {
-    if (timer1 !== null) {
-      setShowRate(false)
-      setVolumeControler(false)
-      setSettingflag(false)
-      clearTimeout(timer1)
+  // 音量加减
+  const skipVolume = (num) => {
+    const video = videoRef.current;
+    let v = video.volume.toFixed(2) * 100 + num
+    if (v > 100) {
+      v = 100
+    } else if (v <= 0) {
+      v = 0
+      setIsMuted(true)
     }
-    setVideoClear(true)
-  }
+    video.volume = v * 0.01;
+    setVolume(v)
+  };
 
-  const leave1 = () => {
-    timer1 = setTimeout(() => {
-      setVideoClear(false)
-      timer1 = null
-    },500)
-  }
-
-  // 倍速
-  const enter2 = () => {
-    if (timer1 !== null) {
-      setVideoClear(false)
-      setVolumeControler(false)
-      setSettingflag(false)
-      clearTimeout(timer1)
+  // 静音处理
+  const handleMulted = () => {
+    const video = videoRef.current
+    if (isMuted) {
+      video.volume = volume * 0.01
+      setVolume(volume)
+    } else {
+      video.volume = 0
+      setVolume(0)
     }
-    setShowRate(true)
+    setIsMuted(!isMuted)
   }
 
-  const leave2 = () => {
-    timer1 = setTimeout(() => {
-      setShowRate(false)
-      timer1 = null
-    },500)
-  }
+  const rightConTimmer = useRef(null)
 
-  // 音量
-  const enter3 = () => {
-    if (timer1 !== null) {
-      setVideoClear(false)
-      setShowRate(false)
-      setSettingflag(false)
-      clearTimeout(timer1)
+  const enterRightController = (type) => {
+    if (rightConTimmer.current !== null) {
+      console.log("sbsbsbsbsbs");
+      
+      clearTimeout(rightConTimmer.current)
+      rightConTimmer.current = null
+    } else {
+      console.log(typeof(type));
+      console.log(type);
+      setRightShow(type + 0)
     }
-    setVolumeControler(true)
   }
 
-  const leave3 = () => {
-    timer1 = setTimeout(() => {
-      setVolumeControler(false)
-      timer1 = null
-    },500)
+  const leaveRightController = (type) => {
+    rightConTimmer.current = setTimeout(() => {
+      setRightShow(0)
+      rightConTimmer.current = null
+    }, 500)
   }
 
-  const enter4 = () => {
-    console.log('enter444');
+  // let timer1 = null
+  // const enter1 = () => {
+  //   if (timer1 !== null) {
+  //     setShowRate(false)
+  //     setVolumeControler(false)
+  //     setSettingflag(false)
+  //     clearTimeout(timer1)
+  //   }
+  //   setVideoClear(true)
+  // }
+
+  // const leave1 = () => {
+  //   timer1 = setTimeout(() => {
+  //     setVideoClear(false)
+  //     timer1 = null
+  //   },500)
+  // }
+
+  // // 倍速
+  // const enter2 = () => {
+  //   if (timer1 !== null) {
+  //     setVideoClear(false)
+  //     setVolumeControler(false)
+  //     setSettingflag(false)
+  //     clearTimeout(timer1)
+  //   }
+  //   setShowRate(true)
+  // }
+
+  // const leave2 = () => {
+  //   timer1 = setTimeout(() => {
+  //     setShowRate(false)
+  //     timer1 = null
+  //   },500)
+  // }
+
+  // // 音量
+  // const enter3 = () => {
+  //   if (timer1 !== null) {
+  //     setVideoClear(false)
+  //     setShowRate(false)
+  //     setSettingflag(false)
+  //     clearTimeout(timer1)
+  //   }
+  //   setVolumeControler(true)
+  // }
+
+  // const leave3 = () => {
+  //   timer1 = setTimeout(() => {
+  //     setVolumeControler(false)
+  //     timer1 = null
+  //   },500)
+  // }
+
+  // const enter4 = () => {
+  //   console.log('enter444');
     
-    if (timer1 !== null) {
-      setVideoClear(false)
-      setShowRate(false)
-      setVolumeControler(false)
-      clearTimeout(timer1)
-    }
-    setSettingflag(true)
-  }
+  //   if (timer1 !== null) {
+  //     setVideoClear(false)
+  //     setShowRate(false)
+  //     setVolumeControler(false)
+  //     clearTimeout(timer1)
+  //   }
+  //   setSettingflag(true)
+  // }
 
-  const leave4 = () => {
-    timer1 = setTimeout(() => {
-      setSettingflag(false)
-      timer1 = null
-    },500)
-  }
+  // const leave4 = () => {
+  //   timer1 = setTimeout(() => {
+  //     setSettingflag(false)
+  //     timer1 = null
+  //   },500)
+  // }
 
   // 播放速率切换
   const changePlaybackRate = (rate) => {
@@ -420,10 +461,6 @@ const VideoPlayer = memo((props) => {
     }
     setVolume(height)
   }
-
-  useEffect(() => {
-    videoRef.current.volume = volume * 0.01
-  }, [volume])
 
   // 返回弹幕行
   const [dmlines, setDmlines] = useState(20),
@@ -468,18 +505,6 @@ const VideoPlayer = memo((props) => {
     fonttimer.current = setTimeout(() => {
       setFontflag(false)
     }, 800)
-  }
-
-  const videoprogresaddnum = (num) => {
-    Promise.resolve().then(() => {
-      setVolume(() => {
-        if (num > 0) {
-          return volume > 95 ? 100 : volume + 5
-        } else {
-          return volume < 5 ? 0 : volume - 5
-        }
-      })
-    })
   }
 
   // 开始拖动
@@ -601,17 +626,11 @@ const VideoPlayer = memo((props) => {
     const video = hiddenVideoRef.current;
     const canvas = canvasRef.current;
     video.currentTime = time;
-
-    // 尚未加载完成
-    console.log('video: ', video);
-    console.log('video.readState: ', video.readyState);
-    console.log('video.readState: ', videoRef.current.readyState);
-    
+    console.log('video2: ', video.readyState);
+    // 尚未加载完成    
     if (!video || video.readyState < 2) {      
       return;
     }
-
-    console.log('xxxxxxxxxxxxxxxxxxxxx');
     
     const onSeeked = () => {
       // 设置canvas尺寸
@@ -1403,7 +1422,8 @@ const VideoPlayer = memo((props) => {
             style={{opacity: showControls ? '1' : '0'}}
           >
             <div className="topline">
-              <span>{thisvid?.title}</span>
+              {/* <span>{thisvid?.title}</span> */}
+              <span>rightShow: {rightShow}</span>
             </div>
           </div>
         }
@@ -1550,9 +1570,15 @@ const VideoPlayer = memo((props) => {
             </div>
             <div className="vidconright">
               <div className='outtbox'>
-                <div className='textspan' onMouseEnter={enter1} onMouseLeave={leave1}>清晰度</div>
-                {videoClear && 
-                  <div className="appendbox1"  onMouseEnter={enter1} onMouseLeave={leave1}>
+                <div className='textspan' 
+                  onMouseEnter={() => enterRightController(1)} 
+                  onMouseLeave={() => leaveRightController(1)}
+                >清晰度</div>
+                {rightShow === 1 && 
+                  <div className="appendbox1" 
+                    onMouseEnter={() => enterRightController(1)} 
+                    onMouseLeave={() => leaveRightController(1)}
+                  >
                     <div className="onevv">1080P 高清</div>
                     <div className="onevv">720P 高清</div>
                     <div className="onevv">360P 流畅</div>
@@ -1561,17 +1587,18 @@ const VideoPlayer = memo((props) => {
               </div>
               <div className='outtbox outbox2'>
                 <div className='textspan'
-                  onMouseEnter={enter2}
-                  onMouseLeave={leave2}>
+                  onMouseEnter={() => enterRightController(2)} 
+                  onMouseLeave={() => leaveRightController(2)}
+                >
                     { 
                       <span>{playbackRate === 1 ? '倍速' : playbackRate}</span>
                     }
                   </div>
                 {
-                  showRate && 
+                  rightShow === 2 && 
                   <div className="appendbox2" 
-                    onMouseEnter={enter2}
-                    onMouseLeave={leave2}
+                    onMouseEnter={() => enterRightController(2)} 
+                    onMouseLeave={() => leaveRightController(2)}
                   >
                     {
                       rateList.map(item =>
@@ -1584,31 +1611,25 @@ const VideoPlayer = memo((props) => {
                 }
               </div>
               <div className='outtbox'>
-                {
-                  isMuted ?
                   <span className='icon iconfont sp11'
-                    onMouseEnter={enter3}
-                    onMouseLeave={leave3}
-                    onClick={() => {
-                      setIsMuted(false)
-                      videoRef.current.volume = 0
-                    }}
-                  >&#xea11;</span>
-                  :
-                  <span className='icon iconfont sp12'
-                    onMouseEnter={enter3}
-                    onMouseLeave={leave3}
-                    onClick={() => {
-                      setIsMuted(true)
-                      videoRef.current.volume = (volume * 0.01)
-                    }}
-                    >&#xea0f;</span> 
-                }
+                    onMouseEnter={() => enterRightController(3)} 
+                    onMouseLeave={() => leaveRightController(3)}
+                    onClick={handleMulted}
+                  >
+                    {
+                      isMuted ?
+                      <span>&#xea11;</span>
+                      :
+                      <span>&#xea0f;</span>
+                    }
+                  </span>
+              
+          
                 {
-                  volumeControler && 
+                  rightShow === 3 && 
                     <div className="appendbox3"
-                      onMouseEnter={enter3}
-                      onMouseLeave={leave3}
+                     onMouseEnter={() => enterRightController(3)} 
+                      onMouseLeave={() => leaveRightController(3)}
                       onClick={changevolume}
                   >
                     <div className="voicenum">{volume}</div>
@@ -1628,14 +1649,14 @@ const VideoPlayer = memo((props) => {
               </div>
               <div className='outtbox'>
                 <span className='iconfont sp-setting'
-                  onMouseEnter={enter4}
-                  onMouseLeave={leave4}
+                  onMouseEnter={() => enterRightController(4)} 
+                  onMouseLeave={() => leaveRightController(4)}
                 >&#xe602;</span>
                 {
-                  settingflag &&
+                  rightShow === 4 &&
                   <div className="appendbox4"
-                    onMouseEnter={enter4}
-                    onMouseLeave={leave4}
+                    onMouseEnter={() => enterRightController(4)} 
+                    onMouseLeave={() => leaveRightController(4)}
                   >
                     <div className="one-setting-line">
                       <span className="settingtext">循环播放</span>

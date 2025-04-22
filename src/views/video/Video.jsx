@@ -51,7 +51,6 @@ const VideoPart = memo((props) => {
   const [dmtest, setDmtext] = useState()           // 发送弹幕内容
   const [dmflag, setDmflag] = useState(true)       // 是否打开弹幕
 
-  // const playerboxref = useRef()
   const textpart = useRef()                              // 标题ref，判断是都超过宽度
   const favref = useRef()     // 收藏box的ref
   const createref = useRef()  // 新建
@@ -114,18 +113,6 @@ const VideoPart = memo((props) => {
       getData()
     }
   },[thisvid])
-
-  // useEffect(() => {
-  //   const distance = playerboxref.current.scrollTop + playerboxref.current.clientHeight
-  //     window.addEventListener('scroll', () => {
-  //     const top = document.body.scrollTop || document.documentElement.scrollTop
-  //     if (top > distance) {
-  //       setBottomScrollflag(true)
-  //     } else {
-  //       setBottomScrollflag(false)
-  //     }
-  //   })
-  // }, [])
 
   // 返回弹幕行
   const [dmlines, setDmlines] = useState(20),
@@ -697,14 +684,14 @@ const VideoPart = memo((props) => {
           <div className="infosline">
             <div className="infodiv">
               <span className="icon iconfont" style={{fontSize: '13px'}}>&#xe6b8;</span>
-              <span className="infonums">{thisvid.plays}</span>
+              <span className="infonums">{thisvid?.plays}</span>
             </div>
             <div className="infodiv">
               <span className="icon iconfont">&#xe666;</span>
-              <span className="infonums">{ thisvid.danmus }</span>
+              <span className="infonums">{ thisvid?.danmus }</span>
             </div>
             <div className="infodiv">
-              <span className="infonums">{ thisvid.time }</span>
+              <span className="infonums">{ thisvid?.time }</span>
             </div>
             <div className="infodiv">
               <span className="icon iconfont" style={{color: "red"}}>&#xe69f;</span>
@@ -713,18 +700,20 @@ const VideoPart = memo((props) => {
           </div>
         </div>
       </div>
-      <VideoPlayer 
-        userinfo={userinfo}
-        thisvid={thisvid}
-        vid={vid}
-        uid={uid}
-        dmlist={dmlist}
-        setDmlist={setDmlist}
-        windoflag2={windoflag2}
-        setWindoflag2={setWindoflag2}
-        widthscreen={widthscreen}
-        setWidthScreen={setWidthScreen}
-      />
+      <div className="player-bot-box">
+        <VideoPlayer 
+          userinfo={userinfo}
+          thisvid={thisvid}
+          vid={vid}
+          uid={uid}
+          dmlist={dmlist}
+          setDmlist={setDmlist}
+          windoflag2={windoflag2}
+          setWindoflag2={setWindoflag2}
+          widthscreen={widthscreen}
+          setWidthScreen={setWidthScreen}
+        />
+      </div>
       <div className="videoinfos"
         onClick={clickbtn}
       >
@@ -1238,7 +1227,8 @@ const RightPart = memo((props) => {
       </div>
     }
     <div className="danmulist"
-      style={{height: danmulistflag ? '44px' : '656px', marginTop: widthscreen ? '855px' : '0'}}>
+      style={{height: danmulistflag ? '44px' : '656px',
+              marginTop: widthscreen ? '590px' : '0'}}>
       <div className="danmulisttop"  onClick={handleList}>
         <div className="danmlistleft">
           <span>弹幕列表</span>
@@ -1427,42 +1417,44 @@ const Video = () => {
     <div className="video-box">
       <Topnav />
       <div className="video-inner">
-        <div className="vid-leftp">
-          <VideoPart
-            vid={vid}
-            uid={uid}
-            userinfo={userinfo}
-            setUserinfo={setUserinfo}
-            setWidthScreen={setWidthScreen}
-            widthscreen={widthscreen}
-            updateuser={updateuser}
-            thisvid={thisvid}
-            setThisvid={setThisvid}
-            dmlist={dmlist}
-            setDmlist={setDmlist}
-            recommendlist={recommendlist}
-            upinfo={upinfo}
-            setUpinfo={setUpinfo}
-          />
-          <Comments
-            vid={vid}
-            uid={uid}
-            hisuid={thisvid != null ? thisvid.uid : null}
-            userinfo={userinfo}
-            commentType = {0}
-          />
-        </div>
-        <div className="vid-rightpp">
-            <RightPart
+        <div className="twopart-box">
+          <div className="vid-leftp">
+            <VideoPart
               vid={vid}
               uid={uid}
-              dmlist={dmlist}
               userinfo={userinfo}
               setUserinfo={setUserinfo}
+              setWidthScreen={setWidthScreen}
               widthscreen={widthscreen}
+              updateuser={updateuser}
+              thisvid={thisvid}
+              setThisvid={setThisvid}
+              dmlist={dmlist}
+              setDmlist={setDmlist}
+              recommendlist={recommendlist}
               upinfo={upinfo}
               setUpinfo={setUpinfo}
             />
+            <Comments
+              vid={vid}
+              uid={uid}
+              hisuid={thisvid != null ? thisvid.uid : null}
+              userinfo={userinfo}
+              commentType = {0}
+            />
+          </div>
+          <div className="vid-rightpp">
+              <RightPart
+                vid={vid}
+                uid={uid}
+                dmlist={dmlist}
+                userinfo={userinfo}
+                setUserinfo={setUserinfo}
+                widthscreen={widthscreen}
+                upinfo={upinfo}
+                setUpinfo={setUpinfo}
+              />
+          </div>
         </div>
       </div>
     </div>

@@ -28,13 +28,14 @@ const Topnav = memo((props) => {
   // 路由跳转之后数据 消失
   // const dispatch = useDispatch()   // 更待store需要用到
   //const { userinfo } = useSelector(state => state.userinfo)
-
+  const { closemid } = props
   const [userinfo, setUserinfos] = useState(() => JSON.parse(localStorage.getItem('userinfo')))
-  // const userinfo = JSON.parse(localStorage.getItem('userinfo'))
-  const uid = parseInt(userinfo !== null && userinfo !== '' ? userinfo.uid : -1)
-  // console.log('this uid is:', uid);
+  const isLodinged = userinfo != null, // 是否登录
+        uid = parseInt(userinfo != null && userinfo !== '' ? userinfo.uid : -1) // uid
+  console.log('是否登录: ', isLodinged, "uid is: ", uid);
   
-  const closemid = props.closemid
+  const [rightAppendShow, setRightAppendShow] = useState(0) // 右侧详情 1 头像 2 消息 3 动态....
+  const rightTimer = useState(null)
   
   const bgimg = [
     baseurl + '/sys/a1.webp',
@@ -67,12 +68,6 @@ const Topnav = memo((props) => {
   const [bgflag, setBgflag] = useState(active)            // 是否显示顶部背景图
   const [classifys, setClassifys] = useState([]),
         [showflag, setShowflag] = useState(false)         // 顶部‘首页’hover详情
-  const [appendflag, setAppendflag] = useState(false)     // 用户信息append
-
-  const [messageflag, setMfalg] = useState(false) 
-  const [dynamicflag, setDyflag] = useState(false)  
-  const [historyflag, setHisflag] = useState(false) 
-  const [favlistflag, setFavlistflag] = useState(false) 
 
   const [focusflag, setFocusflag] = useState(false),      // 搜索框append
         [hoslist, setHotlist] = useState(),               // 热搜 10条
@@ -82,50 +77,57 @@ const Topnav = memo((props) => {
   const searchboxref = useRef() 
 
   const [dyanmiclist, setDynamicList] = useState([])      // 动态
-
   const [favlist, setFavlist] = useState([])              // 收藏夹
   const [favindex, setFavindex] = useState(0)           
   const [favonesum, setFavonesum] = useState([])          // 数量
-
   const [hisList, setHislist] = useState([])              // 历史记录
   const [hisindex, setHisindex] = useState(0)             // 0 视频  1 直播
-
   const [vipbuyflag, setVipblyflag] = useState(false)
   useEffect(() => {
     // 本地有数据
     const getData = async () => {      
-      const res = await getByUid(uid)
-      // console.log('user', res);
-      // const res = await login(userinfo.accouht, userinfo.password)
-      // localStorage.setItem('userinfo', JSON.stringify(res))
-      // setUserinfos(res)
-      // 动态
-      const res4 = await getHomeDynamic(uid, 0)
-      setDynamicList(res4)
-      // console.log('动态: ', res4);
-      // 观看历史
-      const res3 = await getHomeHistory(uid, 0, 20, 20);
-      setHislist(res3)      
-      // 收藏夹
-      const res2 = await getFavlist(uid, -1)
-      console.log('res2 is: ', res2);
+      // const res = await getByUid(uid)
+      // // 动态
+      // const res4 = await getHomeDynamic(uid, 0)
+      // setDynamicList(res4)
+      // // console.log('动态: ', res4);
+      // // 观看历史
+      // const res3 = await getHomeHistory(uid, 0, 20, 20);
+      // setHislist(res3)      
+      // // 收藏夹
+      // const res2 = await getFavlist(uid, -1)
+      // console.log('res2 is: ', res2);
       
-      // console.log('收藏夹列表,', res2);
-      const res22 = await getOneList(res2[0].fid, 0, null)
-      setFavlist(res2)
-      setFavonesum(res22)
+      // // console.log('收藏夹列表,', res2);
+      // const res22 = await getOneList(res2[0].fid, 0, null)
+      // setFavlist(res2)
+      // setFavonesum(res22)
       
-      const res5 = await getAllKeyword(uid)
-      setOldkeywords(res5)
+      // const res5 = await getAllKeyword(uid)
+      // setOldkeywords(res5)
 
-      const res6 = await getHotRanking()
-      setHotlist(res6.slice(0, 10))
+      // const res6 = await getHotRanking()
+      // setHotlist(res6.slice(0, 10))
 
-      const res7 = await getAllClassify()
-      const res8 = res7.filter(item =>
+      // const res7 = await getAllClassify()
+      // const res8 = res7.filter(item =>
+      //   item.type !== 1
+      // )
+      // setClassifys(res8)
+      const res = await Promise.all([getHomeDynamic(uid, 0), getHomeHistory(uid, 0, 20, 20),
+                                    getFavlist(uid, -1), getAllKeyword(uid),
+                                    getHotRanking(), getAllClassify()])
+      const res2 = await getOneList(res[2][0].fid, 0, null)
+      setDynamicList(res[0])
+      setHislist(res[1])
+      setFavlist(res[2])
+      setFavonesum(res2)
+      setOldkeywords(res[3])
+      setHotlist(res[4].slice(0, 10))
+      const temp =  res[5].filter(item =>
         item.type !== 1
       )
-      setClassifys(res8)
+      setClassifys(temp)
     }
     if (uid === -1) {
       console.log('未登录');
@@ -216,131 +218,19 @@ const Topnav = memo((props) => {
     }
   }
 
-  let timer1 = null
-  const menter = (e) => {
-    if (timer2 != null) {
-      setMfalg(false)
-      timer2 = null
-    } else if (timer3 != null) {
-      setDyflag(false)
-      timer3 = null
-    } else if (timer4 != null) {
-      setFavlistflag(false)
-      timer4 = null
-    } else if (timer5 != null) {
-      setHisflag(false)
-      timer5 = null
+  // 进入右侧单个项目
+  const enterRightItem = (type) => {
+    console.log('enter type ' + type);
+    if (rightTimer.current != null) {
+      clearTimeout(rightTimer.current)
+      rightTimer.current = null
     }
-    setAppendflag(true)
-    clearTimeout(timer1)
+    setRightAppendShow(type + 0)
   }
 
-  const mleave = (e) => {
-    timer1 = setTimeout(() => {
-      setAppendflag(false)
-    }, 300)
-  }
-
-  let timer2 = null
-  const menter2 = (e) => {
-    if (timer1 != null) {
-      setAppendflag(false)
-      timer1 = null
-    } else if (timer3 != null) {
-      setDyflag(false)
-      timer3 = null
-    } else if (timer4 != null) {
-      setFavlistflag(false)
-      timer4 = null
-    } else if (timer5 != null) {
-      setHisflag(false)
-      timer5 = null
-    }
-    setMfalg(true)
-    clearTimeout(timer2)
-  }
-  const mleave2 = (e) => {
-    timer2 = setTimeout(() => {
-      setMfalg(false)
-    }, 300)
-  }
-
-  let timer3 = null
-  const menter3 = (e) => {
-    if (timer2 != null) {
-      setMfalg(false)
-      timer2 = null
-    } else if (timer1 != null) {
-      setAppendflag(false)
-      timer1 = null
-    } else if (timer4 != null) {
-      setFavlistflag(false)
-      timer4 = null
-    } else if (timer5 != null) {
-      setHisflag(false)
-      timer5 = null
-    }
-    setDyflag(true)
-    clearTimeout(timer3)
-  }
-  const mleave3 = (e) => {
-    timer3 = setTimeout(() => {
-      setDyflag(false)
-    }, 300)
-  }
-
-  let timer4 = null
-  const menter4 = async (e) => {
-    if (timer2 != null) {
-      setMfalg(false)
-      timer2 = null
-    } else if (timer3 != null) {
-      setDyflag(false)
-      timer3 = null
-    } else if (timer1 != null) {
-      setAppendflag(false)
-      timer1 = null
-    } else if (timer5 != null) {
-      setHisflag(false)
-      timer5 = null
-    }
-    setFavlistflag(true)
-    const res = await getHomeHistory(uid, 0, 20, 20)
-    setHislist(res)
-    clearTimeout(timer4)
-  }
-  const mleave4 = (e) => {
-    timer4 = setTimeout(() => {
-      setFavlistflag(false)
-    }, 300)
-  }
-
-  let timer5 = null
-  const menter5 = async (e) => {
-    if (timer2 != null) {
-      setMfalg(false)
-      timer2 = null
-    } else if (timer3 != null) {
-      setDyflag(false)
-      timer3 = null
-    } else if (timer4 != null) {
-      setFavlistflag(false)
-      timer4 = null
-    } else if (timer1 != null) {
-      setAppendflag(false)
-      timer1 = null
-    }
-
-    setHisflag(true)
-    clearTimeout(timer5)
-    // 获取新的历史记录
-    const res = await getHomeHistory(uid, 0, 20, 20)
-    setHislist(res)
-  }
-
-  const mleave5 = (e) => {
-    timer5 = setTimeout(() => {
-      setHisflag(false)
+  const leaveRightItem = (type) => {
+    rightTimer.current = setTimeout(() => {
+      setRightAppendShow(0)
     }, 300)
   }
 
@@ -411,44 +301,20 @@ const Topnav = memo((props) => {
     
   }
 
-  const tomessage = () => {
-    if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})      
-      return
+  const rightToDirect = (tp) => {
+    const type = tp + 0
+    if (isLodinged) {
+      if (type === 1) {window.open(`/${uid}/whisper`, '_blank')}
+      else if (type === 2) {window.open(`/dynamicM/${uid}`, '_blank')}
+      else if (type === 3) {window.open(`/${uid}/favlist`, '_blank')}
+      else if (type === 4) {window.open(`/watched/${uid}`, '_blank')}
+      else if (type === 5) {window.open(`/${uid}/platform/upload/video`, "_blank")}
+    } else {
+      if (type !== 0) {
+        message.open({ type: 'warning', content: '请先登录'})
+      }
+      setLoginflag(true) 
     }
-    window.open(`/${uid}/whisper`, '_blank')
-  }
-
-  const todynamic = () => {
-    if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})
-      return
-    }
-    window.open(`/dynamicM/${uid}`, '_blank')
-  }
-
-  const tofavorite = () => {
-    if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})
-      return
-    }
-    window.open(`/${uid}/favlist`, '_blank')
-  }
-
-  const tohistory = () => {
-    if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})
-      return
-    }
-    window.open(`/watched/${uid}`, '_blank')
-  }
-
-  const toupload = () => {
-    if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})
-      return
-    }
-    window.open(`/${uid}/platform/upload/video`, "_blank")
   }
 
   const tothisitem = (value, type) => {
@@ -633,21 +499,25 @@ const Topnav = memo((props) => {
           <div className="rightp">
             <div className="onetiem1">
               {
-                userinfo === null &&
-                <div className="login-box" onClick={() => setLoginflag(true)}>登录</div>
+                userinfo === null ?
+                <div className="login-box"
+                  onClick={() => rightToDirect(0)}
+                >登录</div>
+                :
+                <img src={userinfo.avatar} alt="" className='useravatar'
+                  data-uid={userinfo.uid}
+                  style={{scale: rightAppendShow === 1 ? '2' : '1', translate: rightAppendShow === 1 ? '-10px 35px' : '0 0'}}
+                  onMouseEnter={() => enterRightItem(1)} 
+                  nMouseLeave={() => leaveRightItem(1)}
+                  onClick={touserspace}
+                />
               }
               {
-                userinfo !== null &&
-                  <img src={userinfo.avatar} alt="" className='useravatar'
-                    data-uid={userinfo.uid}
-                    style={{scale: appendflag ? '2' : '1', translate: appendflag ? '-10px 35px' : '0 0'}}
-                    onMouseEnter={menter} onMouseLeave={mleave}
-                    onClick={touserspace}
-                  />
-              }
-              {
-                appendflag && userinfo !== null &&
-                <div className="avatarappend" onMouseEnter={menter} onMouseLeave={mleave}>
+                rightAppendShow === 1 && userinfo !== null &&
+                <div className="avatarappend"
+                  onMouseEnter={() => enterRightItem(1)} 
+                  onMouseLeave={() => leaveRightItem(1)}
+                >
                   <div className="namediv">{userinfo.name}</div>
                   <span className="lvdiv">lv{userinfo.lv}</span>
                   <div className="icons">
@@ -743,13 +613,16 @@ const Topnav = memo((props) => {
                 </div>
               }
             </div>
-            <div className="onetiem messageitem" onMouseEnter={menter2} onMouseLeave={mleave2}>
-              <div className="iteminner" onClick={tomessage}>
+            <div className="onetiem messageitem"
+              onMouseEnter={() => enterRightItem(2)} 
+              onMouseLeave={() => leaveRightItem(2)}
+            >
+              <div className="iteminner" onClick={() => rightToDirect(1)}>
                 <span className='icon iconfont'>&#xe6eb;</span>
                 <span className='text'>消息</span>
               </div>
               {
-                messageflag && userinfo !== null &&
+                rightAppendShow === 2 && userinfo !== null &&
                 <div className="message-append">
                   <Link to={`/${uid}/whisper`}>
                     <div className="one-message-item">我的消息</div>
@@ -769,13 +642,16 @@ const Topnav = memo((props) => {
                 </div>
               }
             </div>
-            <div className="onetiem dynamicitem" onMouseEnter={menter3} onMouseLeave={mleave3}>
-              <div className='iteminner' onClick={todynamic}>
+            <div className="onetiem dynamicitem"
+              onMouseEnter={() => enterRightItem(3)} 
+              onMouseLeave={() => leaveRightItem(3)}
+            >
+              <div className='iteminner' onClick={() => rightToDirect(2)}>
                 <span className='icon iconfont' style={{scale: '1.1'}}>&#xe62d;</span>
                 <span className='text'>动态</span>
               </div>
               {
-                dynamicflag && userinfo !== null &&
+                rightAppendShow === 3 && userinfo !== null &&
                 <div className="dynamic-append">
                   <div className="dyappend-living">
                     <div className="dl-title">
@@ -819,13 +695,16 @@ const Topnav = memo((props) => {
                 </div>
               }
             </div>
-            <div className="onetiem favimte" onMouseEnter={menter4} onMouseLeave={mleave4}>
-              <div className='iteminner' onClick={tofavorite}>
+            <div className="onetiem favimte" 
+              onMouseEnter={() => enterRightItem(4)} 
+              onMouseLeave={() => leaveRightItem(4)}
+            >
+              <div className='iteminner' onClick={() => rightToDirect(3)}>
                 <span className='icon iconfont' style={{scale: '1.3'}}>&#xe62c;</span>
                 <span className='text'>收藏</span>
               </div>
               {
-                favlistflag && userinfo !== null &&
+                rightAppendShow === 4 && userinfo !== null &&
                 <div className="fav-append">
                   <div className="fav-append-left">
                     {
@@ -861,13 +740,16 @@ const Topnav = memo((props) => {
                 </div>
               }
             </div>
-            <div className="onetiem hisitme" onMouseEnter={menter5} onMouseLeave={mleave5}>
-              <div className='iteminner' onClick={tohistory}>
+            <div className="onetiem hisitme" 
+              onMouseEnter={() => enterRightItem(5)} 
+              onMouseLeave={() => leaveRightItem(5)}
+            >
+              <div className='iteminner' onClick={() => rightToDirect(4)}>
                 <span className='icon iconfont' style={{scale: '0.9'}}>&#xe8bd;</span>
                 <span className='text'>历史</span>
               </div>
               {
-                historyflag && userinfo !== null &&
+                rightAppendShow === 5 && userinfo !== null &&
                 <div className="his-append">
                   <div className="hisappend-title">
                     <div onClick={() => setHisindex(0)}>
@@ -888,7 +770,11 @@ const Topnav = memo((props) => {
                   <div className="his-top-content">
                     {
                       hisList.map(item =>
-                        <div className="one-top-history" key={item.vid} data-vid={item.vid} onClick={tovideo}>
+                        <div className="one-top-history" 
+                          key={item.vid} 
+                          data-vid={item.vid}
+                          onClick={tovideo}
+                        >
                           <img src={item.cover} alt="" className="left-his-cover" />
                           <div className="right-his-infos" data-vid={item.vid}>
                             <div className="rhi-title">{item.title}</div>
@@ -913,7 +799,7 @@ const Topnav = memo((props) => {
               }
             </div>
             <div className="onetiem2">
-              <div onClick={toupload}>
+              <div onClick={() => rightToDirect(5)}>
                 <span className='icon iconfont'>&#xe635;</span>
                 <span>投稿</span>
               </div>

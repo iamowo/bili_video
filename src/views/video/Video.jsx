@@ -483,12 +483,12 @@ const VideoPart = memo((props) => {
               <span className="infonums">{ thisvid?.danmus }</span>
             </div>
             <div className="infodiv">
-              <span className="infonums">{ thisvid?.time }</span>
+              <span className="infonums">{ thisvid.time ? `${thisvid.time.slice(0, 10)}   ${thisvid.time.slice(11,22)}` : 'xx:xx' }</span>
             </div>
-            <div className="infodiv">
+            {/* <div className="infodiv">
               <span className="icon iconfont" style={{color: "red"}}>&#xe69f;</span>
               <span className="infonums">未经授权,禁止转载</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

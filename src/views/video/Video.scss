@@ -12,10 +12,65 @@
 }
 
 @media(min-width: 2261px) {
-
+  .video-inner {
+    width: 2560px;
+    padding: 64px 212.5px 0;
+    .twopart-box {
+      width: 2135px;
+      .vid-leftp {
+        width: 1694px;
+        .playerbox {
+          width: 100%;
+          height: 1009px;
+          .videobox {
+            height: 953px;
+          }
+        }
+        .playerbox-active {
+          // vid-left + vid-right marginleft(30) + vid-right
+          width: 1694px;
+          height: 1184px;
+          .videobox {
+            height: 1128px;
+          }
+        }
+      }
+      .vid-rightpp {
+        width: 441px;
+      }
+    }
+  } 
 }
 @media((max-width: 2260px) and (min-width: 1651px)) {
- 
+  .video-inner {
+    width: 1560px;
+    padding: 64px 246px 0;
+    background-color: green;
+    .twopart-box {
+      width: 1068px;
+      .vid-leftp {
+        width: 688px;
+        .playerbox {
+          width: 100%;
+          height: 477px;
+          .videobox {
+            height: 421px;
+          }
+        }
+        .playerbox-active {
+          // vid-left + vid-right marginleft(30) + vid-right
+          width: 1068px;
+          height: 572px;
+          .videobox {
+            height: 516px;
+          }
+        }
+      }
+      .vid-rightpp {
+        width: 380px;
+      }
+    }
+  } 
 }
 
 @media (max-width: 1650px) {
@@ -44,41 +99,6 @@
       }
       .vid-rightpp {
         width: 380px;
-        // overflow: hidden;
-        .recommendlist {
-          width: 100%;
-          .video-outter-box {
-            .onevideo {
-              box-sizing: border-box;
-              width: 350px;
-              height: 83px;
-              display: flex;
-              .recom-video-box {
-                .leftvideoimg {
-                  width: 141px;
-                  height: 83px;
-                }
-              }
-              .revideoinfos {
-                height: 83px;
-                flex: 1;
-                padding: 0 15px 0 10px;
-                box-sizing: border-box;
-                // background-color: red;
-                .revidtitle {
-                  height: 40px;
-                }
-                .vidupname {
-                  margin-top: 3px;
-    
-                }
-                .vidoereminfo {
-                  margin-top: 3px;
-                }
-              }
-            }
-          }
-        }
       }
     }
   } 
@@ -1399,8 +1419,8 @@
           .revideoinfos {
             height: 107px;
             flex: 1;
-            padding-left: 10px;
             box-sizing: border-box;
+            padding: 0 15px 0 10px;
             // background-color: red;
             .revidtitle {
               width: 100%;

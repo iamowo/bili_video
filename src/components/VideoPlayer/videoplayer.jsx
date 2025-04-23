@@ -44,6 +44,7 @@ const VideoPlayer = memo((props) => {
         clickPending = useRef(false); // 是否正在等待第二次点击
   const favref = useRef()     // 收藏box的ref
   const createref = useRef()  // 新建
+  const durationTimer = useRef(null) // 持续按右键键1s，三倍速播放
 
   const [capturedImage, setCapturedImage] = useState(null) // 当前帧数图片
   const [isLoading, setIsLoading] = useState(false)               // 加载完成
@@ -277,31 +278,9 @@ const VideoPlayer = memo((props) => {
         // 右箭头前进5秒
         case "arrowright":
           e.preventDefault();
-          skipTime(5);
-           if (!isPlaying) {
-            togglePlay();
-          }
-          // 长按1秒后3倍速播放
-          // if (!e.repeat) {
-          //   const timer = setTimeout(() => {
-          //     if (e.key === "arrowRight") {
-          //       changePlaybackRate(3);
-          //     }
-          //   }, 1000);
-
-          //   // 清理定时器
-          //   const handleKeyUp = () => {
-          //     clearTimeout(timer);
-          //     changePlaybackRate(1); // 恢复正常速度
-          //     document.removeEventListener("keyup", handleKeyUp);
-          //   };
-
-          //   document.addEventListener("keyup", handleKeyUp);
-          // } else {
-          //   if (!isPlaying) {
-          //     togglePlay();
-          //   }
-          // }
+          durationTimer.current = setTimeout(() => {
+            videoRef.current.playbackRate = 3
+          }, 1000)
           break;
         // 上箭头增加5%音量
         case "arrowup":
@@ -317,10 +296,29 @@ const VideoPlayer = memo((props) => {
           break;
       }
     };
+    const handleKeyUp = (e) => {
+      const key = e.key.toLowerCase();
+      switch (key) {
+        case 'arrowright':
+          e.preventDefault();
+          if (durationTimer.current) {
+            clearTimeout(durationTimer.current);
+            durationTimer.current = null;
+            videoRef.current.playbackRate = 1
+          } else {
+            skipTime(5);
+            if (!isPlaying) {
+              togglePlay();
+            }
+          }
+      }
+    }
     // 添加事件监听，使用capture阶段捕获 注意第三个参数true
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
     };
   }, [isFullscreen, volume, isPlaying, widthscreen]);
 
@@ -388,7 +386,6 @@ const VideoPlayer = memo((props) => {
   const changePlaybackRate = (rate) => {
     videoRef.current.playbackRate = rate;
     setPlaybackRate(rate);
-
     // 清除
     bottomTimer.current = setTimeout(() => {
       setShowControls(false)
@@ -1490,8 +1487,7 @@ const VideoPlayer = memo((props) => {
             style={{opacity: showControls ? '1' : '0'}}
           >
             <div className="topline">
-              {/* <span>{thisvid?.title}</span> */}
-              <span>{isDragging + 0}</span>
+              <span>{thisvid?.title}</span>
             </div>
           </div>
         }

@@ -28,7 +28,6 @@
     border-bottom-right-radius: 4px;
     .videobox {
       width: 100%;
-      height: 100%;
       background-color: rgb(17, 16, 16);
       position: relative;
       display: flex;
@@ -101,9 +100,29 @@
         color: #e4dfdf;
         user-select: none;
       }
+      .volumechangebox {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        translate: -50% -50%;
+        z-index: 1;
+        background-color: #ffffffd0;
+        height: 45px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+        font-size: 16px;
+        color: #222;
+        font-weight: 550;
+        .iconfont {
+          margin-right: 10px;
+          font-size: 25px;
+        }
+      }
       .vide-mask-over {
         position: absolute;
-        z-index: 1;
+        z-index: 2;
         width: 100%;
         height: 100%;
         background-color: rgba(255, 255, 255, 0);
@@ -420,6 +439,7 @@
               .outtbox {
                 .iconfont {
                   font-size: 25px;
+
                 }
                 .textspan {
                   translate: 0 3px;
@@ -432,18 +452,18 @@
                 .sp12 {
                 }
                 .sp-setting {
-                  font-size: 27px;
+                  font-size: 24px;
                 }
                 .sp31 {
-                  font-size: 28px;
+                  font-size: 26px;
                 }
                 .sp41 {
-                  font-size: 23px;
+                  font-size: 21px;
                   translate: 0 2px;
                 }
                 .sp51 {
                   translate: 0 2px;
-                  font-size: 26px;
+                  font-size: 24px;
                 }
               }
             }
@@ -489,6 +509,7 @@
           .vidconleft {
             height: 35px;
             display: flex;
+            user-select: none;
             .leftinnerspan {
               position: relative;
               z-index: 3;
@@ -821,7 +842,7 @@
               .sp12 {
               }
               .sp-setting {
-                font-size: 21px;
+                font-size: 18px;
                 &:hover {
                   animation: spinning 1s ease-in-out infinite;
                 }
@@ -847,7 +868,7 @@
               }
             }
             // 清晰度盒子
-            .appendbox1 {
+            .clear-append {
               position: absolute;
               width: 120px;
               height: fit-content;
@@ -874,7 +895,7 @@
               }
             }
             // 倍速
-            .appendbox2 {
+            .rate-append {
               position: absolute;
               width: 70px;
               height: fit-content;
@@ -901,7 +922,7 @@
               }
             }
             // 音量
-            .appendbox3 {
+            .volume-append {
               position: absolute;
               width: 32px;
               height: fit-content;
@@ -923,40 +944,41 @@
                 color: #e4dfdf;
                 margin-bottom: 5px;
               }
-              .voiceprogress {
+              .volumebox {
                 margin: 0;
                 width: 100%;
-                height: 100px;
+                height: 64px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                .voice-pro1 {
-                  width: 2px;
-                  height: 100px;
+                cursor: pointer;
+                .volumebar {
+                  width: 4px;
+                  height: 100%;
                   background-color: #e4dfdf;
                   display: flex;
                   flex-direction: column;
                   justify-content: end;
-                  cursor: pointer;
-                  .voice-pro2 {
-                    width: 2px;
-                    height: 100%;
+                  position: relative;
+                  .volumeprogress {
+                    width: 100%;
+                    height: 20px;
                     background-color: #32aeec;
-                    position: relative;
                   }
                   .drag-btn {
                     position: absolute;
-                    top: -6px;
-                    left: -5px;
-                    width: 12px;
-                    height: 12px;
+                    top: 50%;
+                    left: 50%;
+                    translate: -50% -50%;
+                    width: 14px;
+                    height: 14px;
                     border-radius: 50%;
                     background-color: #32aeec;
                   }
                 }
               }
             }
-            .appendbox4 {
+            .setting-append {
               position: absolute;
               width: 140px;
               height: fit-content;

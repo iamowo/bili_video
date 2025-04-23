@@ -1,5 +1,5 @@
 import "./index.scss"
-import { useState, useRef, useEffect, memo } from "react"
+import { useState, useRef, useEffect, memo, useCallback } from "react"
 import { getVideoFormList } from "../../api/videolist"
 import message from "../notice/notice"
 import { baseurl2 } from "../../api"
@@ -8,31 +8,42 @@ import { updateinfo, sendDm } from "../../api/video"
 import { getFavlist, addOneFavlist, addOneVideo } from "../../api/favlist"
 import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from "../../api/animation"
 import { useLocation, useNavigate } from "react-router-dom"
-import { debounceWithCancel } from "../../util/fnc"
+import { debounce } from "../../util/fnc"
 
 const VideoPlayer = memo((props) => {  
   const { vid, uid, thisvid,
           userinfo, setUserinfo, upinfo, 
           widthscreen, setWidthScreen,
           setThisvid, recommendlist, dmlist, setDmlist, updateuser,
-          setUpinfo,
-          windoflag2, setWindoflag2 } = props
+          setUpinfo } = props
   
   const location = useLocation();
+  const playerboxRef = useRef()
   const videoRef = useRef(null),
         hiddenVideoRef = useRef(null); // 隐藏视频（用于捕获）
   const playerRef = useRef(null)
   const videoBoxRef = useRef(null)
-  const progressRef = useRef(null)
+  const progressRef = useRef(null),
+        [isDragging, setIsDragging] = useState(false) // 视频进度条是否正在拖动
+  const volumeRef = useRef(null),
+       [isVolumeDragging, setIsVolumeDragging] = useState(false) // 视频进度条是否正在拖动
   const previewRef = useRef(null)
   const canvasRef = useRef(null)
   const bottomTimer = useRef(null)
   const moveTimer = useRef(false)
+  const debounceTimer = useRef(null) // 防抖定时器
+  const executeCallback = useRef(true) // 跟踪是否需要执行回调
   const bottomFlag = useRef(false) // 是都在底部操作栏
   const rightConTimmer = useRef(null) // 清晰度 音量 ...
+  const volumeTimer = useRef(null)
   const fontTimer = useRef()
   const createbox = useRef()
   const firstPlay = useRef(false) // 第一次播放
+  const clickTimer = useRef(null), // 双击时不触发单击 1. 定时器  2. 记录点击次数
+        lastClickTime = useRef(0), // 记录上一次点击时间
+        clickPending = useRef(false); // 是否正在等待第二次点击
+  const favref = useRef()     // 收藏box的ref
+  const createref = useRef()  // 新建
 
   const [capturedImage, setCapturedImage] = useState(null) // 当前帧数图片
   const [isLoading, setIsLoading] = useState(false)               // 加载完成
@@ -61,7 +72,8 @@ const VideoPlayer = memo((props) => {
         [setting3, setSetting3] = useState(true)        // 16：9    4：3
 
   const [volume, setVolume] = useState(100),           // 音量大小
-        [isMuted, setIsMuted] = useState(true)      // 静音 or 打开 声音
+        [isMuted, setIsMuted] = useState(false),      // 静音 or 打开 声音
+        [volumeChangeShow, setVolumeChangeShow] = useState(false)
 
   // 进度条交互
   const [hoverTime, setHoverTime] = useState(0),  // 悬浮时间
@@ -86,15 +98,9 @@ const VideoPlayer = memo((props) => {
 
   const [dmtest, setDmtext] = useState()           // 发送弹幕内容
   const [dmflag, setDmflag] = useState(true)       // 是否打开弹幕
-
-  const playerboxRef = useRef()
-  const favref = useRef()     // 收藏box的ref
-  const createref = useRef()  // 新建
   const [newFavtitle, setNewfavtitle] = useState()
-
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
         [vlistindex, setVlistindex] = useState(0)                  // 列表篇中当前播放的视频的index
-
   const [seasonlist, setSeasonlist] = useState([]),
         [seasonindex, setSeasonindex] = useState(0),
         [chapterlist, setChapterlist] = useState([]),
@@ -192,7 +198,7 @@ const VideoPlayer = memo((props) => {
     // 关闭页面是触发
     const updateInfo = async () => {
       // 如果播放了视频，更新数据， 否则不用
-      if (clicked) {
+      if (firstPlay.current) {
         const data = {
           uid: userinfo.uid,
           vid: vid,
@@ -230,16 +236,13 @@ const VideoPlayer = memo((props) => {
   // 键盘事件处理
   useEffect(() => {
     const handleKeyDown = (e) => {
-      const video = videoRef.current;
       const key = e.key.toLowerCase();
-
       if (isFullscreen && key === "escape") {
         e.preventDefault();
         e.stopPropagation(); // 阻止事件冒泡
         setIsFullscreen(false)
         return; // 直接返回，不执行任何操作
       }
-      console.log('key is: ', key);
       switch (key) {
         case "[":
           break;
@@ -256,10 +259,12 @@ const VideoPlayer = memo((props) => {
           togglePlay();
           break;
         case "k":
-          console.log('233333');
-          
           e.preventDefault()
           setWidthScreen(!widthscreen)
+          break;
+        case "m":
+          e.preventDefault();
+          handleMulted()
           break;
         // 左箭头后退5秒
         case "arrowleft":
@@ -327,8 +332,20 @@ const VideoPlayer = memo((props) => {
 
   // 音量加减
   const skipVolume = (num) => {
+    setVolumeChangeShow(true)
+    if(volumeTimer.current != null) {
+      clearTimeout(volumeTimer.current)
+      volumeTimer.current = null
+    }
+    volumeTimer.current = setTimeout(() => {
+      setVolumeChangeShow(false)
+    }, 1000);
+
     const video = videoRef.current;
-    let v = video.volume.toFixed(2) * 100 + num
+    let v = Math.floor(video.volume.toFixed(2) * 100 + num)
+    if (num > 0 && isMuted) {
+      setIsMuted(false)
+    }
     if (v > 100) {
       v = 100
     } else if (v <= 0) {
@@ -345,11 +362,11 @@ const VideoPlayer = memo((props) => {
     if (isMuted) {
       video.volume = volume * 0.01
       setVolume(volume)
+      setIsMuted(false)
     } else {
       video.volume = 0
-      setVolume(0)
+      setIsMuted(true)
     }
-    setIsMuted(!isMuted)
   }
 
   const enterRightController = (type) => {
@@ -371,19 +388,72 @@ const VideoPlayer = memo((props) => {
   const changePlaybackRate = (rate) => {
     videoRef.current.playbackRate = rate;
     setPlaybackRate(rate);
+
+    // 清除
+    bottomTimer.current = setTimeout(() => {
+      setShowControls(false)
+    }, 2000)
+    setRightShow(0)
   };
 
-  // 改变音量
-  const changeVolume = (e) => {
-    const proHeight = 100
-    let height = volume
-    if (e.target.className === "voice-pro1") {
-      height = e.target.getBoundingClientRect().top + proHeight - e.clientY
-    } else if (e.target.className === "voice-pro2"){
-      height = e.target.parentNode.getBoundingClientRect().top + proHeight - e.clientY
+  // 改变音量========================================
+  // 鼠标按下
+  const handleVolumeDown = (e) => {
+    e.stopPropagation()
+    setIsVolumeDragging(true);
+  
+    // 计算点击位置的百分比
+    const progressBar = volumeRef.current;
+    const rect = progressBar.getBoundingClientRect();
+        console.log(e.clientY, rect.bottom);
+    const clickPosition = rect.bottom - e.clientY;
+    const percentage = Math.floor((clickPosition / rect.height) * 100)
+    if (isMuted && percentage > 0) {
+      setIsMuted(false)
     }
-    setVolume(height)
+    if(percentage <= 0) {
+      setIsMuted(true)
+      videoRef.current.volume = 0
+    }
+    // 设置缓冲条和进度条位置
+    setVolume(percentage)
+    videoRef.current.volume = percentage * 0.01
   }
+
+  const handleVolumeMove = useCallback((e) => {
+    if (isVolumeDragging) {
+      const progressBar = volumeRef.current;
+      const rect = progressBar.getBoundingClientRect();
+      
+      let clickPositionY = rect.bottom - e.clientY;
+      clickPositionY = Math.max(0, Math.min(rect.height, clickPositionY));
+      const percentage = Math.floor((clickPositionY / rect.height) * 100)
+      if (isMuted && percentage > 0) {
+        setIsMuted(false)
+      }
+       if(percentage <= 0) {
+        setIsMuted(true)
+        videoRef.current.volume = 0
+      }
+      setVolume(percentage)
+      videoRef.current.volume = percentage * 0.01
+    }
+  }, [isVolumeDragging]);
+
+  useEffect(() => {
+    // 鼠标抬起
+    const handleMouseUp = (e) => {
+      setIsVolumeDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleVolumeMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleVolumeMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleVolumeMove]);
 
   // 返回弹幕行
   const [dmlines, setDmlines] = useState(20),
@@ -392,11 +462,6 @@ const VideoPlayer = memo((props) => {
         [fontflag, setFontflag] = useState(false),
         [dmfontsize, setDmfontsize] = useState('16px'),
         [dmfontcolor, setDmfontcolor] = useState("#fff")
-
-  const fncline = (i) => {
-    console.log('i is: ', i);
-    
-  }
 
   const dmcontrolenter = () => {
     if (fontTimer.current != null) {
@@ -428,36 +493,6 @@ const VideoPlayer = memo((props) => {
     }, 800)
   }
 
-  // 开始拖动
-  let dragstart = false,
-      starposition = 0,                                       // 鼠标开始的位置
-      moveY = 0,                                              // y轴移动的距离
-      endpositon = 0,                                         // 结束时y位置
-      boxY = 0                                                // 音量距离位置
-
-  const dragstartfnc = (e) => {
-    dragstart = true
-    starposition = e.clientY
-    boxY = 
-    console.log('start',starposition);
-    document.addEventListener("mouseup", dragend)              // 拖拽结束
-    document.addEventListener("mouseover", draging)            // 拖拽结束
-  }
-  const draging = (e) => {
-    if (dragstart) {
-      console.log('draging');
-      moveY= e.clientX-starposition;
-      console.log(moveY);
-      
-    }
-  }
-
-  const dragend = () => {
-    dragstart = false
-    console.log('dragend');
-    document.removeEventListener("mouseup", dragend)
-  }
-
   // 格式化时间显示
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
@@ -483,14 +518,38 @@ const VideoPlayer = memo((props) => {
     };
   }, []);
 
-  // pleyend  视频播放完
-  const playend = () => {
-    setIsEnded(true)
+  // 延迟播放/暂停 全屏/推出全屏
+  const togglePlayClick = () => {
+    const now = Date.now();
+    const isDoubleClick = now - lastClickTime.current < 300; // 300ms 内算双击
+
+    lastClickTime.current = now; // 更新点击时间
+
+    if (isDoubleClick) {
+      // 如果是双击：
+      // 1. 取消之前的单击定时器
+      if (clickTimer.current) {
+        clearTimeout(clickTimer.current);
+        clickTimer.current = null;
+      }
+      // 2. 执行双击逻辑（全屏）
+      toggleFullscreen();
+      clickPending.current = false; // 重置状态
+    } else {
+      // 如果是单击：
+      clickPending.current = true; // 标记为等待第二次点击
+      clickTimer.current = setTimeout(() => {
+        if (clickPending.current) {
+          // 如果 300ms 内没有第二次点击，执行单击逻辑（播放/暂停）
+          togglePlay();
+          clickPending.current = false;
+        }
+        clickTimer.current = null;
+      }, 300); // 300ms 后判定为单击
+    }
   }
 
-  const [clicked, setcliceked] = useState(false)  // 播放了视频
-  const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
-  // 播放/暂停
+  // 播放/暂停(立即)
   const togglePlay = async () => {
     // 第一次播放点击之后，如果没有其它操作下方控制栏消失
     if (!firstPlay.current) {
@@ -498,6 +557,26 @@ const VideoPlayer = memo((props) => {
       moveTimer.current = setTimeout(() => {
         setShowControls(false)
       }, 2000)
+      // 更新视频信息
+      if (thisvid.lastweatched === 0) {
+        const data = {
+          uid: userinfo.uid,
+          vid: vid,
+          type: 0,
+          lastwatched: 1,
+          done: 0
+        }
+        const res = await updateinfo(data)
+        console.log('res: ', res);
+        
+        if (res === 0) {
+          setThisvid({
+            ...thisvid,
+            plays: thisvid.plays + 1,
+            lastwatched: 1
+          })
+        }
+      }
     }
     const video = videoRef.current;
     if (video.paused) {
@@ -509,43 +588,6 @@ const VideoPlayer = memo((props) => {
       video.pause();
       setIsPlaying(false);
     }
-
-    // if (clicktimer != null) {
-    //   clearTimeout(clicktimer)
-    //   clicktimer = null
-    //   return
-    // }
-    // if (isLoading === true) {
-    //   if (videoRef.current.paused) {
-    //     setTimeout(async () => {
-    //       videoRef.current.play()
-    //       setIsPlaying(true)
-    //       setcliceked(true)
-    //       if (thisvid.lastweatched === 0) {
-    //         const data = {
-    //           uid: userinfo.uid,
-    //           vid: vid,
-    //           type: 0,
-    //           lastwatched: 1,
-    //           done: 0
-    //         }
-    //         const res = await updateinfo(data)
-    //         console.log('res: ', res);
-            
-    //         if (res === 0) {
-    //           setThisvid({
-    //             ...thisvid,
-    //             plays: thisvid.plays + 1,
-    //             lastwatched: 1
-    //           })
-    //         }
-    //       }
-    //     }, 150)
-    //   } else if (videoRef.current.play) {
-    //     videoRef.current.pause()
-    //     setIsPlaying(false)
-    //   }
-    // }
   }
 
   // 当前帧数图片
@@ -580,24 +622,7 @@ const VideoPlayer = memo((props) => {
     
     video.addEventListener('seeked', onSeeked);
   };
-
-  // 进度条交互
-  const handleProgressHover = (e) => {
-    const progressBar = progressRef.current;
-    const rect = progressBar.getBoundingClientRect();
-    const hoverPosition = e.clientX - rect.left;
-    const percent = hoverPosition / rect.width;
-    setHoverTime(percent * duration);
-    setPreviewPosition(hoverPosition);
-    setShowPreview(true);
-    generateImg(hoverTime)
-  };
-
-  const handleProgressLeave = () => {
-    setShowPreview(false);
-  };
   
-
   // 处理全屏变化
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -609,13 +634,13 @@ const VideoPlayer = memo((props) => {
 
       setIsFullscreen(!!fullscreenElement);
 
-      if (!fullscreenElement && videoBoxRef.current) {
-        if (widthscreen) {
-          videoBoxRef.current.style.height = "824px";
-        } else {
-          videoBoxRef.current.style.height = "768px";
-        }
-      }
+      // if (!fullscreenElement && videoBoxRef.current) {
+      //   if (widthscreen) {
+      //     videoBoxRef.current.style.height = "516px";
+      //   } else {
+      //     videoBoxRef.current.style.height = "421px";
+      //   }
+      // }
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -679,45 +704,74 @@ const VideoPlayer = memo((props) => {
         document.msExitFullscreen();
       }
       setIsFullscreen(false);
-    }   
-  }
-  
-  // 鼠标在视频中移动时间
-  const mouseMoveOnMask = () => {
-    console.log('moving');
-    if (!bottomFlag.current) {
-      setShowControls(true)
-      if (moveTimer.current != null) {
-        clearTimeout(moveTimer.current)
-        moveTimer.current = null
-      }
-      moveTimer.current = setTimeout(() => {
-        setShowControls(false)
-      }, 3000);
     }
   }
-
-  //出视频之后，仍会执行一次
-  // const [mouseMoveOnMask, cancelMouseMove] = debounceWithCancel(() => {
+  
+  // 底部操作栏==========================================================
+  // 鼠标在视频中移动时间
+  /**
+   * 于 JavaScript 闭包和定时器的异步特性导致的
+   * 当 mouseMoveOnMask 执行时，它创建了一个定时器，这个定时器会在 3 秒后执行回调函数。
+    如果在 3 秒内调用了 enterBottomControl，虽然你清除了 moveTimer.current，
+    但是定时器的回调函数可能已经被放入事件队列中等待执行。
+    clearTimeout 只能阻止尚未执行的定时器，不能取消已经在事件队列中等待执行的回调。
+    解决方案: 你需要添加一个标志来阻止回调函数的执行：
+    executeCallback
+   */
+  // const mouseMoveOnMask = () => {
   //   if (!bottomFlag.current) {
+  //     executeCallback.current = true;
+
+  //     setShowControls(true)
+  //     if (moveTimer.current != null) {
+  //       clearTimeout(moveTimer.current)
+  //       moveTimer.current = null
+  //     }
+  //     moveTimer.current = setTimeout(() => {
+  //       if (executeCallback.current) {
+  //         setShowControls(false);
+  //       }
+  //     }, 3000);
+  //   }
+  // }
+
+  const mouseMoveOnMask = () => {
+    if (!bottomFlag.current) {
+      setShowControls(true); // 立即显示控制栏
+      executeCallback.current = true;
+
+      // 清除之前的防抖和隐藏定时器
+      clearTimeout(debounceTimer.current);
+      clearTimeout(moveTimer.current);
+
+      // 设置防抖：300ms 后（鼠标停止移动）才启动 3 秒隐藏定时器
+      debounceTimer.current = setTimeout(() => {
+        moveTimer.current = setTimeout(() => {
+          setShowControls(false);
+        }, 3000);
+      }, 300); // 防抖延迟 300ms
+    }
+  };
+
+  // const mouseMoveOnMask = debounce(() => {
+  //   if (!bottomFlag.current) {
+  //     executeCallback.current = true;
   //     setShowControls(true);
-  //     // 清除之前的 moveTimer（如果存在）
   //     if (moveTimer.current) {
   //       clearTimeout(moveTimer.current);
   //     }
   //     // 设置新的 moveTimer（3秒后隐藏控制栏）
   //     moveTimer.current = setTimeout(() => {
-  //       setShowControls(false);
+  //       if (executeCallback.current) {
+  //         setShowControls(false);
+  //       }
   //     }, 3000);
   //   }
   // }, 500);
 
   // 离开视频区域
   const leaveVideoPart = () => {
-    console.log('离开视频区域')
     setShowControls(false)
-    // 取消防抖函数的待执行操作
-    // cancelMouseMove();
     if (moveTimer.current) {
       clearTimeout(moveTimer.current);
       moveTimer.current = null;
@@ -731,6 +785,11 @@ const VideoPlayer = memo((props) => {
   // 进入底部操作框
   const enterBottomControl = () => {
     bottomFlag.current = true
+    executeCallback.current = false // 阻止回调函数执行
+    if (debounceTimer.current != null) {
+      clearTimeout(debounceTimer.current)
+      debounceTimer.current = null
+    }
     if (bottomTimer.current != null) {
       clearTimeout(bottomTimer.current)
       bottomTimer.current = null
@@ -750,22 +809,83 @@ const VideoPlayer = memo((props) => {
     }, 3000)
   }
 
+  // 进度条===================================================
+  const handleProgressLeave = () => {
+    setShowPreview(false);
+  };
 
-  // 进度条点击跳转
-  const handleProgressClick = (e) => {
-    const video = videoRef.current;
+  // 鼠标按下
+  const handleProgressDown = (e) => {
+    setIsDragging(true);
+  
+    // 计算点击位置的百分比
     const progressBar = progressRef.current;
     const rect = progressBar.getBoundingClientRect();
     const clickPosition = e.clientX - rect.left;
-    const progressBarWidth = rect.width;
-    const seekTime = (clickPosition / progressBarWidth) * video.duration;
-    video.currentTime = seekTime;
-    setProgress((seekTime / video.duration) * 100);
-    if (!isPlaying) {
-      togglePlay()
-    }
+    const percentage = (clickPosition / rect.width) * 100;
+
+    // 设置缓冲条和进度条位置
+    setBuffered(Math.min(100, Math.max(0, percentage)));
+    setProgress(Math.min(100, Math.max(0, percentage)));
   }
 
+  const handleMouseMove = useCallback((e) => {
+    if (isDragging) {
+      const progressBar = progressRef.current;
+      const rect = progressBar.getBoundingClientRect();
+      
+      // 计算鼠标X坐标相对于进度条的位置
+      let clickPositionX = e.clientX - rect.left;
+      
+      // 限制在进度条范围内（0到宽度）
+      clickPositionX = Math.max(0, Math.min(rect.width, clickPositionX));
+      
+      const percentage = (clickPositionX / rect.width) * 100;
+      
+      // 更新缓冲条和进度条位置
+      setBuffered(Math.min(100, Math.max(0, percentage)));
+      setProgress(Math.min(100, Math.max(0, percentage)));
+    }
+    // const progressBar = progressRef.current;
+    // const rect = progressBar.getBoundingClientRect();
+    // const hoverPosition = e.clientX - rect.left;
+    // const percent = hoverPosition / rect.width;
+    // setHoverTime(percent * duration);
+    // setPreviewPosition(hoverPosition);
+    // setShowPreview(true);
+    // generateImg(hoverTime)
+  }, [isDragging]);
+
+  // 添加全局鼠标移动和抬起事件监听
+  useEffect(() => {
+    // 鼠标抬起
+    const handleMouseUp = (e) => {
+      if (isDragging) {
+        const video = videoRef.current;
+        const progressBar = progressRef.current;
+        const rect = progressBar.getBoundingClientRect();
+        const clickPosition = e.clientX - rect.left;
+        const progressBarWidth = rect.width;
+        const seekTime = (clickPosition / progressBarWidth) * video.duration;
+        video.currentTime = seekTime;
+        setProgress((seekTime / video.duration) * 100);
+        if (!isPlaying) {
+          togglePlay()
+        }
+        setIsDragging(false);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove]);
+
+  // 视频信息====================================================
   // 点赞 投币 收藏 转发
   const clickbtn = async (e) => {
     e.stopPropagation()
@@ -1006,16 +1126,6 @@ const VideoPlayer = memo((props) => {
     }
   }
 
-  const tothiskeyword = (e) => {
-    const index = parseInt(e.target.dataset.index)
-    const w = e.target.dataset.word
-    if (index === 0) {
-      window.open(`/channels/${w}`, '_blank')
-    } else {
-      window.open(`/all/${w}/${uid}`, '_blank')
-    }
-  }
-
   // 关闭 创建新收藏夹
   const toclosecreate = (e) => {
     if (createflag === false) {
@@ -1175,14 +1285,14 @@ const VideoPlayer = memo((props) => {
         onMouseLeave={leaveVideoPart}
         ref={videoBoxRef}
       >
-          <div className="loadingsp" style={{display: isPlaying ? 'none' : 'flex'}}>
-            <div className='lltext'>加载中</div>
-            <div className="rightanima">
-              <div className='icon iconfont nb1'>&#xec1e;</div>
-              <div className='icon iconfont nb2'>&#xec1e;</div>
-              <div className='icon iconfont nb3'>&#xec1e;</div>
-              <div className='icon iconfont nb4'>&#xec1e;</div>
-            </div>
+        <div className="loadingsp" style={{display: isPlaying ? 'none' : 'flex'}}>
+          <div className='lltext'>加载中</div>
+          <div className="rightanima">
+            <div className='icon iconfont nb1'>&#xec1e;</div>
+            <div className='icon iconfont nb2'>&#xec1e;</div>
+            <div className='icon iconfont nb3'>&#xec1e;</div>
+            <div className='icon iconfont nb4'>&#xec1e;</div>
+          </div>
         </div>
         <div className={`pili-player ${isFullscreen ? 'fullscreen' : ''}`}
           ref={playerRef}
@@ -1192,7 +1302,7 @@ const VideoPlayer = memo((props) => {
             ref={videoRef}
             controls={false} // 禁用原生控件
             tabIndex="0"
-            style={{ height: isFullscreen ? "100vh" : "100%" }}
+            // style={{ height: isFullscreen ? "100vh" : "100%" }}
           />
         </div>
         {
@@ -1200,142 +1310,154 @@ const VideoPlayer = memo((props) => {
           <span className="pausespan icon iconfont">&#xe6ab;</span>
         }
         <div className="vide-mask-over"
-          onClick={togglePlay}
+          onClick={togglePlayClick}
         >
-            {
-              isEnded &&
-              <div className="end-view"
-                onClick={replayvideo}
-              >
-                <div className="video-end-box">
-                  <div className="userinfo-line">
-                    <div className="recom-img-box">
-                      <img src={upinfo?.avatar} alt="" className="user-reco-avatar"
+          {
+            volumeChangeShow &&
+            <div className="volumechangebox">
+              {
+                isMuted ?
+                <span className="iconfont">&#xe67e;</span>
+                :
+                <span className="iconfont">&#xe67a;</span>
+              }
+              <span>{volume}%</span>
+            </div>
+          }
+          {
+            isEnded &&
+            <div className="end-view"
+              onClick={replayvideo}
+            >
+              <div className="video-end-box">
+                <div className="userinfo-line">
+                  <div className="recom-img-box">
+                    <img src={upinfo?.avatar} alt="" className="user-reco-avatar"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        window.open(`/${upinfo?.uid}`, "blank")
+                      }}
+                    />
+                  </div>
+                  <div className="reco-info2">
+                    <div className="reco-user-name">
+                      <span
                         onClick={(e) => {
                           e.stopPropagation()
                           window.open(`/${upinfo?.uid}`, "blank")
                         }}
-                      />
-                    </div>
-                    <div className="reco-info2">
-                      <div className="reco-user-name">
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            window.open(`/${upinfo?.uid}`, "blank")
-                          }}
-                        >
-                        {upinfo?.name}
-                        </span>
-                      </div>
-                      {
-                        upinfo?.followed ?
-                        <div className="reco-sub-btn spbtnfollow"
-                          data-uid2={upinfo?.uid}
-                          onClick={canclefollowuser}
-                        >取消关注</div>
-                        :
-                        <div className="reco-sub-btn"
-                          data-uid2={upinfo?.uid}
-                          onClick={tofollowuser}
-                        >+ 关注</div>
-                      }
-                    </div>
-                    <div className="remo-right-info">
-                      <div className="repaly-box">
-                        <div className="iconbox-a"
-                          onClick={replayvideo}
-                        >
-                          <span className="icon iconfont">&#xe615;</span>
-                          <span className="icon-text-sp">重播</span>
-                        </div>
-                      </div>
-                      <div className="onter-icons"
-                        onClick={clickbtn}
                       >
-                        <div className="iconbox-a"
-                          data-type="1"
-                          style={{color: thisvid?.liked ? '#32aeec' : '#fff'}}
-                        >
-                          <span className="icon iconfont">&#xe61c;</span>
-                          <span className="icon-text-sp">点赞</span>
-                        </div>
-                        <div className="iconbox-a"
-                          data-type="2"
-                          style={{color: thisvid?.iconed ? '#32aeec' : '#fff'}}
-                        >
-                          <span className="icon iconfont">&#xe617;</span>
-                          <span className="icon-text-sp">投币</span>
-                        </div>
-                        <div className="iconbox-a"
-                          data-type="3"
-                          style={{color: thisvid?.faved ? '#32aeec' : '#fff'}}
-                        >
-                          <span className="icon iconfont">&#xe630;</span>
-                          <span className="icon-text-sp">收藏</span>
-                        </div>
-                        <div className="iconbox-a"
-                          data-type="4"
-                        >
-                          <span className="icon iconfont">&#xe633;</span>
-                          <span className="icon-text-sp">转发</span>
-                        </div>
+                      {upinfo?.name}
+                      </span>
+                    </div>
+                    {
+                      upinfo?.followed ?
+                      <div className="reco-sub-btn spbtnfollow"
+                        data-uid2={upinfo?.uid}
+                        onClick={canclefollowuser}
+                      >取消关注</div>
+                      :
+                      <div className="reco-sub-btn"
+                        data-uid2={upinfo?.uid}
+                        onClick={tofollowuser}
+                      >+ 关注</div>
+                    }
+                  </div>
+                  <div className="remo-right-info">
+                    <div className="repaly-box">
+                      <div className="iconbox-a"
+                        onClick={replayvideo}
+                      >
+                        <span className="icon iconfont">&#xe615;</span>
+                        <span className="icon-text-sp">重播</span>
                       </div>
                     </div>
-                  </div>
-                  <div className="recommend-box">
-                    <div className="remoccend-title">相关推荐</div>
-                    <div className="recom-videos">
-                      {
-                        recommendlist?.map(item =>
-                          <div className="one-reco-video"
-                            key={item.vid}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              window.open(`/video/${item.vid}`, "_blank")
-                            }}
-                          >
-                            <img src={item.cover} alt="" className="recommend-cover" />
-                            <div className="vidoebox-mask"></div>
-                            <div className="reco-titlebox">{item.cover}</div>
-                          </div>
-                        )
-                      }
+                    <div className="onter-icons"
+                      onClick={clickbtn}
+                    >
+                      <div className="iconbox-a"
+                        data-type="1"
+                        style={{color: thisvid?.liked ? '#32aeec' : '#fff'}}
+                      >
+                        <span className="icon iconfont">&#xe61c;</span>
+                        <span className="icon-text-sp">点赞</span>
+                      </div>
+                      <div className="iconbox-a"
+                        data-type="2"
+                        style={{color: thisvid?.iconed ? '#32aeec' : '#fff'}}
+                      >
+                        <span className="icon iconfont">&#xe617;</span>
+                        <span className="icon-text-sp">投币</span>
+                      </div>
+                      <div className="iconbox-a"
+                        data-type="3"
+                        style={{color: thisvid?.faved ? '#32aeec' : '#fff'}}
+                      >
+                        <span className="icon iconfont">&#xe630;</span>
+                        <span className="icon-text-sp">收藏</span>
+                      </div>
+                      <div className="iconbox-a"
+                        data-type="4"
+                      >
+                        <span className="icon iconfont">&#xe633;</span>
+                        <span className="icon-text-sp">转发</span>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <div className="recommend-box">
+                  <div className="remoccend-title">相关推荐</div>
+                  <div className="recom-videos">
+                    {
+                      recommendlist?.map(item =>
+                        <div className="one-reco-video"
+                          key={item.vid}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(`/video/${item.vid}`, "_blank")
+                          }}
+                        >
+                          <img src={item.cover} alt="" className="recommend-cover" />
+                          <div className="vidoebox-mask"></div>
+                          <div className="reco-titlebox">{item.cover}</div>
+                        </div>
+                      )
+                    }
+                  </div>
+                </div>
               </div>
-            }
-            {
-              dmflag && dmlist.map((item, index) =>
-                item.type === 0 ?
-                  <div className="danmu-div"
-                    key={item.id}
-                    style={{animationPlayState: isPlaying ? 'running' : 'paused',
-                          color: (item.color) + '',
-                          textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                          top: (index % 20 * 25 + 10) + 'px',
-                          fontSize: '16px',
-                          // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
-                          display: item.sendtime <= progress && item.sendtime + 10 >= progress ? "block" : "none"
-                  }}
-                  onMouseEnter={(e) =>
-                    e.target.style.animationPlayState = 'paused'
-                  }
-                  onMouseLeave={(e) => 
-                    e.target.style.animationPlayState = 'running'                      
-                  }
-                  >{item.text}</div>
-                :
-                  <div className="danmu-div" key={item.id}
+            </div>
+          }
+          {
+            dmflag && dmlist.map((item, index) =>
+              item.type === 0 ?
+                <div className="danmu-div"
+                  key={item.id}
                   style={{animationPlayState: isPlaying ? 'running' : 'paused',
-                          color: (item.color) + '',
-                          textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                          top: (index % 20 * 25 + 10) + 'px',
-                          fontSize: '16px'
-                  }}>{item.text}</div> 
-              )
-            }
+                        color: (item.color) + '',
+                        textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                        top: (index % 20 * 25 + 10) + 'px',
+                        fontSize: '16px',
+                        // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+                        display: item.sendtime <= progress && item.sendtime + 10 >= progress ? "block" : "none"
+                }}
+                onMouseEnter={(e) =>
+                  e.target.style.animationPlayState = 'paused'
+                }
+                onMouseLeave={(e) => 
+                  e.target.style.animationPlayState = 'running'                      
+                }
+                >{item.text}</div>
+              :
+                <div className="danmu-div" key={item.id}
+                style={{animationPlayState: isPlaying ? 'running' : 'paused',
+                        color: (item.color) + '',
+                        textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                        top: (index % 20 * 25 + 10) + 'px',
+                        fontSize: '16px'
+                }}>{item.text}</div> 
+            )
+          }
         </div>
         {/* 预览图 */}
         <video 
@@ -1345,7 +1467,8 @@ const VideoPlayer = memo((props) => {
           crossOrigin="anonymous" // 绘制帧图片时候跨域
         />
         <canvas ref={canvasRef} style={{ display: 'none' }} />
-        {showPreview && (
+        {
+         false &&
           <div
             className={`preview-thumbnail`}
             ref={previewRef}
@@ -1359,7 +1482,7 @@ const VideoPlayer = memo((props) => {
             </div>
             <div className="preview-time">{formatTime(hoverTime)}</div>
           </div>
-        )}
+        }
         {/* 顶部信息控制 */}
         {
           !isEnded &&
@@ -1367,7 +1490,8 @@ const VideoPlayer = memo((props) => {
             style={{opacity: showControls ? '1' : '0'}}
           >
             <div className="topline">
-              <span>{thisvid?.title}</span>
+              {/* <span>{thisvid?.title}</span> */}
+              <span>{isDragging + 0}</span>
             </div>
           </div>
         }
@@ -1380,9 +1504,8 @@ const VideoPlayer = memo((props) => {
           >
           <div className="progress-bar"
             ref={progressRef}
-            onMouseMove={handleProgressHover}
             onMouseLeave={handleProgressLeave}
-            onClick={handleProgressClick}
+            onMouseDown={handleProgressDown}
           >
             <div className="buffered" style={{width: `${buffered}%`}}></div>
             <div className="progress" style={{width: `${progress}%`}}></div>
@@ -1518,7 +1641,7 @@ const VideoPlayer = memo((props) => {
                   onMouseLeave={() => leaveRightController(1)}
                 >清晰度</div>
                 {rightShow === 1 && 
-                  <div className="appendbox1" 
+                  <div className="clear-append" 
                     onMouseEnter={() => enterRightController(1)} 
                     onMouseLeave={() => leaveRightController(1)}
                   >
@@ -1533,20 +1656,20 @@ const VideoPlayer = memo((props) => {
                   onMouseEnter={() => enterRightController(2)} 
                   onMouseLeave={() => leaveRightController(2)}
                 >
-                    { 
-                      <span>{playbackRate === 1 ? '倍速' : playbackRate}</span>
-                    }
+                  { 
+                    <span>{playbackRate === 1 ? '倍速' : playbackRate}</span>
+                  }
                   </div>
                 {
                   rightShow === 2 && 
-                  <div className="appendbox2" 
+                  <div className="rate-append" 
                     onMouseEnter={() => enterRightController(2)} 
                     onMouseLeave={() => leaveRightController(2)}
                   >
                     {
                       rateList.map(item =>
                         <div className="onevv"
-                              onClick={() => changePlaybackRate(item.rate)}
+                          onClick={() => changePlaybackRate(item.rate)}
                         >{item.text}</div>
                       )
                     }
@@ -1561,29 +1684,35 @@ const VideoPlayer = memo((props) => {
                   >
                     {
                       isMuted ?
-                      <span>&#xea11;</span>
+                      <span>&#xe67e;</span>
                       :
-                      <span>&#xea0f;</span>
+                      <span>&#xe67a;</span>
                     }
                   </span>
               
           
                 {
                   rightShow === 3 && 
-                    <div className="appendbox3"
+                    <div className="volume-append"
                      onMouseEnter={() => enterRightController(3)} 
                       onMouseLeave={() => leaveRightController(3)}
-                      onClick={changeVolume}
+                      // onClick={changeVolume}
                   >
-                    <div className="voicenum">{volume}</div>
-                    <div className="voiceprogress">
-                      <div className="voice-pro1">
-                        <div className="voice-pro2"
-                          style={{height: `${volume}%`}}
-                        >
-                          <div className="drag-btn"
-                            onMouseDown={dragstartfnc}
-                          ></div>
+                    <div className="voicenum">
+                      {
+                        isMuted ?
+                        <span>0</span>
+                        :
+                        <span>{volume}</span>
+                      }
+                    </div>
+                    <div className="volumebox"
+                      ref={volumeRef}
+                      onMouseDown={handleVolumeDown}
+                    >
+                      <div className="volumebar">
+                        <div className="volumeprogress"style={{height: `${volume}%`}}>
+                        {/* <div className="drag-btn"></div> */}
                         </div>
                       </div>
                     </div>
@@ -1594,10 +1723,10 @@ const VideoPlayer = memo((props) => {
                 <span className='iconfont sp-setting'
                   onMouseEnter={() => enterRightController(4)} 
                   onMouseLeave={() => leaveRightController(4)}
-                >&#xe602;</span>
+                >&#xe680;</span>
                 {
                   rightShow === 4 &&
-                  <div className="appendbox4"
+                  <div className="setting-append"
                     onMouseEnter={() => enterRightController(4)} 
                     onMouseLeave={() => leaveRightController(4)}
                   >

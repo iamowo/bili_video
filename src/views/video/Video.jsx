@@ -22,20 +22,10 @@ import icon2 from '../../static/assets/icon2.png'
 import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
 const VideoPart = memo((props) => {
+  // widthscreen 宽屏模式
   const { vid, userinfo, uid, setDmlist, dmlist, thisvid, 
           widthscreen, setWidthScreen } = props
   const location = useLocation();
-
-  const [timeprogress, setTimeprogress] = useState(0)   // 一直增加的时间
-  const [lastwatchednunm, setLswnum] = useState(0)      // 上次观看的时间
-  const [wawtchdonefal, setWdone] = useState(0)         // 是否观看完
-
-  const [nowtime ,setNowTime] = useState('00:00')       // time
-  const [videoprogress, setProgress] = useState(0)      // progress
-  const [loadprogress, setLoadprogress] = useState(0)   // 预加载进度
-  const [fullfalg, setFullflag] = useState(false)           // 全屏
-  
-  const [windoflag2, setWindoflag2] = useState(false)   // 网页宽屏
   const [titleflag, setTitleflag] = useState(false)
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
   const [favflag, setFavflag] = useState(false)    // 打开收藏框
@@ -93,11 +83,8 @@ const VideoPart = memo((props) => {
 
       // animation list 信息
       if (thisvid.aid !== -1 && thisvid.aid != null) {
-        console.log('=====================');
         const res5 = await getSeasons(thisvid.aid)
-        setSeasonlist(res5)
-        console.log('======================res4: ', res5);
-        
+        setSeasonlist(res5)        
         for (let i = 0; i < res5.length; i++) {
           for (let j = 0; j < res5[i].length; j++) {
             if (res5[i][j].vid === vid) {
@@ -122,141 +109,17 @@ const VideoPart = memo((props) => {
         [dmfontsize, setDmfontsize] = useState('16px'),
         [dmfontcolor, setDmfontcolor] = useState("#fff")
 
-  const fonttimer = useRef()
-
-  // 元数据加载完成
-  const videoloadedmated = () => {
-    // 监听全屏改变事件
-    window.addEventListener("fullscreenchange", () => {
-      // 全屏时为全屏元素   退出全屏时为null
-      const fullelement = document.fullscreenElement      
-      if (fullelement !== null && fullfalg === false) {
-        setFullflag(true)
-      } else if (fullelement === null){
-        // 按esc时的情况
-        setFullflag(false)
-      }
-    })
-  }
-
-  const videobox = useRef()                                     // 视频区域
-  const videoref = useRef()                                     // 视频资源
+  const videoRef = useRef()                                     // 视频资源
   // 视频相关函数
-  const [loadflag, setLoadflag] = useState(false)               // 加载完成
   const [playflag, setPlayflag] = useState(false)
-  const [endflag, setEndflag] = useState(false)                 // 视频结束
-  const [vidoopationflag, setVidoopationflag] = useState(true)  // 显示控制栏 true显示 false不显示
 
-  const videoprogressfnc = () => {
-    console.log('progressing');
 
-    const duration = videoref.current.duration
-    if (duration > 0) {
-      for (let i = 0; i <videoref.current.buffered.length; i++) {
-        if (videoref.current.buffered.start(videoref.current.buffered.length - 1 - i) < videoref.current.currentTime) {
-            const loadpro = (videoref.current.buffered.end(videoref.current.buffered.length - 1 - i) * 100) / duration
-            setLoadprogress(loadpro)
-          }
-      }
-    }
-    
-  }
-
-  // playing 	当音频/视频在因缓冲而暂停或停止后已就绪时触发。
-  const videoplating = () => {
-    console.log('加载完成playing');
-    
-  }
-  // play 播放时触发
-  const videoplay = () => {
-    setPlayflag(true)
-  }
-  // pause  手动暂停  跳转时加载暂停
-  const videopause = () => {
-    console.log('pause');  
-  }
-
-  // 视频加载等待。当视频由于需要缓冲下一帧而停止，等待时触发
-  const videowating = () => {
-    console.log('正在缓冲',videoref.current.buffered);
-  }
-  
-  const videoerror = () => {
-    // 视频error
-    console.log('video error');
-    // setLoadflag(false)
-  }
-
-  // opupdate 当目前的播放位置已更改时触发。
-  const videotimeupdate  = () => {    
-    const duration = videoref.current.duration
-    const now = videoref.current.currentTime
-    setTimeprogress(now)
-    // console.log('now: ', now);
-    
-    setLswnum(now)
-    setProgress(now / duration * 100)
-
-    let mm = Math.floor(now / 60) > 10 ? '' + Math.floor(now / 60) : '0' + Math.floor(now / 60)
-    let ss = now % 60 > 10 ? '' + Math.floor(now % 60) : '0' + Math.floor(now % 60)
-    if (now >= 3600) {
-      let hh = Math.floor(now / 3600) > 10 ? '' + Math.floor(now / 3600) : '0' + Math.floor(now/ 3600)
-      setNowTime(hh + ":" + mm + ":" + ss)
-    } else {
-      setNowTime(+ mm + ":" + ss)
-    }
-
-  }
-
-  // pleyend  视频播放完
-  const playend = () => {
-    setEndflag(true)
-  }
-
-  const [clicked, setcliceked] = useState(false)  // 播放了视频
   const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
-  const clickvideo = async () => {
-    console.log('点击了视频 播放or暂停');
-    
-    if (clicktimer != null) {
-      clearTimeout(clicktimer)
-      clicktimer = null
-      return
-    }
-    if (loadflag === true) {
-      if (videoref.current.paused) {
-        setTimeout(async () => {
-          videoref.current.play()
-          setPlayflag(true)
-          setcliceked(true)
-          if (thisvid.lastweatched === 0) {
-            const data = {
-              uid: userinfo.uid,
-              vid: vid,
-              type: 0,
-              lastwatched: 1,
-              done: 0
-            }
-            const res = await updateinfo(data)
-            console.log('res: ', res);
-            
-            if (res === 0) {
-              props.setThisvid({
-                ...thisvid,
-                plays: thisvid.plays + 1,
-                lastwatched: 1
-              })
-            }
-          }
-        }, 150)
-      } else if (videoref.current.play) {
-        videoref.current.pause()
-        setPlayflag(false)
-      }
-    }
+
+  // 播放视频
+  const togglePlay = async () => {
   }
 
-  const progressref = useRef()
   // 点赞 投币 收藏 转发
   const clickbtn = async (e) => {
     e.stopPropagation()
@@ -524,72 +387,6 @@ const VideoPart = memo((props) => {
     }
   }
 
-  const tosendm = async () => {
-    if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})
-      return
-    }
-    if (dmflag) {
-      if (dmtest === '' || dmtest === null) {
-        message.open({ type: 'error', content: '输入内容为空'})
-        return
-      }
-      const data = {
-        text: dmtest,
-        uid: uid,
-        vid: vid,
-        sendtime: timeprogress,
-        color: dmfontcolor,
-        type: 0,
-      }
-      const res = await sendDm(data)
-      console.log(data);
-      
-      if (res) {
-        console.log('send dm successfuly');
-        setDmlist(res)
-        setDmtext("")
-      }
-    }
-  }
-
-  // 上一个视频
-  const navigate = useNavigate()
-  const prvvideo = () => {
-    navigate(`/video/${vlist[vlistindex - 2].vid}`)
-    document.location.reload()
-  }
-
-  // 下一个视频
-  const nextvideo = () => {
-    navigate(`/video/${vlist[vlistindex].vid}`)
-    document.location.reload()
-  }
-
-  const prvanima = () => {
-    let prvtVid = chapterlist[chapterindex - 1].vid
-    navigate(`/video/${prvtVid}`)
-    document.location.reload()
-  }
-
-  const nextanima = () => {
-    let nextVid = chapterlist[chapterindex + 1].vid
-    navigate(`/video/${nextVid}`)
-    document.location.reload()
-  }
-
-  // 重播
-  const replayvideo = (e) => {
-    e.stopPropagation()
-    videoref.current.currentTime = 0;
-    videoref.current.play()
-    setEndflag(false)
-  }
-
-  useEffect(() => {
-    console.log('???', endflag);
-    
-  },[endflag])
   // 关注
   const tofollowuser = async (e) => {
     e.stopPropagation()
@@ -660,13 +457,8 @@ const VideoPart = memo((props) => {
     }
   }
 
-  // canplay
-  const videoloaded = () => {
-    console.log('canplay');
-    setLoadflag(true)
-  }
   return (
-    <>
+    <div>
       <Totop 
         scrollheight={bottomscrollflag}
       />
@@ -708,8 +500,6 @@ const VideoPart = memo((props) => {
           uid={uid}
           dmlist={dmlist}
           setDmlist={setDmlist}
-          windoflag2={windoflag2}
-          setWindoflag2={setWindoflag2}
           widthscreen={widthscreen}
           setWidthScreen={setWidthScreen}
         />
@@ -914,34 +704,22 @@ const VideoPart = memo((props) => {
         <div className="window-video">
           <video className="video2"
             src={thisvid != null ? thisvid.path : null}
-            ref={videoref}
-            onCanPlay={videoloaded}
-            onProgress={videoprogressfnc}
-            onTimeUpdate={videotimeupdate}
-            onPlaying={videoplating}
-            // onSeeking={videoseeking}
-            // onSeeked={videoseeked}
-            onWaiting={videowating}
-            onEnded={playend}
-            onPlay={videoplay}
-            onPause={videopause}
-            onError={videoerror}
-            onLoadedMetadata={videoloadedmated}
+            ref={videoRef}
           ></video>
           <span className="closevspan icon iconfont">&#xe6bf;</span>
           {
             playflag ?
             <span className="playvbtn icon iconfont"
-              onClick={clickvideo}
+              onClick={togglePlay}
             >&#xe6ab;</span>
             :
             <span className="playvbtn icon iconfont"
-              onClick={clickvideo}
+              onClick={togglePlay}
             >&#xe6ac;</span>
           }
         </div>
       }
-    </>
+    </div>
   )
 })
 

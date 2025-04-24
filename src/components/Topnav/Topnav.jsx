@@ -65,16 +65,16 @@ const Topnav = memo((props) => {
   const [active, setActive] = useState(() => 
     location.pathname === '/' ||  location.pathname.includes('/rank/') || location.pathname.includes('/channels/')
     ? false : true)
-  const [bgflag, setBgflag] = useState(active)            // 是否显示顶部背景图
+  const [showBg, setShowBg] = useState(active)            // 是否显示顶部背景图
   const [classifys, setClassifys] = useState([]),
-        [showflag, setShowflag] = useState(false)         // 顶部‘首页’hover详情
+        [showClassify, setShowClassify] = useState(false) // 顶部‘首页’hover详情
 
   const [focusflag, setFocusflag] = useState(false),      // 搜索框append
         [hoslist, setHotlist] = useState(),               // 热搜 10条
         [keywordresult, setKyresult] = useState([]),      // kw的搜索结果
         [oldkeywords, setOldkeywords] = useState([])      // 本地存储关键词
 
-  const searchboxref = useRef() 
+  const searchRef = useRef() 
 
   const [dyanmiclist, setDynamicList] = useState([])      // 动态
   const [favlist, setFavlist] = useState([])              // 收藏夹
@@ -146,10 +146,10 @@ const Topnav = memo((props) => {
 
   // 关闭search-append
   const closeMidAppend = (e) => {
-    // searchboxref 刚加载出来直接使用会报错
+    // searchRef 刚加载出来直接使用会报错
     setTimeout(() => {
       const tar = e.target
-      if (!searchboxref?.current?.contains(tar)) {
+      if (!searchRef?.current?.contains(tar)) {
         setFocusflag(false)
       }
     },100)
@@ -326,12 +326,12 @@ const Topnav = memo((props) => {
     if (hovertimer.current != null) {
       clearTimeout(hovertimer.current)
     }
-    setShowflag(true)
+    setShowClassify(true)
   }
 
   const leavefnc = () => {
     hovertimer.current = setTimeout(() => {
-      setShowflag(false)
+      setShowClassify(false)
     },500)
   }
 
@@ -360,12 +360,12 @@ const Topnav = memo((props) => {
                 {
                   active &&
                   <div className='moreic'>
-                    <div className={showflag ? "iconfont rotate1" : "iconfont"}>&#xe624;</div>
+                    <div className={showClassify ? "iconfont rotate1" : "iconfont"}>&#xe624;</div>
                   </div>
                 }
               </Link>
               {
-                active && showflag &&
+                active && showClassify &&
                 <div className="home-append"
                   onMouseEnter={enterfnc}
                   onMouseLeave={leavefnc}
@@ -410,7 +410,7 @@ const Topnav = memo((props) => {
             </div>
           </div>
           <div className="midp" 
-            ref={searchboxref}
+            ref={searchRef}
               style={{display: closemid !== null && closemid !== undefined && closemid ? 'none' : 'block'}}
             >
             <div className="out-midbox"
@@ -807,7 +807,7 @@ const Topnav = memo((props) => {
           </div>
         </div>
         {
-          !bgflag &&
+          !showBg &&
           <div className="topbg">
             <div className="omgbox-topnav">
               {

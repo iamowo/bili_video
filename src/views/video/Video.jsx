@@ -23,8 +23,9 @@ import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
 const VideoPart = memo((props) => {
   // widthscreen 宽屏模式
-  const { vid, userinfo, uid, setDmlist, dmlist, thisvid, 
+  const { vid, userinfo, uid, setDmlist, dmlist, videoInfo, 
           widthscreen, setWidthScreen } = props
+  console.log("videoInfo info : ", videoInfo );
   const location = useLocation();
   const [titleflag, setTitleflag] = useState(false)
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
@@ -64,7 +65,7 @@ const VideoPart = memo((props) => {
 
   useEffect(() => {
     const getData = async () => {
-      const text = thisvid.title
+      const text = videoInfo.title
       const font = '22px PingFang SC'
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
@@ -82,8 +83,8 @@ const VideoPart = memo((props) => {
       setAnimationinfo(res4)      
 
       // animation list 信息
-      if (thisvid.aid !== -1 && thisvid.aid != null) {
-        const res5 = await getSeasons(thisvid.aid)
+      if (videoInfo.aid !== -1 && videoInfo.aid != null) {
+        const res5 = await getSeasons(videoInfo.aid)
         setSeasonlist(res5)        
         for (let i = 0; i < res5.length; i++) {
           for (let j = 0; j < res5[i].length; j++) {
@@ -96,10 +97,10 @@ const VideoPart = memo((props) => {
         }
       }
     }
-    if (thisvid != null) {
+    if (videoInfo != null) {
       getData()
     }
-  },[thisvid])
+  },[videoInfo])
 
   // 返回弹幕行
   const [dmlines, setDmlines] = useState(20),
@@ -156,14 +157,14 @@ const VideoPart = memo((props) => {
         setFavflag(true)   // 开打收藏box
       } else if (type === 2) {
         // 打开投币页面
-        if (thisvid.iconed === false) {
+        if (videoInfo.iconed === false) {
           setIconflag(true)
         } else {
           message.open({ type: 'info', content: '已经投币不能重复~'})
         }
       } else {
         const data = {
-          hisuid: thisvid.uid,
+          hisuid: videoInfo.uid,
           uid: userinfo.uid,
           vid: vid,
           type: type,
@@ -172,34 +173,34 @@ const VideoPart = memo((props) => {
         const res = (await updateinfo(data))
         if (res === 1) {
           // 点赞
-          if (thisvid.liked === false) {
+          if (videoInfo.liked === false) {
             props.setThisvid({
-              ...thisvid,
-              likes: thisvid.likes + 1,
-              liked: !thisvid.liked
+              ...videoInfo,
+              likes: videoInfo.likes + 1,
+              liked: !videoInfo.liked
             })
             message.open({ type: 'info', content: '点赞', flag: true})
           } else {
             props.setThisvid({
-              ...thisvid,
-              likes: thisvid.likes - 1,
-              liked: !thisvid.liked
+              ...videoInfo,
+              likes: videoInfo.likes - 1,
+              liked: !videoInfo.liked
             })
             message.open({ type: 'info', content: '取消点赞', flag: true})
           }
         }
         // else if (res === 3) {
         //   setThisvid({
-        //     ...thisvid,
-        //     favorites: thisvid.favorites + 1,
-        //     faved: !thisvid.faved
+        //     ...videoInfo,
+        //     favorites: videoInfo.favorites + 1,
+        //     faved: !videoInfo.faved
         //   })
         // }
         else if (res === 4){
           // 分享
           // http://localhost:3000/video/84
           // let content = 'http://localhost:3000' + location.pathname
-          let content = "[" + thisvid.title + "] " + baseurl2 + location.pathname
+          let content = "[" + videoInfo.title + "] " + baseurl2 + location.pathname
 
           var aux = document.createElement("input"); 
           aux.setAttribute("value", content); 
@@ -208,8 +209,8 @@ const VideoPart = memo((props) => {
           document.execCommand("copy"); 
           document.body.removeChild(aux);
           props.setThisvid({
-            ...thisvid,
-            shares: thisvid.shares + 1 
+            ...videoInfo,
+            shares: videoInfo.shares + 1 
           })
           message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
         }
@@ -315,9 +316,9 @@ const VideoPart = memo((props) => {
         message.open({ type: 'info', content: num > 0 ? '添加收藏' : '取消收藏', flag: true})
         closefavbox()  // 关闭收藏页面
         props.setThisvid({
-          ...thisvid,
-          favorites: thisvid.favorites + num,
-          faved: !thisvid.faved
+          ...videoInfo,
+          favorites: videoInfo.favorites + num,
+          faved: !videoInfo.faved
         })
       }
     } else {
@@ -347,8 +348,8 @@ const VideoPart = memo((props) => {
       const res = await updateinfo(data)
       if (res) {
         props.setThisvid({
-          ...thisvid,
-          icons: thisvid.icons + icons,
+          ...videoInfo,
+          icons: videoInfo.icons + icons,
           iconed: true               // 投币不能撤回
         })
       }
@@ -466,7 +467,7 @@ const VideoPart = memo((props) => {
         <div className={titlestyle ? "top-all-part stybe-topbox" : "top-all-part stybe-topbox2"}>
           <div className="titlelin">
             <div className="textpart" ref={textpart}>
-              { thisvid.title }</div>
+              { videoInfo.title }</div>
             <div className="noreicon" style={{rotate: titlestyle ? '180deg' : '0deg'}} onClick={opentitle}>
               { titleflag &&
                 <span className="icon iconfont">&#xe624;</span>            
@@ -476,14 +477,14 @@ const VideoPart = memo((props) => {
           <div className="infosline">
             <div className="infodiv">
               <span className="icon iconfont" style={{fontSize: '13px'}}>&#xe6b8;</span>
-              <span className="infonums">{thisvid?.plays}</span>
+              <span className="infonums">{videoInfo?.plays}</span>
             </div>
             <div className="infodiv">
               <span className="icon iconfont">&#xe666;</span>
-              <span className="infonums">{ thisvid?.danmus }</span>
+              <span className="infonums">{ videoInfo?.danmus }</span>
             </div>
             <div className="infodiv">
-              <span className="infonums">{ thisvid.time ? `${thisvid.time.slice(0, 10)}   ${thisvid.time.slice(11,22)}` : 'xx:xx' }</span>
+              <span className="infonums">{ videoInfo.time ? `${videoInfo.time.slice(0, 10)}   ${videoInfo.time.slice(11,22)}` : 'xx:xx' }</span>
             </div>
             {/* <div className="infodiv">
               <span className="icon iconfont" style={{color: "red"}}>&#xe69f;</span>
@@ -495,7 +496,7 @@ const VideoPart = memo((props) => {
       <div className="player-bot-box">
         <VideoPlayer 
           userinfo={userinfo}
-          thisvid={thisvid}
+          videoInfo={videoInfo}
           vid={vid}
           uid={uid}
           dmlist={dmlist}
@@ -509,24 +510,24 @@ const VideoPart = memo((props) => {
       >
         <div className="onepart likeicon"
           data-type="1"
-          style={{color: thisvid.liked ? '#32AEEC' : '#61666D'}}
+          style={{color: videoInfo.liked ? '#32AEEC' : '#61666D'}}
           >
           <span className="icon iconfont" style={{fontSize: '35px'}}>&#xe61c;</span>
-          <span className='optext'>{thisvid != null ? thisvid.likes : null}</span>
+          <span className='optext'>{videoInfo != null ? videoInfo.likes : null}</span>
         </div>
         <div className="onepart iconicon"
           data-type="2"
-          style={{color: thisvid.iconed ? '#32AEEC' : '#61666D'}}
+          style={{color: videoInfo.iconed ? '#32AEEC' : '#61666D'}}
         >
           <span className="icon iconfont" style={{fontSize: '37px', translate: '0 3px'}}>&#xe617;</span>
-          <span className='optext'>{thisvid != null ? thisvid.icons : null}</span>
+          <span className='optext'>{videoInfo != null ? videoInfo.icons : null}</span>
         </div>
         <div className="onepart subicon"
           data-type="3"
-          style={{color: thisvid.faved ? '#32AEEC' : '#61666D'}}
+          style={{color: videoInfo.faved ? '#32AEEC' : '#61666D'}}
         >
           <span className="icon iconfont">&#xe630;</span>
-          <span className='optext'>{thisvid != null ? thisvid.favorites : null}</span>
+          <span className='optext'>{videoInfo != null ? videoInfo.favorites : null}</span>
         </div>
         <div className="onepart shareicon"
           data-type="4"
@@ -537,7 +538,7 @@ const VideoPart = memo((props) => {
           <span className="icon iconfont">&#xe633;</span>
           {
             sahreflag ?
-            <span className='optext'>{thisvid.shares}</span>
+            <span className='optext'>{videoInfo.shares}</span>
             :
             <span className="optext">点击复制链接</span>
           }
@@ -645,7 +646,7 @@ const VideoPart = memo((props) => {
         </div>
       }
       {
-        thisvid.aid !== -1 ?
+        videoInfo?.aid + 0 !== -1 ?
         <div className="intro-animation-box">
           <img src={animationinfo?.cover} alt="" className="left-animation-civer" />
           <div className="right-animation-iinfos">
@@ -678,9 +679,9 @@ const VideoPart = memo((props) => {
         :
         <div>
           {
-            thisvid.intro != null &&
+            videoInfo.intro != null &&
             <div className="vidintro">
-              <span className="text">{thisvid.intro}</span>
+              <span className="text">{videoInfo.intro}</span>
               <div className="intromore">更多</div>
             </div>
           }
@@ -703,7 +704,7 @@ const VideoPart = memo((props) => {
         littlewindow &&
         <div className="window-video">
           <video className="video2"
-            src={thisvid != null ? thisvid.path : null}
+            src={videoInfo != null ? videoInfo.path : null}
             ref={videoRef}
           ></video>
           <span className="closevspan icon iconfont">&#xe6bf;</span>
@@ -725,7 +726,7 @@ const VideoPart = memo((props) => {
 
 const RightPart = memo((props) => {
   const {vid, userinfo, uid, upinfo, dmlist,
-    setUpinfo, setUserinfo,
+    setUpinfo, setUserinfo, videoInfo,
     widthscreen
   } = props
   // const vid = +props.vid
@@ -733,11 +734,9 @@ const RightPart = memo((props) => {
   // const uid = props.uid            // myuid
   // f1 0 头像   f1 1 名字
   const [userinfoflag, setUserinfoflag] = useState({f1: -1, f2: -1, f3: -1})
-  const [thisvid, setThisvid] = useState({})
-  const [videouser, setVideouser] = useState()
   const [recommendlist, setRecommendlist] = useState([])          // 推荐列表
   // const [upinfo, setUpinfo] = useState()                          // up主的信息
-  const [videoinfo, setVideoinfo] = useState()                    // 视频信息
+  // const [videoinfo, setVideoinfo] = useState()                    // 视频信息
 
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
         [vlistindex, setVlistindex] = useState(0),                  // 列表篇中当前播放的视频的index
@@ -750,8 +749,6 @@ const RightPart = memo((props) => {
         [chapterindex, setChapterindex] = useState(0)
 
   const [donateflag, setDonateflag] = useState(false)
-
-  const rigtbox = useRef()
   const recommendref = useRef()
 
   // const [dmlist, setDmlist] = useState([])         // 弹幕列表
@@ -776,10 +773,7 @@ const RightPart = memo((props) => {
   useEffect(() => {
     const getData = async () => {
       const res = await Promise.all([getByVid(vid, uid), getVideoLikely(vid)])
-      // console.log(res);
-      setVideoinfo(res[0])
       const upuid = res[0].uid     // 作者的uid
-
       const res3 = await getVideoFormList(res[0].listid)
       let tempnums = 0
       for (let i = 0; i < res3.length; i++) {
@@ -797,14 +791,8 @@ const RightPart = memo((props) => {
         setListname(res4.title)
       }
 
-      // const res2 = await getByUidFollowed(upuid, uid)
-      // console.log('作者信息:', res2);
-      // setUpinfo(res2)
-
-      // 弹幕
-      setThisvid(res[0])
+      // 推荐
       setRecommendlist(res[1])
-      // setDmlist(res[2])
 
       if (res[0].aid !== -1 && res[0].aid != null) {
         const res5 = await getSeasons(res[0].aid)
@@ -1036,7 +1024,7 @@ const RightPart = memo((props) => {
     </div>
     {
       // 视频列表
-      videoinfo != null && videoinfo.listid !== -1 &&
+      videoInfo != null && videoInfo.listid !== -1 &&
         <div className="playlist">
           <div className="playlist-title">
             <div>
@@ -1073,7 +1061,7 @@ const RightPart = memo((props) => {
     }
     {
       // 选集  番剧 电视剧。。。
-      videoinfo != null && videoinfo.aid !== -1 &&
+      videoInfo?.aid !== -1 &&
       <div className="seasionlist">
         <div className="anima-title">
           <div>
@@ -1168,7 +1156,7 @@ const Video = () => {
   const uid = parseInt(userinfo != null ? userinfo.uid : -1)
   const [widthscreen, setWidthScreen] = useState(false)             // 宽屏模式
   const [recommendlist, setRecommendlist] = useState([])            // 相关推荐视频
-  const [thisvid, setThisvid] = useState({})                        // 视频信息
+  const [videoInfo, setThisvid] = useState({})                        // 视频信息
   const [dmlist, setDmlist] = useState([])                          // 弹幕列表, 视频部分和右侧列表要用
   const [upinfo, setUpinfo] = useState()                            // up主的信息
   useEffect(() => {
@@ -1205,7 +1193,7 @@ const Video = () => {
               setWidthScreen={setWidthScreen}
               widthscreen={widthscreen}
               updateuser={updateuser}
-              thisvid={thisvid}
+              videoInfo={videoInfo}
               setThisvid={setThisvid}
               dmlist={dmlist}
               setDmlist={setDmlist}
@@ -1216,7 +1204,7 @@ const Video = () => {
             <Comments
               vid={vid}
               uid={uid}
-              hisuid={thisvid != null ? thisvid.uid : null}
+              hisuid={videoInfo != null ? videoInfo.uid : null}
               userinfo={userinfo}
               commentType = {0}
             />
@@ -1226,6 +1214,7 @@ const Video = () => {
                 vid={vid}
                 uid={uid}
                 dmlist={dmlist}
+                videoInfo={videoInfo}
                 userinfo={userinfo}
                 setUserinfo={setUserinfo}
                 widthscreen={widthscreen}

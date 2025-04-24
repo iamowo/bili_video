@@ -10,12 +10,52 @@ import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from
 import { useLocation, useNavigate } from "react-router-dom"
 import { debounce } from "../../util/fnc"
 
+const Danmu = memo((props) => {
+  const {dmflag, dmlist, isPlaying, uid, currentTime } = props
+  
+  return (
+    <div>
+      {
+        dmflag && dmlist.map((item, index) =>
+          item.type === 0 ?
+            <div className="danmu-div"
+              key={item.id}
+              style={{animationPlayState: isPlaying ? 'running' : 'paused',
+                    color: (item.color) + '',
+                    textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                    top: (index % 20 * 25 + 10) + 'px',
+                    fontSize: '16px',
+                    // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+                    display: item.sendtime <= currentTime && item.sendtime + 10 >= currentTime ? "block" : "none"
+            }}
+            onMouseEnter={(e) =>
+              e.target.style.animationPlayState = 'paused'
+            }
+            onMouseLeave={(e) => 
+              e.target.style.animationPlayState = 'running'                      
+            }
+            >{item.text}</div>
+          :
+            <div className="danmu-div" key={item.id}
+            style={{animationPlayState: isPlaying ? 'running' : 'paused',
+                    color: (item.color) + '',
+                    textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+                    top: (index % 20 * 25 + 10) + 'px',
+                    fontSize: '16px'
+            }}>{item.text}</div> 
+        )
+      }
+    </div>
+  )
+})
+
 const VideoPlayer = memo((props) => {  
-  const { vid, uid, thisvid,
+  const { vid, uid, videoInfo,
           userinfo, setUserinfo, upinfo, 
           widthscreen, setWidthScreen,
           setThisvid, recommendlist, dmlist, setDmlist, updateuser,
           setUpinfo } = props
+  console.log('dmlist is: ', dmlist);
   
   const location = useLocation();
   const playerboxRef = useRef()
@@ -44,7 +84,8 @@ const VideoPlayer = memo((props) => {
         clickPending = useRef(false); // 是否正在等待第二次点击
   const favref = useRef()     // 收藏box的ref
   const createref = useRef()  // 新建
-  const durationTimer = useRef(null) // 持续按右键键1s，三倍速播放
+  const [tripleSpeedShow, setTripleSpeedShow] = useState(false),
+        tsTimer = useRef(null) // 持续按右键键1s，三倍速播放
 
   const [capturedImage, setCapturedImage] = useState(null) // 当前帧数图片
   const [isLoading, setIsLoading] = useState(false)               // 加载完成
@@ -56,7 +97,7 @@ const VideoPlayer = memo((props) => {
   const [wawtchdonefal, setWdone] = useState(0)         // 是否观看完
   const [currentTime ,setCurrentTime] = useState(0)       // 当前视频时间
   const [duration, setDuration] = useState(0)             //时长
-  const [progress, setProgress] = useState(0)       // 视频进度
+  const [progress, setProgress] = useState(0)       // 视频进度条
   const [buffered, setBuffered] = useState(0)       // 缓冲
   const [isFullscreen, setIsFullscreen] = useState(false)           // 全屏
   const [rightShow, setRightShow] = useState(0) // 1 清晰度 2 倍速 3 音量 4 设置
@@ -113,7 +154,7 @@ const VideoPlayer = memo((props) => {
   // 获取数据
   useEffect(() => {
     const getData = async () => {      
-      const res = thisvid
+      const res = videoInfo
       // 刚开始数据还没加载出来， 无法使用slice
       res.time = res?.time?.slice(0, 10) + ' ' + res?.time.slice(11, 16) // 在{ } 中修改会报错
       // 视频选集
@@ -141,11 +182,11 @@ const VideoPlayer = memo((props) => {
         }
       }
     }
-    // thisvid 非空 非null
-    if (thisvid != null && Object.keys(thisvid).length === '{}') {
+    // videoInfo 非空 非null
+    if (videoInfo != null && Object.keys(videoInfo).length === '{}') {
       getData()
     }
-  },[thisvid])
+  },[videoInfo])
 
   // 初始化视频元数据
   useEffect(() => {
@@ -278,9 +319,12 @@ const VideoPlayer = memo((props) => {
         // 右箭头前进5秒
         case "arrowright":
           e.preventDefault();
-          durationTimer.current = setTimeout(() => {
-            videoRef.current.playbackRate = 3
-          }, 1000)
+          if (!tsTimer.current) { // 避免重复设置
+            tsTimer.current = setTimeout(() => {
+              setTripleSpeedShow(true);
+              videoRef.current.playbackRate = 3;
+            }, 1000);
+          }
           break;
         // 上箭头增加5%音量
         case "arrowup":
@@ -301,16 +345,20 @@ const VideoPlayer = memo((props) => {
       switch (key) {
         case 'arrowright':
           e.preventDefault();
-          if (durationTimer.current) {
-            clearTimeout(durationTimer.current);
-            durationTimer.current = null;
+          clearTimeout(tsTimer.current);
+          tsTimer.current = null;
+          if (tripleSpeedShow) {
             videoRef.current.playbackRate = 1
+            setTripleSpeedShow(false)
           } else {
             skipTime(5);
             if (!isPlaying) {
               togglePlay();
             }
           }
+          break;
+        default:
+          break;
       }
     }
     // 添加事件监听，使用capture阶段捕获 注意第三个参数true
@@ -319,8 +367,12 @@ const VideoPlayer = memo((props) => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
+      if(tsTimer.current) {
+        clearTimeout(tsTimer.current)
+        tsTimer.current = null;
+      }
     };
-  }, [isFullscreen, volume, isPlaying, widthscreen]);
+  }, [isFullscreen, volume, isPlaying, widthscreen, tripleSpeedShow]);
 
   // 时间进退
   const skipTime = (seconds) => {
@@ -555,7 +607,7 @@ const VideoPlayer = memo((props) => {
         setShowControls(false)
       }, 2000)
       // 更新视频信息
-      if (thisvid.lastweatched === 0) {
+      if (videoInfo.lastweatched === 0) {
         const data = {
           uid: userinfo.uid,
           vid: vid,
@@ -568,8 +620,8 @@ const VideoPlayer = memo((props) => {
         
         if (res === 0) {
           setThisvid({
-            ...thisvid,
-            plays: thisvid.plays + 1,
+            ...videoInfo,
+            plays: videoInfo.plays + 1,
             lastwatched: 1
           })
         }
@@ -919,14 +971,14 @@ const VideoPlayer = memo((props) => {
         setFavflag(true)   // 开打收藏box
       } else if (type === 2) {
         // 打开投币页面
-        if (thisvid.iconed === false) {
+        if (videoInfo.iconed === false) {
           setIconflag(true)
         } else {
           message.open({ type: 'info', content: '已经投币不能重复~'})
         }
       } else {
         const data = {
-          hisuid: thisvid.uid,
+          hisuid: videoInfo.uid,
           uid: userinfo.uid,
           vid: vid,
           type: type,
@@ -935,34 +987,34 @@ const VideoPlayer = memo((props) => {
         const res = (await updateinfo(data))
         if (res === 1) {
           // 点赞
-          if (thisvid.liked === false) {
+          if (videoInfo.liked === false) {
             setThisvid({
-              ...thisvid,
-              likes: thisvid.likes + 1,
-              liked: !thisvid.liked
+              ...videoInfo,
+              likes: videoInfo.likes + 1,
+              liked: !videoInfo.liked
             })
             message.open({ type: 'info', content: '点赞', flag: true})
           } else {
             setThisvid({
-              ...thisvid,
-              likes: thisvid.likes - 1,
-              liked: !thisvid.liked
+              ...videoInfo,
+              likes: videoInfo.likes - 1,
+              liked: !videoInfo.liked
             })
             message.open({ type: 'info', content: '取消点赞', flag: true})
           }
         }
         // else if (res === 3) {
         //   setThisvid({
-        //     ...thisvid,
-        //     favorites: thisvid.favorites + 1,
-        //     faved: !thisvid.faved
+        //     ...videoInfo,
+        //     favorites: videoInfo.favorites + 1,
+        //     faved: !videoInfo.faved
         //   })
         // }
         else if (res === 4){
           // 分享
           // http://localhost:3000/video/84
           // let content = 'http://localhost:3000' + location.pathname
-          let content = "[" + thisvid.title + "] " + baseurl2 + location.pathname
+          let content = "[" + videoInfo.title + "] " + baseurl2 + location.pathname
 
           var aux = document.createElement("input"); 
           aux.setAttribute("value", content); 
@@ -971,8 +1023,8 @@ const VideoPlayer = memo((props) => {
           document.execCommand("copy"); 
           document.body.removeChild(aux);
           setThisvid({
-            ...thisvid,
-            shares: thisvid.shares + 1 
+            ...videoInfo,
+            shares: videoInfo.shares + 1 
           })
           message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
         }
@@ -1074,9 +1126,9 @@ const VideoPlayer = memo((props) => {
         message.open({ type: 'info', content: num > 0 ? '添加收藏' : '取消收藏', flag: true})
         closefavbox()  // 关闭收藏页面
         setThisvid({
-          ...thisvid,
-          favorites: thisvid.favorites + num,
-          faved: !thisvid.faved
+          ...videoInfo,
+          favorites: videoInfo.favorites + num,
+          faved: !videoInfo.faved
         })
       }
     } else {
@@ -1106,8 +1158,8 @@ const VideoPlayer = memo((props) => {
       const res = await updateinfo(data)
       if (res) {
         setThisvid({
-          ...thisvid,
-          icons: thisvid.icons + icons,
+          ...videoInfo,
+          icons: videoInfo.icons + icons,
           iconed: true               // 投币不能撤回
         })
       }
@@ -1151,7 +1203,7 @@ const VideoPlayer = memo((props) => {
         uid: uid,
         vid: vid,
         // sendtime: timeprogress,
-        sendtime: progress,
+        sendtime: currentTime,
         color: dmfontcolor,
         type: 0,
       }
@@ -1295,7 +1347,7 @@ const VideoPlayer = memo((props) => {
           ref={playerRef}
         >
           <video
-            src={thisvid?.path}
+            src={videoInfo?.path}
             ref={videoRef}
             controls={false} // 禁用原生控件
             tabIndex="0"
@@ -1309,6 +1361,10 @@ const VideoPlayer = memo((props) => {
         <div className="vide-mask-over"
           onClick={togglePlayClick}
         >
+          {
+            tripleSpeedShow &&
+            <div className="triplespeedbox">三倍速播放中</div>
+          }
           {
             volumeChangeShow &&
             <div className="volumechangebox">
@@ -1374,21 +1430,21 @@ const VideoPlayer = memo((props) => {
                     >
                       <div className="iconbox-a"
                         data-type="1"
-                        style={{color: thisvid?.liked ? '#32aeec' : '#fff'}}
+                        style={{color: videoInfo?.liked ? '#32aeec' : '#fff'}}
                       >
                         <span className="icon iconfont">&#xe61c;</span>
                         <span className="icon-text-sp">点赞</span>
                       </div>
                       <div className="iconbox-a"
                         data-type="2"
-                        style={{color: thisvid?.iconed ? '#32aeec' : '#fff'}}
+                        style={{color: videoInfo?.iconed ? '#32aeec' : '#fff'}}
                       >
                         <span className="icon iconfont">&#xe617;</span>
                         <span className="icon-text-sp">投币</span>
                       </div>
                       <div className="iconbox-a"
                         data-type="3"
-                        style={{color: thisvid?.faved ? '#32aeec' : '#fff'}}
+                        style={{color: videoInfo?.faved ? '#32aeec' : '#fff'}}
                       >
                         <span className="icon iconfont">&#xe630;</span>
                         <span className="icon-text-sp">收藏</span>
@@ -1425,41 +1481,20 @@ const VideoPlayer = memo((props) => {
               </div>
             </div>
           }
-          {
-            dmflag && dmlist.map((item, index) =>
-              item.type === 0 ?
-                <div className="danmu-div"
-                  key={item.id}
-                  style={{animationPlayState: isPlaying ? 'running' : 'paused',
-                        color: (item.color) + '',
-                        textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                        top: (index % 20 * 25 + 10) + 'px',
-                        fontSize: '16px',
-                        // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
-                        display: item.sendtime <= progress && item.sendtime + 10 >= progress ? "block" : "none"
-                }}
-                onMouseEnter={(e) =>
-                  e.target.style.animationPlayState = 'paused'
-                }
-                onMouseLeave={(e) => 
-                  e.target.style.animationPlayState = 'running'                      
-                }
-                >{item.text}</div>
-              :
-                <div className="danmu-div" key={item.id}
-                style={{animationPlayState: isPlaying ? 'running' : 'paused',
-                        color: (item.color) + '',
-                        textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                        top: (index % 20 * 25 + 10) + 'px',
-                        fontSize: '16px'
-                }}>{item.text}</div> 
-            )
-          }
+          <div className="dm-container">
+            <Danmu
+              dmflag={dmflag}
+              dmlist={dmlist}
+              isPlaying={isPlaying}
+              uid={uid}
+              currentTime={currentTime}
+            />
+          </div>
         </div>
         {/* 预览图 */}
         <video 
           ref={hiddenVideoRef}
-          scr={thisvid?.path}
+          scr={videoInfo?.path}
           style={{ display: 'none' }}
           crossOrigin="anonymous" // 绘制帧图片时候跨域
         />
@@ -1487,7 +1522,7 @@ const VideoPlayer = memo((props) => {
             style={{opacity: showControls ? '1' : '0'}}
           >
             <div className="topline">
-              <span>{thisvid?.title}</span>
+              <span>{videoInfo?.title}</span>
             </div>
           </div>
         }
@@ -1779,7 +1814,7 @@ const VideoPlayer = memo((props) => {
         </div>
       </div>
       <div className="videoconbox">
-        {/* <div className="conleft">已经装填{thisvid.danmus}条弹幕</div> */}
+        {/* <div className="conleft">已经装填{videoInfo.danmus}条弹幕</div> */}
         <div className="conleft">已经装填{dmlist.length}条弹幕</div>
         <div className="conright">
           <div className="danmuopen icon iconfont" onClick={() => setDmflag(!dmflag)}>&#xe61f;

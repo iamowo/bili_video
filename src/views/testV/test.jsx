@@ -18,6 +18,7 @@ function Test() {
   const uid = userinfo.uid
   const [dmlist, setDmlist] = useState([]),
         [thisvid, setThisvid] = useState(null)
+  const videoRef = useRef(null)
 
   useEffect(() => {
     const getData = async () => {
@@ -66,7 +67,7 @@ function Test() {
 
   return (
     <div>
-      <div className="text-view">
+      {/* <div className="text-view">
         <view className="v1box">
           <div className="load-box"></div>
           <div className="load-box2"></div>
@@ -93,7 +94,7 @@ function Test() {
       </div>
       <div
         style={{margin: '40px 0'}}
-      >================================================================================</div>
+      >================================================================================</div> */}
     </div>
   )
 }

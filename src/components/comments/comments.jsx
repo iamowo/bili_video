@@ -11,7 +11,7 @@ import Userinfo from '../Userinfo/Userinfo'
 
 function Comments(props) {
   // commentType  0视频 1动态 2漫画
-  const { vid, did, mid, commentType }  = props       
+  const { vid, did, mid, commentType, logined }  = props       
   const userinfo = props.userinfo
   const uid = props.uid
   const hisuid = props.hisuid

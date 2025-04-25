@@ -23,8 +23,8 @@ import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
 const VideoPart = memo((props) => {
   // widthscreen 宽屏模式
-  const { vid, userinfo, uid, setDmlist, dmlist, videoInfo, 
-          widthscreen, setWidthScreen } = props
+  const { vid, userinfo, uid, setDmList, dmList, videoInfo, 
+          widthscreen, setWidthScreen, logined } = props
   console.log("videoInfo info : ", videoInfo );
   const location = useLocation();
   const [titleflag, setTitleflag] = useState(false)
@@ -174,14 +174,14 @@ const VideoPart = memo((props) => {
         if (res === 1) {
           // 点赞
           if (videoInfo.liked === false) {
-            props.setThisvid({
+            props.setVideoInfo({
               ...videoInfo,
               likes: videoInfo.likes + 1,
               liked: !videoInfo.liked
             })
             message.open({ type: 'info', content: '点赞', flag: true})
           } else {
-            props.setThisvid({
+            props.setVideoInfo({
               ...videoInfo,
               likes: videoInfo.likes - 1,
               liked: !videoInfo.liked
@@ -190,7 +190,7 @@ const VideoPart = memo((props) => {
           }
         }
         // else if (res === 3) {
-        //   setThisvid({
+        //   setVideoInfo({
         //     ...videoInfo,
         //     favorites: videoInfo.favorites + 1,
         //     faved: !videoInfo.faved
@@ -208,7 +208,7 @@ const VideoPart = memo((props) => {
           aux.select();
           document.execCommand("copy"); 
           document.body.removeChild(aux);
-          props.setThisvid({
+          props.setVideoInfo({
             ...videoInfo,
             shares: videoInfo.shares + 1 
           })
@@ -315,7 +315,7 @@ const VideoPart = memo((props) => {
       if (res) {
         message.open({ type: 'info', content: num > 0 ? '添加收藏' : '取消收藏', flag: true})
         closefavbox()  // 关闭收藏页面
-        props.setThisvid({
+        props.setVideoInfo({
           ...videoInfo,
           favorites: videoInfo.favorites + num,
           faved: !videoInfo.faved
@@ -347,7 +347,7 @@ const VideoPart = memo((props) => {
       }
       const res = await updateinfo(data)
       if (res) {
-        props.setThisvid({
+        props.setVideoInfo({
           ...videoInfo,
           icons: videoInfo.icons + icons,
           iconed: true               // 投币不能撤回
@@ -389,15 +389,15 @@ const VideoPart = memo((props) => {
   }
 
   // 关注
-  const tofollowuser = async (e) => {
+  const toFollowUser = async (e) => {
     e.stopPropagation()
     const uid2 = parseInt(e.target.dataset.uid2)
-    if (uid === -1 || uid === null) {
-      message.open({ type: 'error', content: '请先登录'})
-      return
-    }
-    if (uid === uid2) {
-      message.open({ type: 'info', content: '已经关注了自己'})
+    if (logined) {
+      if (uid === uid2) {
+        message.open({ type: 'info', content: '已经关注了自己'})
+      } else {
+        message.open({ type: 'error', content: '请先登录'})
+      }
       return
     }
     const res = await toFollow(uid2, uid)
@@ -499,8 +499,8 @@ const VideoPart = memo((props) => {
           videoInfo={videoInfo}
           vid={vid}
           uid={uid}
-          dmlist={dmlist}
-          setDmlist={setDmlist}
+          dmList={dmList}
+          setDmList={setDmList}
           widthscreen={widthscreen}
           setWidthScreen={setWidthScreen}
         />
@@ -725,9 +725,8 @@ const VideoPart = memo((props) => {
 })
 
 const RightPart = memo((props) => {
-  const {vid, userinfo, uid, upinfo, dmlist,
-    setUpinfo, setUserinfo, videoInfo,
-    widthscreen
+  const {vid, userinfo, uid, upinfo, dmList,
+    setUpinfo, setUserinfo, videoInfo, logined, widthscreen
   } = props
   // const vid = +props.vid
   // const userinfo = props.userinfo  // 我的个人信息
@@ -751,7 +750,7 @@ const RightPart = memo((props) => {
   const [donateflag, setDonateflag] = useState(false)
   const recommendref = useRef()
 
-  // const [dmlist, setDmlist] = useState([])         // 弹幕列表
+  // const [dmList, setDmList] = useState([])         // 弹幕列表
 
   const [playalongflag, setPlayaloneflag] = useState(false)   // 连续播放标志
   // 弹幕列表flag
@@ -844,7 +843,7 @@ const RightPart = memo((props) => {
   }
 
   // 关注
-  const tofollowuser = async (e) => {
+  const toFollowUser = async (e) => {
     const uid2 = parseInt(e.target.dataset.uid2)
     if (uid === -1 || uid === null) {
       message.open({ type: 'error', content: '请先登录'})
@@ -975,7 +974,7 @@ const RightPart = memo((props) => {
             :
             <div className="sunthisup icon iconfont"
               data-uid2={upinfo != null ? upinfo.uid : null}
-              onClick={tofollowuser}>&#xe643; 关注</div>
+              onClick={toFollowUser}>&#xe643; 关注</div>
           }
         </div>
       </div>
@@ -1009,7 +1008,7 @@ const RightPart = memo((props) => {
           <div className="sendtimes">发送时间</div>
         </div>
         {
-          dmlist.map(item =>
+          dmList.map(item =>
           <div className="onedanmu"
             key={item.id}
           >
@@ -1146,18 +1145,17 @@ const RightPart = memo((props) => {
   )
 })
 
-const Video = () => {
-  console.log('top father...');
-  
+const Video = () => {  
   const params = useParams()
   const vid = params.vid
   const userinfos = JSON.parse(localStorage.getItem('userinfo'))
   const [userinfo, setUserinfo] = useState(() => userinfos)         // 未登录时null, 用户的信息
-  const uid = parseInt(userinfo != null ? userinfo.uid : -1)
+  const uid = parseInt(userinfo != null ? userinfo.uid : -1),
+        logined = uid !== -1;
   const [widthscreen, setWidthScreen] = useState(false)             // 宽屏模式
   const [recommendlist, setRecommendlist] = useState([])            // 相关推荐视频
-  const [videoInfo, setThisvid] = useState({})                        // 视频信息
-  const [dmlist, setDmlist] = useState([])                          // 弹幕列表, 视频部分和右侧列表要用
+  const [videoInfo, setVideoInfo] = useState({})                        // 视频信息
+  const [dmList, setDmList] = useState([])                          // 弹幕列表, 视频部分和右侧列表要用
   const [upinfo, setUpinfo] = useState()                            // up主的信息
   useEffect(() => {
     const getData = async () => {
@@ -1165,9 +1163,9 @@ const Video = () => {
       // console.log('1: ', res[0]);
       const res2 = await getByUidFollowed(res[0].uid, uid)
       setUpinfo(res2)                          // up主的信息
-      setThisvid(res[0])
+      setVideoInfo(res[0])
       document.title = `${res[0].title}`
-      setDmlist(res[1])
+      setDmList(res[1])
       setRecommendlist(res[2])
     }
     getData()
@@ -1194,12 +1192,13 @@ const Video = () => {
               widthscreen={widthscreen}
               updateuser={updateuser}
               videoInfo={videoInfo}
-              setThisvid={setThisvid}
-              dmlist={dmlist}
-              setDmlist={setDmlist}
+              setVideoInfo={setVideoInfo}
+              dmList={dmList}
+              setDmList={setDmList}
               recommendlist={recommendlist}
               upinfo={upinfo}
               setUpinfo={setUpinfo}
+              logined={logined}
             />
             <Comments
               vid={vid}
@@ -1207,19 +1206,21 @@ const Video = () => {
               hisuid={videoInfo != null ? videoInfo.uid : null}
               userinfo={userinfo}
               commentType = {0}
+              logined={logined}
             />
           </div>
           <div className="vid-rightpp">
               <RightPart
                 vid={vid}
                 uid={uid}
-                dmlist={dmlist}
+                dmList={dmList}
                 videoInfo={videoInfo}
                 userinfo={userinfo}
                 setUserinfo={setUserinfo}
                 widthscreen={widthscreen}
                 upinfo={upinfo}
                 setUpinfo={setUpinfo}
+                logined={logined}
               />
           </div>
         </div>

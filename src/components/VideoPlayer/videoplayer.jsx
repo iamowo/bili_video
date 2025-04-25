@@ -11,12 +11,12 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { debounce } from "../../util/fnc"
 
 const Danmu = memo((props) => {
-  const {dmflag, dmlist, isPlaying, uid, currentTime } = props
+  const {dmflag, dmList, isPlaying, uid, currentTime } = props
   
   return (
     <div>
       {
-        dmflag && dmlist.map((item, index) =>
+        dmflag && dmList.map((item, index) =>
           item.type === 0 ?
             <div className="danmu-div"
               key={item.id}
@@ -50,12 +50,12 @@ const Danmu = memo((props) => {
 })
 
 const VideoPlayer = memo((props) => {  
-  const { vid, uid, videoInfo,
+  const { vid, uid, videoInfo, setVideoInfo,
           userinfo, setUserinfo, upinfo, 
           widthscreen, setWidthScreen,
-          setThisvid, recommendlist, dmlist, setDmlist, updateuser,
+          recommendlist, dmList, setDmList, updateuser,
           setUpinfo } = props
-  console.log('dmlist is: ', dmlist);
+  console.log('dmList is: ', dmList);
   
   const location = useLocation();
   const playerboxRef = useRef()
@@ -619,7 +619,7 @@ const VideoPlayer = memo((props) => {
         console.log('res: ', res);
         
         if (res === 0) {
-          setThisvid({
+          setVideoInfo({
             ...videoInfo,
             plays: videoInfo.plays + 1,
             lastwatched: 1
@@ -988,14 +988,14 @@ const VideoPlayer = memo((props) => {
         if (res === 1) {
           // 点赞
           if (videoInfo.liked === false) {
-            setThisvid({
+            setVideoInfo({
               ...videoInfo,
               likes: videoInfo.likes + 1,
               liked: !videoInfo.liked
             })
             message.open({ type: 'info', content: '点赞', flag: true})
           } else {
-            setThisvid({
+            setVideoInfo({
               ...videoInfo,
               likes: videoInfo.likes - 1,
               liked: !videoInfo.liked
@@ -1004,7 +1004,7 @@ const VideoPlayer = memo((props) => {
           }
         }
         // else if (res === 3) {
-        //   setThisvid({
+        //   setVideoInfo({
         //     ...videoInfo,
         //     favorites: videoInfo.favorites + 1,
         //     faved: !videoInfo.faved
@@ -1022,7 +1022,7 @@ const VideoPlayer = memo((props) => {
           aux.select();
           document.execCommand("copy"); 
           document.body.removeChild(aux);
-          setThisvid({
+          setVideoInfo({
             ...videoInfo,
             shares: videoInfo.shares + 1 
           })
@@ -1125,7 +1125,7 @@ const VideoPlayer = memo((props) => {
       if (res) {
         message.open({ type: 'info', content: num > 0 ? '添加收藏' : '取消收藏', flag: true})
         closefavbox()  // 关闭收藏页面
-        setThisvid({
+        setVideoInfo({
           ...videoInfo,
           favorites: videoInfo.favorites + num,
           faved: !videoInfo.faved
@@ -1157,7 +1157,7 @@ const VideoPlayer = memo((props) => {
       }
       const res = await updateinfo(data)
       if (res) {
-        setThisvid({
+        setVideoInfo({
           ...videoInfo,
           icons: videoInfo.icons + icons,
           iconed: true               // 投币不能撤回
@@ -1188,7 +1188,8 @@ const VideoPlayer = memo((props) => {
     }
   }
 
-  const tosendm = async () => {
+  // 发送弹幕
+  const toSendDm = async () => {
     if (uid === -1) {
       message.open({ type: 'error', content: '请先登录'})
       return
@@ -1207,13 +1208,15 @@ const VideoPlayer = memo((props) => {
         color: dmfontcolor,
         type: 0,
       }
+      // 返回带最新的list
       const res = await sendDm(data)
-      console.log(data);
-      
       if (res) {
-        console.log('send dm successfuly');
-        setDmlist(res)
+        setDmList(res)
         setDmtext("")
+        setVideoInfo({
+          ...videoInfo,
+          danmus: videoInfo.danmus + 1
+        })
       }
     }
   }
@@ -1484,7 +1487,7 @@ const VideoPlayer = memo((props) => {
           <div className="dm-container">
             <Danmu
               dmflag={dmflag}
-              dmlist={dmlist}
+              dmList={dmList}
               isPlaying={isPlaying}
               uid={uid}
               currentTime={currentTime}
@@ -1654,13 +1657,13 @@ const VideoPlayer = memo((props) => {
                           setDmtext(e.target.value)
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {tosendm()}
+                          if (e.key === 'Enter') {toSendDm()}
                         }}
                       placeholder='发一条弹幕吧~'/>
                       :
                       <div className="dm-close-box">弹幕已关闭</div>
                     }
-                    <div className={dmflag ? "rightbtn" : "rightbtn notsend"} onClick={tosendm}>发送</div>
+                    <div className={dmflag ? "rightbtn" : "rightbtn notsend"} onClick={toSendDm}>发送</div>
                   </div>
                 </div>
               }
@@ -1815,7 +1818,7 @@ const VideoPlayer = memo((props) => {
       </div>
       <div className="videoconbox">
         {/* <div className="conleft">已经装填{videoInfo.danmus}条弹幕</div> */}
-        <div className="conleft">已经装填{dmlist.length}条弹幕</div>
+        <div className="conleft">已经装填{dmList.length}条弹幕</div>
         <div className="conright">
           <div className="danmuopen icon iconfont" onClick={() => setDmflag(!dmflag)}>&#xe61f;
             {
@@ -1879,13 +1882,13 @@ const VideoPlayer = memo((props) => {
                 value={dmtest}
                 onChange={(e) => setDmtext(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {tosendm()}
+                  if (e.key === 'Enter') {toSendDm()}
                 }}
               placeholder='发一条弹幕吧~'/>
               :
               <div className="dm-close-box">弹幕已关闭</div>
             }
-            <div className={dmflag ? "rightbtn" : "rightbtn notsend"} onClick={tosendm}>发送</div>
+            <div className={dmflag ? "rightbtn" : "rightbtn notsend"} onClick={toSendDm}>发送</div>
           </div>
         </div>
       </div>

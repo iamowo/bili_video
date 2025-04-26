@@ -228,7 +228,8 @@ const Topnav = memo((props) => {
     setRightAppendShow(type + 0)
   }
 
-  const leaveRightItem = (type) => {
+  const leaveRightItem = () => {
+    console.log('leave');
     rightTimer.current = setTimeout(() => {
       setRightAppendShow(0)
     }, 300)
@@ -508,7 +509,7 @@ const Topnav = memo((props) => {
                   data-uid={userinfo.uid}
                   style={{scale: rightAppendShow === 1 ? '2' : '1', translate: rightAppendShow === 1 ? '-10px 35px' : '0 0'}}
                   onMouseEnter={() => enterRightItem(1)} 
-                  nMouseLeave={() => leaveRightItem(1)}
+                  onMouseLeave={leaveRightItem}
                   onClick={touserspace}
                 />
               }
@@ -516,7 +517,7 @@ const Topnav = memo((props) => {
                 rightAppendShow === 1 && userinfo !== null &&
                 <div className="avatarappend"
                   onMouseEnter={() => enterRightItem(1)} 
-                  onMouseLeave={() => leaveRightItem(1)}
+                  onMouseLeave={leaveRightItem}
                 >
                   <div className="namediv">{userinfo.name}</div>
                   <span className="lvdiv">lv{userinfo.lv}</span>
@@ -615,7 +616,7 @@ const Topnav = memo((props) => {
             </div>
             <div className="onetiem messageitem"
               onMouseEnter={() => enterRightItem(2)} 
-              onMouseLeave={() => leaveRightItem(2)}
+              onMouseLeave={leaveRightItem}
             >
               <div className="iteminner" onClick={() => rightToDirect(1)}>
                 <span className='icon iconfont'>&#xe6eb;</span>
@@ -644,7 +645,7 @@ const Topnav = memo((props) => {
             </div>
             <div className="onetiem dynamicitem"
               onMouseEnter={() => enterRightItem(3)} 
-              onMouseLeave={() => leaveRightItem(3)}
+              onMouseLeave={leaveRightItem}
             >
               <div className='iteminner' onClick={() => rightToDirect(2)}>
                 <span className='icon iconfont' style={{scale: '1.1'}}>&#xe62d;</span>
@@ -697,7 +698,7 @@ const Topnav = memo((props) => {
             </div>
             <div className="onetiem favimte" 
               onMouseEnter={() => enterRightItem(4)} 
-              onMouseLeave={() => leaveRightItem(4)}
+              onMouseLeave={leaveRightItem}
             >
               <div className='iteminner' onClick={() => rightToDirect(3)}>
                 <span className='icon iconfont' style={{scale: '1.3'}}>&#xe62c;</span>
@@ -742,7 +743,7 @@ const Topnav = memo((props) => {
             </div>
             <div className="onetiem hisitme" 
               onMouseEnter={() => enterRightItem(5)} 
-              onMouseLeave={() => leaveRightItem(5)}
+              onMouseLeave={leaveRightItem}
             >
               <div className='iteminner' onClick={() => rightToDirect(4)}>
                 <span className='icon iconfont' style={{scale: '0.9'}}>&#xe8bd;</span>

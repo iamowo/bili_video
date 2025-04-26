@@ -24,7 +24,7 @@ import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 const VideoPart = memo((props) => {
   // widthscreen 宽屏模式
   const { vid, userinfo, uid, setDmList, dmList, videoInfo, 
-          widthscreen, setWidthScreen, logined } = props
+          widthscreen, setWidthScreen, logined, setVideoInfo, setUpinfo, setUserinfo, updateuser } = props
   console.log("videoInfo info : ", videoInfo );
   const location = useLocation();
   const [titleflag, setTitleflag] = useState(false)
@@ -394,7 +394,7 @@ const VideoPart = memo((props) => {
     const uid2 = parseInt(e.target.dataset.uid2)
     if (logined) {
       if (uid === uid2) {
-        message.open({ type: 'info', content: '已经关注了自己'})
+        message.open({ type: 'info', content: '不能关注自己'})
       } else {
         message.open({ type: 'error', content: '请先登录'})
       }
@@ -497,6 +497,11 @@ const VideoPart = memo((props) => {
         <VideoPlayer 
           userinfo={userinfo}
           videoInfo={videoInfo}
+          setVideoInfo={setVideoInfo}
+          setUserinfo={setUserinfo}
+          upinfo={upinfo}
+          setUpinfo={setUpinfo}
+          updateuser={updateuser}
           vid={vid}
           uid={uid}
           dmList={dmList}
@@ -907,7 +912,7 @@ const RightPart = memo((props) => {
     time_userinfo.current = setTimeout(() => {
       setUserinfoflag({f1: -1, f2: -1, f3: -1})
       time_userinfo.current = null
-    }, 800)
+    }, 300)
   }
   return (
     <>

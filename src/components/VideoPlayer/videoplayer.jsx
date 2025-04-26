@@ -1,5 +1,5 @@
 import "./index.scss"
-import { useState, useRef, useEffect, memo, useCallback } from "react"
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react"
 import { getVideoFormList } from "../../api/videolist"
 import message from "../notice/notice"
 import { baseurl2 } from "../../api"
@@ -11,52 +11,99 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { debounce } from "../../util/fnc"
 
 const Danmu = memo((props) => {
-  const {dmflag, dmList, isPlaying, uid, currentTime } = props
-  
+  const {dmflag, dmList, isPlaying, uid, currentTime } = props;
+
+  // 提取样式逻辑到单独的函数
+  const getDanmuStyle = (item, index, isType0) => {
+    const baseStyle = {
+      animationPlayState: isPlaying ? 'running' : 'paused',
+      color: (item.color || "#fff") + '',
+      textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+      top: (index % 20 * 25 + 10) + 'px',
+      fontSize: '16px'
+    };
+
+    if (isType0) {
+      baseStyle.display = item.sendtime <= currentTime && item.sendtime + 10 >= currentTime ? "block" : "none";
+    }
+
+    return baseStyle;
+  };
+
+  // 使用 useMemo 缓存映射结果
+  const danmuElements = useMemo(() => {
+    if (!dmflag || !Array.isArray(dmList)) {
+      return null;
+    }
+
+    return dmList.map((item, index) => {
+      const isType0 = item.type === 0;
+      return (
+        <div 
+          className="danmu-div"
+          key={item.id || `danmu-${index}`}
+          style={getDanmuStyle(item, index, isType0)}
+          onMouseEnter={(e) => e.target.style.animationPlayState = 'paused'}
+          onMouseLeave={(e) => e.target.style.animationPlayState = 'running'}
+        >
+          {item.text || ""}
+        </div>
+      );
+    });
+  }, [dmflag, dmList, isPlaying, uid, currentTime]);
+
   return (
     <div>
-      {
-        dmflag && dmList.map((item, index) =>
-          item.type === 0 ?
-            <div className="danmu-div"
-              key={item.id}
-              style={{animationPlayState: isPlaying ? 'running' : 'paused',
-                    color: (item.color) + '',
-                    textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                    top: (index % 20 * 25 + 10) + 'px',
-                    fontSize: '16px',
-                    // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
-                    display: item.sendtime <= currentTime && item.sendtime + 10 >= currentTime ? "block" : "none"
-            }}
-            onMouseEnter={(e) =>
-              e.target.style.animationPlayState = 'paused'
-            }
-            onMouseLeave={(e) => 
-              e.target.style.animationPlayState = 'running'                      
-            }
-            >{item.text}</div>
-          :
-            <div className="danmu-div" key={item.id}
-            style={{animationPlayState: isPlaying ? 'running' : 'paused',
-                    color: (item.color) + '',
-                    textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
-                    top: (index % 20 * 25 + 10) + 'px',
-                    fontSize: '16px'
-            }}>{item.text}</div> 
-        )
-      }
+      {danmuElements}
     </div>
-  )
-})
+  );
+});
+
+// const Danmu = memo((props) => {
+//   const {dmflag, dmList, isPlaying, uid, currentTime } = props
+  
+//   return (
+//     <div>
+//       {
+//         dmflag && dmList.map((item, index) =>
+//           item.type === 0 ?
+//             <div className="danmu-div"
+//               key={item.id}
+//               style={{animationPlayState: isPlaying ? 'running' : 'paused',
+//                     color: (item.color) + '',
+//                     textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+//                     top: (index % 20 * 25 + 10) + 'px',
+//                     fontSize: '16px',
+//                     // display: item.sendtime <= timeprogress && item.sendtime + 10 >= timeprogress ? "block" : "none"
+//                     display: item.sendtime <= currentTime && item.sendtime + 10 >= currentTime ? "block" : "none"
+//             }}
+//             onMouseEnter={(e) =>
+//               e.target.style.animationPlayState = 'paused'
+//             }
+//             onMouseLeave={(e) => 
+//               e.target.style.animationPlayState = 'running'                      
+//             }
+//             >{item.text}</div>
+//           :
+//             <div className="danmu-div" key={item.id}
+//             style={{animationPlayState: isPlaying ? 'running' : 'paused',
+//                     color: (item.color) + '',
+//                     textDecorationLine: (item.uid === uid) ? 'underline' : 'none',
+//                     top: (index % 20 * 25 + 10) + 'px',
+//                     fontSize: '16px'
+//             }}>{item.text}</div> 
+//         )
+//       }
+//     </div>
+//   )
+// })
 
 const VideoPlayer = memo((props) => {  
   const { vid, uid, videoInfo, setVideoInfo,
           userinfo, setUserinfo, upinfo, 
           widthscreen, setWidthScreen,
           recommendlist, dmList, setDmList, updateuser,
-          setUpinfo } = props
-  console.log('dmList is: ', dmList);
-  
+          setUpinfo } = props  
   const location = useLocation();
   const playerboxRef = useRef()
   const videoRef = useRef(null),
@@ -120,7 +167,8 @@ const VideoPlayer = memo((props) => {
   // 进度条交互
   const [hoverTime, setHoverTime] = useState(0),  // 悬浮时间
         [showPreview, setShowPreview] = useState(false),  // 预览图
-        [previewPosition, setPreviewPosition] = useState(0)  // 预览图位置
+        [previewPosition, setPreviewPosition] = useState(0),  // 预览图位置
+        [isHovering, setIsHovering] = useState(false);
 
   const [sahreflag, setShareflag] = useState(true)
   const [createflag, setCreateflag] = useState(true)
@@ -138,7 +186,7 @@ const VideoPlayer = memo((props) => {
   const [iconflag, setIconflag] = useState(false)  //  打开 icon 页面
   const [icons, setIcons] = useState(1)            // 投币个数
 
-  const [dmtest, setDmtext] = useState()           // 发送弹幕内容
+  const [dmText, setDmtext] = useState("")           // 发送弹幕内容
   const [dmflag, setDmflag] = useState(true)       // 是否打开弹幕
   const [newFavtitle, setNewfavtitle] = useState()
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
@@ -619,6 +667,7 @@ const VideoPlayer = memo((props) => {
         console.log('res: ', res);
         
         if (res === 0) {
+          console.log('第一次次观看，播放加一');
           setVideoInfo({
             ...videoInfo,
             plays: videoInfo.plays + 1,
@@ -761,7 +810,7 @@ const VideoPlayer = memo((props) => {
   /**
    * 于 JavaScript 闭包和定时器的异步特性导致的
    * 当 mouseMoveOnMask 执行时，它创建了一个定时器，这个定时器会在 3 秒后执行回调函数。
-    如果在 3 秒内调用了 enterBottomControl，虽然你清除了 moveTimer.current，
+    如果在 3 秒内调用了 moveBottomControl，虽然你清除了 moveTimer.current，
     但是定时器的回调函数可能已经被放入事件队列中等待执行。
     clearTimeout 只能阻止尚未执行的定时器，不能取消已经在事件队列中等待执行的回调。
     解决方案: 你需要添加一个标志来阻止回调函数的执行：
@@ -832,7 +881,7 @@ const VideoPlayer = memo((props) => {
   }
 
   // 进入底部操作框
-  const enterBottomControl = () => {
+  const moveBottomControl = () => {
     bottomFlag.current = true
     executeCallback.current = false // 阻止回调函数执行
     if (debounceTimer.current != null) {
@@ -849,7 +898,6 @@ const VideoPlayer = memo((props) => {
     }
     setShowControls(true)
   }
-
   // 离开底部操作框
   const leaveBottomControl = () => {
     bottomFlag.current = false
@@ -859,9 +907,14 @@ const VideoPlayer = memo((props) => {
   }
 
   // 进度条===================================================
-  const handleProgressLeave = () => {
+  const enterBottomProgress = () => {
+    setIsHovering(true)
+  }
+
+  const leaveBottomProgress = () => {
     setShowPreview(false);
-  };
+    setIsHovering(false)
+  }
 
   // 鼠标按下
   const handleProgressDown = (e) => {
@@ -895,14 +948,17 @@ const VideoPlayer = memo((props) => {
       setBuffered(Math.min(100, Math.max(0, percentage)));
       setProgress(Math.min(100, Math.max(0, percentage)));
     }
-    // const progressBar = progressRef.current;
-    // const rect = progressBar.getBoundingClientRect();
-    // const hoverPosition = e.clientX - rect.left;
-    // const percent = hoverPosition / rect.width;
-    // setHoverTime(percent * duration);
-    // setPreviewPosition(hoverPosition);
-    // setShowPreview(true);
-    // generateImg(hoverTime)
+    // 预览图
+    const progressBar = progressRef.current;
+    const rect = progressBar.getBoundingClientRect();
+    const positon = e.clientX - rect.left;
+    const percent = positon / rect.width;
+    setHoverTime(percent * duration);
+    setPreviewPosition(positon);
+    setShowPreview(true);
+    generateImg(hoverTime)
+
+    // setHoverPosition(positon)
   }, [isDragging]);
 
   // 添加全局鼠标移动和抬起事件监听
@@ -988,6 +1044,8 @@ const VideoPlayer = memo((props) => {
         if (res === 1) {
           // 点赞
           if (videoInfo.liked === false) {
+            console.log('1111: ',typeof(setVideoInfo));
+            
             setVideoInfo({
               ...videoInfo,
               likes: videoInfo.likes + 1,
@@ -1191,16 +1249,16 @@ const VideoPlayer = memo((props) => {
   // 发送弹幕
   const toSendDm = async () => {
     if (uid === -1) {
-      message.open({ type: 'error', content: '请先登录'})
+      message.open({ type: 'warning', content: '请先登录'})
       return
     }
     if (dmflag) {
-      if (dmtest === '' || dmtest === null) {
-        message.open({ type: 'error', content: '输入内容为空'})
+      if (dmText === '' || dmText === null) {
+        message.open({ type: 'warning', content: '输入内容为空'})
         return
       }
       const data = {
-        text: dmtest,
+        text: dmText,
         uid: uid,
         vid: vid,
         // sendtime: timeprogress,
@@ -1211,12 +1269,12 @@ const VideoPlayer = memo((props) => {
       // 返回带最新的list
       const res = await sendDm(data)
       if (res) {
-        setDmList(res)
         setDmtext("")
         setVideoInfo({
           ...videoInfo,
           danmus: videoInfo.danmus + 1
         })
+        setDmList(res)
       }
     }
   }
@@ -1503,7 +1561,7 @@ const VideoPlayer = memo((props) => {
         />
         <canvas ref={canvasRef} style={{ display: 'none' }} />
         {
-         false &&
+         isHovering &&
           <div
             className={`preview-thumbnail`}
             ref={previewRef}
@@ -1533,16 +1591,33 @@ const VideoPlayer = memo((props) => {
         <div
           className={`videobottomcof ${ isFullscreen ? "full-active" : ""}`}
           style={{opacity: showControls ? '1' : '0'}}
-          onMouseEnter={enterBottomControl}
+          onMouseMove={moveBottomControl}
           onMouseLeave={leaveBottomControl}
           >
           <div className="progress-bar"
             ref={progressRef}
-            onMouseLeave={handleProgressLeave}
             onMouseDown={handleProgressDown}
+            onMouseEnter={enterBottomProgress}
+            onMouseLeave={leaveBottomProgress}
           >
             <div className="buffered" style={{width: `${buffered}%`}}></div>
             <div className="progress" style={{width: `${progress}%`}}></div>
+             {isHovering && (
+                <>
+                  <div 
+                    className="triangle top" 
+                    style={{ left: `${previewPosition}px` }}
+                  ></div>
+                  <div 
+                    className="triangle bottom" 
+                    style={{ left: `${previewPosition}px` }}
+                  ></div>
+                  <div 
+                    className="hover-indicator" 
+                    style={{ left: `${previewPosition}px` }}
+                  ></div>
+                </>
+              )}
           </div>
           <div className="videoopationbox">
             <div className="vidconleft">
@@ -1651,7 +1726,7 @@ const VideoPlayer = memo((props) => {
                     {
                       dmflag ?
                       <input type="text" className="inputdanmu"
-                        value={dmtest}
+                        value={dmText}
                         onChange={(e) => {
                           e.preventDefault()
                           setDmtext(e.target.value)
@@ -1879,7 +1954,7 @@ const VideoPlayer = memo((props) => {
             {
               dmflag ?
               <input type="text" className="inputdanmu"
-                value={dmtest}
+                value={dmText}
                 onChange={(e) => setDmtext(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {toSendDm()}

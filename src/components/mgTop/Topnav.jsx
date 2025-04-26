@@ -70,10 +70,9 @@ function Mgtopnav(props) {
   useEffect(() => {
     const getData = async () => {
       const res = await Promise.all([getMgList(uid, 0), getMgList(uid, 1)])
-      setFavlist(res[0].splice(0, 3))
-      setHislist(res[1].splice(0, 3))
       console.log('res is: ', res);
-      
+      setFavlist(res[0] != null && res[0].length > 0 ? res[0].splice(0, 3) : [])
+      setHislist(res[1] != null && res[0].length > 0 ? res[1].splice(0, 3) : [])      
     }
     getData()
   },[])

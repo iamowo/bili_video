@@ -142,19 +142,21 @@
         height: 100%;
         background-color: rgba(255, 255, 255, 0);
         box-sizing: border-box;
-        // padding: 10px 0;
         overflow: hidden;
         .end-view {
+          width: 100%;
+          height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 100%;
-          height: 100%;
           background: rgba(37, 37, 37, 0.432);
 	        -webkit-backdrop-filter: blur(10px);
 	        backdrop-filter: blur(10px);
+          box-sizing: border-box;
+          padding: 20px;
           .video-end-box {
-            width: 709px;
+            width: 688px;
+            height: 421px;
             height: fit-content;
             color: #fff;
             font-size: 14px;
@@ -270,7 +272,7 @@
             .recommend-box {
               margin-top: 20px;
               width: 100%;
-              height: fit-content;
+              height: 305px;
               .remoccend-title {
                 width: 100%;
                 height: 20px;
@@ -512,6 +514,33 @@
             width: 0;
             height: 100%;
             background-color: #00AEEC;
+          }
+          .triangle {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            transform: translateX(-40%);            
+            &.top {
+              top: 6px;
+              border-width: 0 6px 10px 6px;
+              border-color: transparent transparent #32AEEC transparent;
+            }
+            &.bottom {
+              bottom: 6px;
+              border-width: 10px 6px 0 6px;
+              border-color: #32AEEC transparent transparent transparent;
+            }
+          }
+          .hover-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 10px;
+            background-color: #fff;
+            z-index: 2;
+            display: none;
           }
         }
         .videoopationbox {

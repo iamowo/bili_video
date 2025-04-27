@@ -32,8 +32,7 @@ const Topnav = memo((props) => {
   const [userinfo, setUserinfos] = useState(() => JSON.parse(localStorage.getItem('userinfo')))
   const isLodinged = userinfo != null, // 是否登录
         uid = parseInt(userinfo != null && userinfo !== '' ? userinfo.uid : -1) // uid
-  console.log('是否登录: ', isLodinged, "uid is: ", uid);
-  
+  const logined = uid !== -1  
   const [rightAppendShow, setRightAppendShow] = useState(0) // 右侧详情 1 头像 2 消息 3 动态....
   const rightTimer = useState(null)
   
@@ -86,51 +85,17 @@ const Topnav = memo((props) => {
   useEffect(() => {
     // 本地有数据
     const getData = async () => {      
-      // const res = await getByUid(uid)
-      // // 动态
-      // const res4 = await getHomeDynamic(uid, 0)
-      // setDynamicList(res4)
-      // // console.log('动态: ', res4);
-      // // 观看历史
-      // const res3 = await getHomeHistory(uid, 0, 20, 20);
-      // setHislist(res3)      
-      // // 收藏夹
-      // const res2 = await getFavlist(uid, -1)
-      // console.log('res2 is: ', res2);
-      
-      // // console.log('收藏夹列表,', res2);
-      // const res22 = await getOneList(res2[0].fid, 0, null)
-      // setFavlist(res2)
-      // setFavonesum(res22)
-      
-      // const res5 = await getAllKeyword(uid)
-      // setOldkeywords(res5)
-
-      // const res6 = await getHotRanking()
-      // setHotlist(res6.slice(0, 10))
-
-      // const res7 = await getAllClassify()
-      // const res8 = res7.filter(item =>
-      //   item.type !== 1
-      // )
-      // setClassifys(res8)
-      const res = await Promise.all([getHomeDynamic(uid, 0), getHomeHistory(uid, 0, 20, 20),
-                                    getFavlist(uid, -1), getAllKeyword(uid),
+      const res = await Promise.all([getHomeDynamic(uid, 0), getAllKeyword(uid),
                                     getHotRanking(), getAllClassify()])
-      const res2 = await getOneList(res[2][0].fid, 0, null)
       setDynamicList(res[0])
-      setHislist(res[1])
-      setFavlist(res[2])
-      setFavonesum(res2)
-      setOldkeywords(res[3])
-      setHotlist(res[4].slice(0, 10))
-      const temp =  res[5].filter(item =>
+      setOldkeywords(res[1])
+      setHotlist(res[2].slice(0, 10))
+      const temp =  res[3].filter(item =>
         item.type !== 1
       )
       setClassifys(temp)
     }
-    if (uid === -1) {
-      console.log('未登录');
+    if (!logined) {
       // 未登录
       const token = JSON.parse(localStorage.getItem('token'))
       if (token === '' || token === null) {
@@ -219,13 +184,24 @@ const Topnav = memo((props) => {
   }
 
   // 进入右侧单个项目
-  const enterRightItem = (type) => {
-    console.log('enter type ' + type);
+  const enterRightItem = async (type) => {
+    const tp = type + 0
     if (rightTimer.current != null) {
       clearTimeout(rightTimer.current)
       rightTimer.current = null
     }
-    setRightAppendShow(type + 0)
+    setRightAppendShow(tp)
+    if (tp === 3) {
+
+    } else if (tp === 4) {
+      const res = await getFavlist(uid, -1)
+      setFavlist(res)
+      const res2 = await getOneList(res[0].fid, 0, null)
+      setFavonesum(res2)
+    } else if (tp === 5) {
+      const res = await getHomeHistory(uid, 0, 20, 20)
+      setHislist(res)
+    }
   }
 
   const leaveRightItem = () => {

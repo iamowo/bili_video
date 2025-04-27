@@ -4,7 +4,7 @@ import { getVideoFormList } from "../../api/videolist"
 import message from "../notice/notice"
 import { baseurl2 } from "../../api"
 import { toFollow, toUnfollow } from "../../api/user"
-import { updateinfo, sendDm } from "../../api/video"
+import { updateVideoInfo, sendDm } from "../../api/video"
 import { getFavlist, addOneFavlist, addOneVideo } from "../../api/favlist"
 import { subthisAnimation, getSeasons, getAnimationByVid, cnacleAnimation } from "../../api/animation"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -296,7 +296,7 @@ const VideoPlayer = memo((props) => {
           lastwatched: videoRef.current.currentTime,
           done: wawtchdonefal
         }
-        await updateinfo(data)
+        await updateVideoInfo(data)
       }
       return
     }
@@ -663,9 +663,8 @@ const VideoPlayer = memo((props) => {
           lastwatched: 1,
           done: 0
         }
-        const res = await updateinfo(data)
+        const res = await updateVideoInfo(data)
         console.log('res: ', res);
-        
         if (res === 0) {
           console.log('第一次次观看，播放加一');
           setVideoInfo({
@@ -1040,7 +1039,7 @@ const VideoPlayer = memo((props) => {
           type: type,
           // fid: type === 3 ? 0 : null
         }
-        const res = (await updateinfo(data))
+        const res = (await updateVideoInfo(data))
         if (res === 1) {
           // 点赞
           if (videoInfo.liked === false) {
@@ -1068,7 +1067,7 @@ const VideoPlayer = memo((props) => {
         //     faved: !videoInfo.faved
         //   })
         // }
-        else if (res === 4){
+        else if (type === 4){
           // 分享
           // http://localhost:3000/video/84
           // let content = 'http://localhost:3000' + location.pathname
@@ -1213,7 +1212,7 @@ const VideoPlayer = memo((props) => {
         type: 2,
         // fid: type === 3 ? 0 : null
       }
-      const res = await updateinfo(data)
+      const res = await updateVideoInfo(data)
       if (res) {
         setVideoInfo({
           ...videoInfo,
@@ -1226,7 +1225,7 @@ const VideoPlayer = memo((props) => {
      // 子传父 更新用户信息
       updateuser()
       setIconflag(0)
-      message.open({ type: 'info', content: '已投币~', falg: true})
+      message.open({ type: 'info', content: '已投币~', flag: true})
     } else {
       setIconflag(0)
       message.open({ type: 'error', content: '剩余硬币不足'})

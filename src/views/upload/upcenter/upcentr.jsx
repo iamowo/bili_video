@@ -18,7 +18,9 @@ function Upcenter () {
   const uid = params.uid
   const type = params.type  // 没用
 
-  let filedata = null
+  
+  const containerRef = useRef(),
+        inputRef = useRef();
   const [upprogress, setProgress] = useState('ready'),    //' ready uploading infos done
         [videofile, setVideoFile] = useState(null),   
         [seasonflag, setSeasonflag] = useState(false),     // 连续剧？
@@ -29,8 +31,7 @@ function Upcenter () {
         [titleinp, setTileler] = useState(''),            // 标题
         [introinp, setIntroinp] = useState(''),           // 简介
         [tags, setTags] = useState(''),                   // 字符传形式的tags
-        [ffalg, setFflag] = useState(true),     
-        [atags, setAtags] = useState([]),                 // tags 的数组形式
+        [tagList, setTagList] = useState([]),                 // tags 的数组形式
         [maintag, setMaintag] = useState(''),             // 主tag  分类
         [videoduration, setDuration] = useState(0),   
         [vidtype, setVidType] = useState(''),             // 上传视频文件类型
@@ -164,7 +165,6 @@ function Upcenter () {
       suffix
     } = await changeBuffer(file)
     console.log('视频HASH:', HASH);
-
     // 断点续传，获取已经上传的部分
     let already = [],
         thisvid = null
@@ -174,7 +174,7 @@ function Upcenter () {
       already = res.already
       thisvid = parseInt(res.vid)
     } catch (err) {}
-    console.log("=============:",thisvid, already);
+    console.log("=============:",thisvid, "===: ", already);
     // 上传视频信息（标题，简介等。。。。
     if (thisvid === -1) {
       // 还没上传过此视频
@@ -185,7 +185,7 @@ function Upcenter () {
         duration: videoduration,
         cover: vidcover,
         maintag: maintag,
-        othertags: atags.join(" "),
+        othertags: tagList.join(" "),
         hashValue: HASH,
         listid: listindex !== -1 ? videolisttoselect[listindex].listid : -1,
         aid: listindex2 !== -1 ? animationlist[listindex2].aid : -1,
@@ -294,25 +294,33 @@ function Upcenter () {
     window.location.reload()
   }
 
+  // 添加标签
+  const addTag = (tag) => {
+    if (tag.trim() && !tagList.includes(tag.trim())) {
+      const keywordlistNew = [...tagList, tag.trim()];
+      setTagList(keywordlistNew);
+      setTags("");
+    }
+  };
+
+  // 删除标签
+  const removeTag = (index) => {
+    const keywordlistNew = tagList.filter((_, i) => i !== index);
+    setTagList(keywordlistNew);
+  };
+
   // 回车确定tag
-  const entertosplice = (e) => {
-    if (e.key === 'Enter') {
-      const nword = tags
-      setAtags([
-        ...atags,
-        tags
-      ])
-      setTags('')
+  const hadndleKeyDonw = (e) => {
+    if (e.key === 'Enter' && tags.trim()) {
+      e.preventDefault()
+      addTag(tags)
+      setTags("")
+    } else if (e.key === "Backspace" && !tags && tagList.length > 0) {
+      // 删除最后一个标签
+      removeTag(tagList.length - 1);
     }
   }
 
-  // 删除一个tag
-  const deletethis = (e) => {
-    const ind = parseInt(e.target.dataset.index)
-    setAtags(atags.filter((item, index) => {
-      return index !== ind
-    }))
-  }
   const clickthistag = (e) => {
     const text = e.target.dataset.text
     setMaintag(text)    
@@ -351,6 +359,12 @@ function Upcenter () {
     }
     setListflag(0)
   }
+
+   // 点击容器聚焦输入框
+  const handleContainerClick = () => {
+    inputRef.current.focus();
+  };
+
   return (
     <div className="upcenter-allbox">
       <div className="upcenter-box">
@@ -712,31 +726,29 @@ function Upcenter () {
                 <div className="one-upbox"
                   style={{marginTop: '30px'}}>
                   <div className="left-text-span">tags</div>
-                  <div className="input-out-box1">
-                    {/* <div className="tags-list"
-                      style={{opacity: atags.length > 0 && ffalg ? '0' : '1'}}> */}
-                      {
-                        atags.map((item, index) =>
-                          <div className="onetags">
-                            <span>{item}</span>
-                            <span className="icon iconfont"
-                              data-index={index}
-                              onClick={deletethis}>&#xe7b7;</span>
-                          </div>
-                        )                        
-                      }
+                  <div className="input-out-box1"
+                    ref={containerRef}
+                    onClick={handleContainerClick}
+                  >
+                    {
+                      tagList.map((item, index) =>
+                        <div className="onetags">
+                          <span>{item}</span>
+                          <span className="icon iconfont"
+                            onClick={() => removeTag(index)}>&#xe7b7;</span>
+                        </div>
+                      )                        
+                    }
                     {/* </div> */}
                     <input type="text"
+                        ref={inputRef}
                         className="rightinptags"
                         onChange={(e) => setTags(e.target.value)}
                         value={tags}
-                        onFocus={() => setFflag(true)}
-                        onBlur={() => setFflag(false)}
-                        onKeyDown={entertosplice}
-                        style={{opacity: atags.length === 0 || ffalg ? '1' : '0'}}
+                        onKeyDown={hadndleKeyDonw}
                     />
                     <span className="ss-sp">* 按回车输入tag</span>
-                    <span className="ss-sp2">{atags.length} / 10</span>
+                    <span className="ss-sp2">{tagList.length} / 10</span>
                   </div>
                 </div>
               </div>

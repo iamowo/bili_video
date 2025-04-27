@@ -2,7 +2,7 @@ import './Video.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { memo, useEffect, useRef, useState } from 'react'
-import { getByVid, updateinfo, getVideoLikely, getDm, sendDm } from '../../api/video'
+import { getByVid, updateVideoInfo, getVideoLikely, getDm, sendDm } from '../../api/video'
 import { debounce } from '../../util/fnc'
 import Totop from '../../components/toTop/totop'
 import { getFavlist, addOneVideo, addOneFavlist } from '../../api/favlist'
@@ -23,9 +23,9 @@ import VideoPlayer from '../../components/VideoPlayer/videoplayer'
 
 const VideoPart = memo((props) => {
   // widthscreen 宽屏模式
-  const { vid, userinfo, uid, setDmList, dmList, videoInfo, 
+  const { vid, userinfo, uid, setDmList, dmList, videoInfo,
           widthscreen, setWidthScreen, logined, setVideoInfo, setUpinfo, setUserinfo, updateuser } = props
-  console.log("videoInfo info : ", videoInfo );
+  
   const location = useLocation();
   const [titleflag, setTitleflag] = useState(false)
   const [bottomscrollflag, setBottomScrollflag] = useState(false)
@@ -112,110 +112,172 @@ const VideoPart = memo((props) => {
 
   const videoRef = useRef()                                     // 视频资源
   // 视频相关函数
-  const [playflag, setPlayflag] = useState(false)
-
-
-  const clicktimer = null             // 双击时不触发单击 1. 定时器  2. 记录点击次数
+  const [littleWindow, setLittleWindow] = useState(false)
 
   // 播放视频
   const togglePlay = async () => {
   }
 
   // 点赞 投币 收藏 转发
-  const clickbtn = async (e) => {
-    e.stopPropagation()
-    if (userinfo === null) {
-      message.open({ type: 'error', content: '请先登录'})
+  // const doSomethingToVideo = async (type) => {
+  //   if (userinfo === null) {
+  //     message.open({ type: 'error', content: '请先登录'})
+  //     return;
+  //   }
+  //   console.log(e.target.className, e.target.parentNode.className);
+    
+  //   if (e.target.className.includes('onepart') || e.target.parentNode.className.includes('onepart')
+  //       || e.target.className === 'iconbox-a' || e.target.parentNode.className === 'iconbox-a'
+  //   ) {
+  //     const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)      
+  //     if (type === 3) {   // 收藏
+  //       // 获得收藏列表
+  //       const res = await getFavlist(userinfo.uid, vid)
+  //       if (res) {
+  //         setFavlist(res)
+  //         const nums = res.map(item => item.collected)
+  //         setFavchecked(nums)
+  //         setFavcheckedold(nums)
+
+  //         // window.addEventListener("click", (e) => {
+  //         //   if (favflag === true) {
+  //         //     const tar = e.target      
+  //         //     setTimeout(() => {
+  //         //       if (!favref.current.contains(tar)) {
+  //         //         setFavflag(false)                  
+  //         //       }
+  //         //     },200)
+  //         //   }
+  //         // })
+  //       }
+  //       setFavflag(true)   // 开打收藏box
+  //     } else if (type === 2) {
+  //       // 打开投币页面
+  //       if (videoInfo.iconed === false) {
+  //         setIconflag(true)
+  //       } else {
+  //         message.open({ type: 'info', content: '已经投币不能重复~'})
+  //       }
+  //     } else {
+  //       const data = {
+  //         hisuid: videoInfo.uid,
+  //         uid: userinfo.uid,
+  //         vid: vid,
+  //         type: type,
+  //         // fid: type === 3 ? 0 : null
+  //       }
+  //       const res = (await updateVideoInfo(data))
+  //       if (res === 1) {
+  //         // 点赞
+  //         if (videoInfo.liked === false) {
+  //           props.setVideoInfo({
+  //             ...videoInfo,
+  //             likes: videoInfo.likes + 1,
+  //             liked: !videoInfo.liked
+  //           })
+  //           message.open({ type: 'info', content: '点赞', flag: true})
+  //         } else {
+  //           props.setVideoInfo({
+  //             ...videoInfo,
+  //             likes: videoInfo.likes - 1,
+  //             liked: !videoInfo.liked
+  //           })
+  //           message.open({ type: 'info', content: '取消点赞', flag: true})
+  //         }
+  //       }
+  //       // else if (res === 3) {
+  //       //   setVideoInfo({
+  //       //     ...videoInfo,
+  //       //     favorites: videoInfo.favorites + 1,
+  //       //     faved: !videoInfo.faved
+  //       //   })
+  //       // }
+  //       else if (res === 4){
+  //         // 分享
+  //         // http://localhost:3000/video/84
+  //         // let content = 'http://localhost:3000' + location.pathname
+  //         let content = "[" + videoInfo.title + "] " + baseurl2 + location.pathname
+
+  //         var aux = document.createElement("input"); 
+  //         aux.setAttribute("value", content); 
+  //         document.body.appendChild(aux); 
+  //         aux.select();
+  //         document.execCommand("copy"); 
+  //         document.body.removeChild(aux);
+  //         props.setVideoInfo({
+  //           ...videoInfo,
+  //           shares: videoInfo.shares + 1 
+  //         })
+  //         message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
+  //       }
+  //     }
+  //   }
+  // }
+  const doSomethingToVideo = async (t) => {
+    if (!logined) {
+      message.open({ type: 'warning', content: '请先登录'})
       return;
     }
-    console.log(e.target.className, e.target.parentNode.className);
-    
-    if (e.target.className.includes('onepart') || e.target.parentNode.className.includes('onepart')
-        || e.target.className === 'iconbox-a' || e.target.parentNode.className === 'iconbox-a'
-    ) {
-      const type = parseInt(e.target.dataset.type || e.target.parentNode.dataset.type)      
-      if (type === 3) {   // 收藏
-        // 获得收藏列表
-        const res = await getFavlist(userinfo.uid, vid)
-        if (res) {
-          setFavlist(res)
-          const nums = res.map(item => item.collected)
-          setFavchecked(nums)
-          setFavcheckedold(nums)
-
-          // window.addEventListener("click", (e) => {
-          //   if (favflag === true) {
-          //     const tar = e.target      
-          //     setTimeout(() => {
-          //       if (!favref.current.contains(tar)) {
-          //         setFavflag(false)                  
-          //       }
-          //     },200)
-          //   }
-          // })
-        }
-        setFavflag(true)   // 开打收藏box
-      } else if (type === 2) {
-        // 打开投币页面
-        if (videoInfo.iconed === false) {
-          setIconflag(true)
-        } else {
-          message.open({ type: 'info', content: '已经投币不能重复~'})
-        }
-      } else {
-        const data = {
-          hisuid: videoInfo.uid,
-          uid: userinfo.uid,
-          vid: vid,
-          type: type,
-          // fid: type === 3 ? 0 : null
-        }
-        const res = (await updateinfo(data))
-        if (res === 1) {
-          // 点赞
-          if (videoInfo.liked === false) {
-            props.setVideoInfo({
-              ...videoInfo,
-              likes: videoInfo.likes + 1,
-              liked: !videoInfo.liked
-            })
-            message.open({ type: 'info', content: '点赞', flag: true})
-          } else {
-            props.setVideoInfo({
-              ...videoInfo,
-              likes: videoInfo.likes - 1,
-              liked: !videoInfo.liked
-            })
-            message.open({ type: 'info', content: '取消点赞', flag: true})
-          }
-        }
-        // else if (res === 3) {
-        //   setVideoInfo({
-        //     ...videoInfo,
-        //     favorites: videoInfo.favorites + 1,
-        //     faved: !videoInfo.faved
-        //   })
-        // }
-        else if (res === 4){
-          // 分享
-          // http://localhost:3000/video/84
-          // let content = 'http://localhost:3000' + location.pathname
-          let content = "[" + videoInfo.title + "] " + baseurl2 + location.pathname
-
-          var aux = document.createElement("input"); 
-          aux.setAttribute("value", content); 
-          document.body.appendChild(aux); 
-          aux.select();
-          document.execCommand("copy"); 
-          document.body.removeChild(aux);
+    const type = parseInt(t)
+    const data = {
+      hisuid: videoInfo.uid,
+      uid: userinfo.uid,
+      vid: vid,
+      type: type,
+      // fid: type === 3 ? 0 : null
+    }
+    if (type === 1) {
+        // 点赞
+        if (videoInfo.liked === false) {
           props.setVideoInfo({
             ...videoInfo,
-            shares: videoInfo.shares + 1 
+            likes: videoInfo.likes + 1,
+            liked: !videoInfo.liked
           })
-          message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
+          message.open({ type: 'info', content: '点赞', flag: true})
+        } else {
+          props.setVideoInfo({
+            ...videoInfo,
+            likes: videoInfo.likes - 1,
+            liked: !videoInfo.liked
+          })
+          message.open({ type: 'info', content: '取消点赞', flag: true})
         }
+    } if (type === 2) {
+      // 打开投币页面
+      if (videoInfo.iconed === false) {
+        setIconflag(true)
+      } else {
+        message.open({ type: 'info', content: '已经投币不能重复~'})
       }
+    } else if (type === 3) {   // 收藏
+      // 获得收藏列表
+      const res = await getFavlist(userinfo.uid, vid)
+      if (res) {
+        setFavlist(res)
+        const nums = res.map(item => item.collected)
+        setFavchecked(nums)
+        setFavcheckedold(nums)
+      }
+      setFavflag(true)   // 开打收藏box
+    } else if (type === 4){
+      // 分享
+      // http://localhost:3000/video/84
+      // let content = 'http://localhost:3000' + location.pathname
+      let content = "[" + videoInfo.title + "] " + baseurl2 + location.pathname
+      var aux = document.createElement("input"); 
+      aux.setAttribute("value", content); 
+      document.body.appendChild(aux); 
+      aux.select();
+      document.execCommand("copy"); 
+      document.body.removeChild(aux);
+      props.setVideoInfo({
+        ...videoInfo,
+        shares: videoInfo.shares + 1 
+      })
+      message.open({type: 'info', content: '已复制链接到剪切板', flag: true})
     }
+    updateVideoInfo(data);
   }
   
   const [titlestyle, setTitlestyle] = useState(false)
@@ -345,7 +407,7 @@ const VideoPart = memo((props) => {
         type: 2,
         // fid: type === 3 ? 0 : null
       }
-      const res = await updateinfo(data)
+      const res = await updateVideoInfo(data)
       if (res) {
         props.setVideoInfo({
           ...videoInfo,
@@ -510,32 +572,30 @@ const VideoPart = memo((props) => {
           setWidthScreen={setWidthScreen}
         />
       </div>
-      <div className="videoinfos"
-        onClick={clickbtn}
-      >
+      <div className="videoinfos">
         <div className="onepart likeicon"
-          data-type="1"
+          onClick={() => doSomethingToVideo(1)}
           style={{color: videoInfo.liked ? '#32AEEC' : '#61666D'}}
           >
           <span className="icon iconfont" style={{fontSize: '35px'}}>&#xe61c;</span>
           <span className='optext'>{videoInfo != null ? videoInfo.likes : null}</span>
         </div>
         <div className="onepart iconicon"
-          data-type="2"
+          onClick={() => doSomethingToVideo(2)}
           style={{color: videoInfo.iconed ? '#32AEEC' : '#61666D'}}
         >
           <span className="icon iconfont" style={{fontSize: '37px', translate: '0 3px'}}>&#xe617;</span>
           <span className='optext'>{videoInfo != null ? videoInfo.icons : null}</span>
         </div>
         <div className="onepart subicon"
-          data-type="3"
+          onClick={() => doSomethingToVideo(3)}
           style={{color: videoInfo.faved ? '#32AEEC' : '#61666D'}}
         >
           <span className="icon iconfont">&#xe630;</span>
           <span className='optext'>{videoInfo != null ? videoInfo.favorites : null}</span>
         </div>
         <div className="onepart shareicon"
-          data-type="4"
+          onClick={() => doSomethingToVideo(4)}
           style={{width: 'fit-content'}}
           onMouseEnter={() => setShareflag(false)}
           onMouseLeave={() => setShareflag(true)}
@@ -714,7 +774,7 @@ const VideoPart = memo((props) => {
           ></video>
           <span className="closevspan icon iconfont">&#xe6bf;</span>
           {
-            playflag ?
+            littleWindow ?
             <span className="playvbtn icon iconfont"
               onClick={togglePlay}
             >&#xe6ab;</span>

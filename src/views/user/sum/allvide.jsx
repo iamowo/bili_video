@@ -3,7 +3,7 @@ import "./sum"
 import { Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { getVideoFormList, getUnaddVideo, addVideoToList, deleteVideoList, chanegListInfo, getUserListOne } from "../../../api/videolist"
-import { updateinfo } from "../../../api/video"
+import { updateVideoInfo } from "../../../api/video"
 import { tovideo } from "../../../util/fnc"
 
 function Allvideos() {
@@ -121,7 +121,7 @@ function Allvideos() {
     }
     console.log(data);
     
-    const res = await updateinfo(data)
+    const res = await updateVideoInfo(data)
     if (res) {
       const res2 = await getVideoFormList(listid)
       setVideos(res2)

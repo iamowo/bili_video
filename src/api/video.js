@@ -104,10 +104,10 @@ export function mergeChunks(uid, vid, type) {
 }
 
 // 更新视频数据
-export function updateinfo(data) {
+export function updateVideoInfo(data) {
   return http({
     method: 'POST',
-    url: '/video/updateinfo',
+    url: '/video/updateVideoInfo',
     data: data
   })
 }

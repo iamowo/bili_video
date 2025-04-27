@@ -43,16 +43,12 @@ function Login (props) {
       password: inp12
     }    
     // 有了响应拦截器之后就不用写.data.data 了
-    const res = await login(loginData)
-    console.log(res);
-    
-    // console.log('登录成功:', JSON.stringify(res));
+    const res = await login(loginData)    
     if (res === 0) {
       message.open({ type: 'error', content: '没有此账号', flag: true})
     } else if (res === 1) {
       message.open({ type: 'error', content: '密码错误', flag: true})
     } else {
-      // login success
       // dispatch(setuserinfo(res))
       localStorage.setItem('userinfo', JSON.stringify(res))
       localStorage.setItem('token', res.token)
@@ -92,34 +88,68 @@ function Login (props) {
   }
 
   // 不填写个人信息
-  const registerbtn1 = async () => {
+  const registerbtn = async (t) => {
+    const type = t  + 0
     const data = new FormData()
     data.append('account', inp21)
     data.append('password', inp22)
-    data.append('type', 0)
-    const res = await register(data)
-    
-    if (res === 100) {
-      console.log("registe success");
-      const loginData = {
-        account: inp21,
-        password: inp23
-      }  
-      const res2 = await login(loginData)
-      if (res2) {
-        // login success
-        // dispatch(setuserinfo(res))
-        localStorage.setItem('userinfo', JSON.stringify(res2))
-        localStorage.setItem('token', res2.token)
-        // props.closeLogin()
-        setTimeout(() => {
-         // window.location.reload()
-          document.location.reload()
-        }, 300)
+    data.append('type', type)
+    if (type === 0) {
+      const res = await register(data)
+      if (res === 100) {
+        console.log("registe success");
+        const loginData = {
+          account: inp21,
+          password: inp23
+        }  
+        const res2 = await login(loginData)
+        if (res2) {
+          // login success
+          // dispatch(setuserinfo(res))
+          localStorage.setItem('userinfo', JSON.stringify(res2))
+          localStorage.setItem('token', res2.token)
+          // props.closeLogin()
+          setTimeout(() => {
+          // window.location.reload()
+            document.location.reload()
+          }, 300)
+        }
+      } else if (res === 101) {
+        console.log('已经存在');
+        
       }
-    } else if (res === 101) {
-      console.log('已经存在');
-      
+    } else if (type === 1){
+      if (!useravatar.type.includes("image/")) {
+        message.open({ type: 'error', content: '头像文件格式错误'})
+        return
+      }
+      data.append('avatarfile', useravatar)
+      data.append('name', inp31)
+      data.append('intro', inp32)
+      data.append('birthday', inp33)
+      data.append('filetype', useravatar.type.split("/")[1])
+      const res = await register(data)
+      if (res === 100) {
+        console.log("registe success");
+        const loginData = {
+          account: inp21,
+          password: inp23
+        }  
+        const res2 = await login(loginData)
+        if (res2) {
+          // login success
+          // dispatch(setuserinfo(res))
+          localStorage.setItem('userinfo', JSON.stringify(res2))
+          localStorage.setItem('token', res2.token)
+          // props.closeLogin()
+          setTimeout(() => {
+            document.location.reload()
+          }, 300)
+        }
+      } else if (res === 101) {
+        console.log('已经存在');
+        
+      }
     }
   }
 
@@ -136,47 +166,6 @@ function Login (props) {
     
   }
 
-  // 填写个人信息
-  const registerbtn2 = async () => {
-    if (!useravatar.type.includes("image/")) {
-      message.open({ type: 'error', content: '头像文件格式错误'})
-      return
-    }
-
-    const data = new FormData()
-    data.append('account', inp21)
-    data.append('password', inp22)
-    data.append('avatarfile', useravatar)
-    data.append('name', inp31)
-    data.append('intro', inp32)
-    data.append('birthday', inp33)
-    data.append('type', 1)
-    data.append('filetype', useravatar.type.split("/")[1])
-    const res = await register(data)
-
-    if (res === 100) {
-      console.log("registe success");
-      const loginData = {
-        account: inp21,
-        password: inp23
-      }  
-      const res2 = await login(loginData)
-      if (res2) {
-        // login success
-        // dispatch(setuserinfo(res))
-        localStorage.setItem('userinfo', JSON.stringify(res2))
-        localStorage.setItem('token', res2.token)
-        // props.closeLogin()
-        setTimeout(() => {
-          // window.location.reload()
-          document.location.reload()
-        }, 300)
-      }
-    } else if (res === 101) {
-      console.log('已经存在');
-      
-    }
-  }
   return (
     <div className="login-page">
       <div className="center-box" style={{top: flag1 === 0 ? '50%': '-100%'}}>
@@ -230,7 +219,15 @@ function Login (props) {
           </div>
           <div className="bottom-loginbox">
             <span>确认密码</span>
-            <input type="password" className="inp23" onChange={(e) => setInp23(e.target.value)} value={inp23}/>
+            <input type="password" className="inp23" 
+              onKeyDown={(e) => {
+                if (e.target === 'Enter') {
+                  setInp23(inp23)
+                }
+              }}
+              onChange={(e) => setInp23(e.target.value)}
+              value={inp23}
+            />
           </div>   
         </div>
         <div className="btline-opation">
@@ -239,7 +236,7 @@ function Login (props) {
       </div>
       <div className="registeringo-box" style={{top: flag1 === 2 ? "50%" : "150%"}}>
         <div className="top-lin-close">
-          <span className='icons' onClick={registerbtn1}>
+          <span className='icons' onClick={() => registerbtn(0)}>
             跳过
           </span>
         </div>
@@ -270,7 +267,14 @@ function Login (props) {
           </div>
         </div>
         <div className="btline-opation">
-          <div className="right-login" onClick={registerbtn2}>登录</div>
+          <div className="right-login" 
+            onClick={() => registerbtn(1)}
+            onKeyDown={(e) => {
+              if (e.target === 'Enter') {
+                registerbtn(1)
+              }
+            }}
+          >登录</div>
         </div>
       </div>
     </div>

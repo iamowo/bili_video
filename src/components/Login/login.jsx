@@ -60,13 +60,6 @@ function Login (props) {
     }   
   }
 
-  // 回车登录 login
-  const kendonwtologin = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      tologin()
-    }
-  }
 
   // 注册
   const loginandregister = async () => {
@@ -193,7 +186,15 @@ function Login (props) {
               </div>
               <div className="bottom-loginbox">
               <span>密码</span>
-              <input type="password" className="inp12" onChange={(e) => setInp12(e.target.value)} value={inp12} onKeyDown={kendonwtologin}/>
+              <input type="password" className="inp12" 
+                onChange={(e) => setInp12(e.target.value)} 
+                value={inp12} 
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    tologin()
+                  }
+                }}
+              />
               </div>
             </div>
             <div className="btline-opation">
@@ -221,7 +222,7 @@ function Login (props) {
             <span>确认密码</span>
             <input type="password" className="inp23" 
               onKeyDown={(e) => {
-                if (e.target === 'Enter') {
+                if (e.key === 'Enter') {
                   setInp23(inp23)
                 }
               }}
@@ -270,7 +271,7 @@ function Login (props) {
           <div className="right-login" 
             onClick={() => registerbtn(1)}
             onKeyDown={(e) => {
-              if (e.target === 'Enter') {
+              if (e.key === 'Enter') {
                 registerbtn(1)
               }
             }}

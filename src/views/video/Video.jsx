@@ -7,7 +7,7 @@ import { debounce } from '../../util/fnc'
 import Totop from '../../components/toTop/totop'
 import { getFavlist, addOneVideo, addOneFavlist } from '../../api/favlist'
 import { getByUid, getByUidFollowed, toFollow, toUnfollow } from '../../api/user'
-import { tovideo, touserspace } from '../../util/fnc'
+import { tovideo, touserspace, quickSort } from '../../util/fnc'
 import { baseurl, baseurl2 } from '../../api'
 import { getVideoFormList, getUserListOne } from '../../api/videolist'
 import message from '../../components/notice/notice'
@@ -213,6 +213,7 @@ const VideoPart = memo((props) => {
   //     }
   //   }
   // }
+
   const doSomethingToVideo = async (t) => {
     if (!logined) {
       message.open({ type: 'warning', content: '请先登录'})
@@ -698,6 +699,11 @@ const VideoPart = memo((props) => {
                   <div className="box11-d12" ref={createbox} onClick={clickcreatebox}>
                     <input type="text" className="createnewfav" foucs placeholder='最多输入20个字'
                       onChange={(e) => setNewfavtitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        e.stopPropagation()                        
+                        if (e.key === 'Enter') {
+                          setNewfavtitle(e.target.value)}
+                      }}
                     />
                     <div className="cof-d3" onClick={tocreatenewfav}>新建</div>
                   </div>
@@ -790,47 +796,35 @@ const VideoPart = memo((props) => {
 })
 
 const RightPart = memo((props) => {
-  const {vid, userinfo, uid, upinfo, dmList,
+  const {vid, userinfo, uid, upinfo, dmList, setDmList,
     setUpinfo, setUserinfo, videoInfo, logined, widthscreen
   } = props
   // const vid = +props.vid
   // const userinfo = props.userinfo  // 我的个人信息
   // const uid = props.uid            // myuid
   // f1 0 头像   f1 1 名字
+
   const [userinfoflag, setUserinfoflag] = useState({f1: -1, f2: -1, f3: -1})
   const [recommendlist, setRecommendlist] = useState([])          // 推荐列表
-  // const [upinfo, setUpinfo] = useState()                          // up主的信息
-  // const [videoinfo, setVideoinfo] = useState()                    // 视频信息
-
   const [vlist, setVlist] = useState([]),                          // 该视频所属的列表
         [vlistindex, setVlistindex] = useState(0),                  // 列表篇中当前播放的视频的index
         [allplays, setAllpalys] = useState(0),                      // 列表视频总播放量
         [listname, setListname] = useState("")                       // 视频列表的信息
-
   const [seasonlist, setSeasonlist] = useState([]),
         [seasonindex, setSeasonindex] = useState(0),
         [chapterlist, setChapterlist] = useState([]),
         [chapterindex, setChapterindex] = useState(0)
-
+  const [isAscending, setIsAscending] = useState(true), // 是否升序
+        [sortFlag, setSortFlag] = useState(0)
   const [donateflag, setDonateflag] = useState(false)
   const recommendref = useRef()
-
-  // const [dmList, setDmList] = useState([])         // 弹幕列表
-
   const [playalongflag, setPlayaloneflag] = useState(false)   // 连续播放标志
-  // 弹幕列表flag
-  const [danmulistflag, setDanmulist] = useState(true)
-  const handleList = () => {
-    setDanmulist(!danmulistflag)
-    console.log(danmulistflag);
-  }
-
+  const [openList, setOpenList] = useState(false)
   const [scrollflag, setScrollflag] = useState(false)
   // const [distance, setDistance] = useState()     // 推荐视频距离顶部的距离
   // if (scrollflag === true) {
   //   setDistance(recommendref.current.offsetTop - recommendref.current.clientHeight)
   // }
-
   const [seasions, setSeasion] = useState([])   // 分季
   const [chapters, setChapters] = useState([])  // 分集
 
@@ -974,6 +968,14 @@ const RightPart = memo((props) => {
       time_userinfo.current = null
     }, 300)
   }
+
+  // 排序dmlist
+  const sortList = (field, ascending) => {
+    console.log(field, ascending);
+    const sortlist = quickSort(dmList, field, ascending)
+    console.log(sortlist);
+    setDmList(sortlist)
+  }
   return (
     <>
     <div className="upinfosbox">
@@ -1057,20 +1059,57 @@ const RightPart = memo((props) => {
       </div>
     }
     <div className="danmulist"
-      style={{height: danmulistflag ? '44px' : '656px',
+      style={{height: openList ? '656px' : "44px",
               marginTop: widthscreen ? '590px' : '0'}}>
-      <div className="danmulisttop"  onClick={handleList}>
+      <div className="danmulisttop"  onClick={() => {
+        setOpenList(!openList)
+        setSortFlag(0)
+      }}>
         <div className="danmlistleft">
           <span>弹幕列表</span>
-          <span className='icon iconfont'>&#xe653;</span>
+          <span className='iconfont'>&#xe653;</span>
         </div>
-        <div className="danmlistright icon iconfont">&#xe624;</div>
+        <div className={`danmlistright iconfont ${openList ? 'danmlistright-active' : ''}`}>&#xe624;</div>
       </div>
       <div className="lists">
         <div className="listop">
-          <div className="times">时间</div>
-          <div className="contents">弹幕内容</div>
-          <div className="sendtimes">发送时间</div>
+          <div className="times"
+            onClick={() => {
+              setSortFlag(1)
+              setIsAscending(!isAscending)
+              sortList('typetime', !isAscending)
+            }}
+          >
+            <span>时间</span>
+            {
+              sortFlag === 1 &&
+              <div className={`iconfont ${isAscending ? 'spin' : ''}`}>&#xe624;</div>
+            }
+          </div>
+          <div className="contents"
+            onClick={() => {
+              setSortFlag(2)
+              setIsAscending(!isAscending)
+              sortList('text', !isAscending)
+            }}
+          >
+            <span>弹幕内容</span>
+            {
+              sortFlag === 2 &&
+              <div className={`iconfont ${isAscending ? 'spin' : ''}`}>&#xe624;</div>
+            }          </div>
+          <div className="sendtimes"
+            onClick={() => {
+              setSortFlag(3)
+              setIsAscending(!isAscending)
+              sortList('item', !isAscending)
+            }}
+          >
+            <span>发送时间</span>
+            {
+              sortFlag === 3 &&
+              <div className={`iconfont ${isAscending ? 'spin' : ''}`}>&#xe624;</div>
+            }          </div>
         </div>
         {
           dmList.map(item =>
@@ -1279,6 +1318,7 @@ const Video = () => {
                 vid={vid}
                 uid={uid}
                 dmList={dmList}
+                setDmList={setDmList}
                 videoInfo={videoInfo}
                 userinfo={userinfo}
                 setUserinfo={setUserinfo}

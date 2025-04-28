@@ -170,3 +170,29 @@ export function toThisBoard(boardid) {
   const url = `/board/${boardid}`
   window.open(url, "_blank")
 }
+
+// 排序 (数组， 排序字段， 升序）
+export function quickSort(arr, field, ascending) {
+    if (arr.length <= 1) {
+    return arr;
+  }
+
+  const pivot = arr[0];
+  const left = [];
+  const right = [];
+
+  for (let i = 1; i < arr.length; i++) {
+    const compareValue = ascending 
+      ? arr[i][field] < pivot[field] 
+      : arr[i][field] > pivot[field];
+
+    if (compareValue) {
+      left.push(arr[i]);
+    } else {
+      right.push(arr[i]);
+    }
+  }
+
+  return [...quickSort(left, field, ascending), pivot, ...quickSort(right, field, ascending)];
+
+}

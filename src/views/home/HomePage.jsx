@@ -409,7 +409,9 @@ function Home() {
   document.title="啤哩啤哩 (゜-゜)つロ 干杯~-pilipili"
 
   const userinfo = JSON.parse(localStorage.getItem('userinfo')),
-        uid = userinfo ? userinfo.uid : -1
+        uid = userinfo ? userinfo.uid : -1,
+        logined = uid !== -1
+        
   // 在父组件中定义， 子组件也可以是使用
   const navigate = useNavigate()
   // 要赋值为数组形式， 否则没有map方法，会报错

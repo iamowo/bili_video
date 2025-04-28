@@ -327,9 +327,9 @@ const VideoPlayer = memo((props) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const key = e.key.toLowerCase();
+      e.stopPropagation(); // 阻止事件冒泡
       if (isFullscreen && key === "escape") {
         e.preventDefault();
-        e.stopPropagation(); // 阻止事件冒泡
         setIsFullscreen(false)
         return; // 直接返回，不执行任何操作
       }
@@ -1726,12 +1726,13 @@ const VideoPlayer = memo((props) => {
                       dmflag ?
                       <input type="text" className="inputdanmu"
                         value={dmText}
-                        onChange={(e) => {
-                          e.preventDefault()
-                          setDmtext(e.target.value)
-                        }}
+                        onChange={(e) => setDmtext(e.target.value)}
                         onKeyDown={(e) => {
+                          e.stopPropagation()
                           if (e.key === 'Enter') {toSendDm()}
+                        }}
+                        onKeyUp={(e) => {
+                          e.stopPropagation()
                         }}
                       placeholder='发一条弹幕吧~'/>
                       :
@@ -1956,7 +1957,11 @@ const VideoPlayer = memo((props) => {
                 value={dmText}
                 onChange={(e) => setDmtext(e.target.value)}
                 onKeyDown={(e) => {
+                  e.stopPropagation()
                   if (e.key === 'Enter') {toSendDm()}
+                }}
+                onKeyUp={(e) => {
+                  e.stopPropagation()
                 }}
               placeholder='发一条弹幕吧~'/>
               :

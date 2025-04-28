@@ -501,6 +501,15 @@ function Comments(props) {
                   e.preventDefault()
                   setContnet(e.target.value)
                 }}
+                onKeyDown={(e) => {
+                  e.stopPropagation()
+                  if(e.key === 'Enter') {
+                    sendcomment()
+                  }
+                }}
+                onKeyUp={(e) => {
+                  e.stopPropagation()
+                }}
                 value={commentcontent}
                 placeholder='写点什么吧~'
               ></textarea>
@@ -821,6 +830,15 @@ function Comments(props) {
                         <div className="rightcommentpart"> 
                           <textarea name="" id="" className="comtextarea"
                             onChange={(e) => setContnet2(e.target.value)}
+                            onKeyDown={(e) => {
+                              e.stopPropagation()
+                              if(e.key === 'Enter') {
+                                sendcomment2()
+                              }
+                            }}
+                            onKeyUp={(e) => {
+                              e.stopPropagation()
+                            }}
                             value={commentcontent2}
                             placeholder={'回复@ ' + replaydata.fname + ' :'}
                           ></textarea>
@@ -898,6 +916,15 @@ function Comments(props) {
                       window.addEventListener('click', cilckfnc2)
                     }}
                     onChange={(e) => setContnet(e.target.value)}
+                    onKeyDown={(e) => {
+                      e.stopPropagation()
+                      if(e.key === 'Enter') {
+                        sendcomment()
+                      }
+                    }}
+                    onKeyUp={(e) => {
+                      e.stopPropagation()
+                    }}
                     value={commentcontent}
                     placeholder='写点什么吧~'
                   ></textarea>

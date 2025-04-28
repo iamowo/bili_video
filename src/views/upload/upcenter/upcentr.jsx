@@ -13,7 +13,6 @@ import VdieoCoverCrop from '../../../components/ImageCrop/VideoCoverCrop'
 
 function Upcenter () {
   const [upindex, setUpindex] = useState(0)  // 0视频   1 漫画
-
   const params = useParams()
   const uid = params.uid
   const type = params.type  // 没用

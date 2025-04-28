@@ -8,7 +8,7 @@ import { getUserVideoList, addVideoList } from '../../../api/videolist'
 import { baseurl } from '../../../api'
 import { getUploadAniList } from '../../../api/animation'
 import message from '../../../components/notice/notice'
-
+import { fileToBase64 } from '../../../util/fnc'
 import VdieoCoverCrop from '../../../components/ImageCrop/VideoCoverCrop'
 
 function Upcenter () {

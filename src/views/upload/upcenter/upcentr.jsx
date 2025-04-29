@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import './index.scss'
 import { useState, useRef, useEffect } from 'react'
+import { getOneTagType } from '../../../api/tag'
 import { uploadVideoInfos, uploadChunks, mergeChunks, getAlready } from '../../../api/video'
 import SparkMD5 from 'spark-md5' // 切片用
 import { getUserVideoList, addVideoList } from '../../../api/videolist'
@@ -20,6 +21,7 @@ function Upcenter () {
   
   const containerRef = useRef(),
         inputRef = useRef();
+  const videoFileRef = useRef()
   const [upprogress, setProgress] = useState('ready'),    //' ready uploading infos done
         [videofile, setVideoFile] = useState(null),   
         [seasonflag, setSeasonflag] = useState(false),     // 连续剧？
@@ -35,8 +37,8 @@ function Upcenter () {
         [videoduration, setDuration] = useState(0),   
         [vidtype, setVidType] = useState(''),             // 上传视频文件类型
         [videosrc, setVideosrc] = useState(),             // 上传视频的链接
-        [uppersent, setPersent] = useState(0)             // 文件上传服务器进度
-
+        [uppersent, setPersent] = useState(0),             // 文件上传服务器进度
+        [maintaglist, setMainTagList] = useState([])
   const [listflag, setListflag] = useState(0),            // 选择视频列表flag  1 选择  2 新建
         [listindex, setListindex] = useState(-1),          // 选择第几个列表
         [videolisttoselect, setVideotoselect] = useState([]),     // 个人的视频列表
@@ -51,43 +53,26 @@ function Upcenter () {
         [chapternum, setChapternum] = useState(),
         [chaptertitle, setChaptertitle] = useState("")
 
-  const mtagref = useRef()
-  const watchref = useRef()
-  const spanref = useRef()
+  const [classifyFlag, setClassifyFlag] = useState(false) // 打开分区
 
   const [upviewflag, setUpviewflag] = useState(false)  //上传封面页面
-  const [maintaglist, setMaintaglist] = useState([
-    '日常', '游戏', '音乐', '动漫', '电影', '搞笑', '电视剧', 'VLOG'
-  ])
+  // const [maintaglist, setMaintaglist] = useState([
+  //   '日常', '游戏', '音乐', '动漫', '电影', '搞笑', '电视剧', 'VLOG'
+  // ])
 
 
   useEffect(() => {
       const getData = async () => {
-        const res = await Promise.all([getUserVideoList(uid), getUploadAniList(uid)])
-        console.log('res is:', res);
+        const res = await Promise.all([getUserVideoList(uid), getUploadAniList(uid), getOneTagType(0)])
         setVideotoselect(res[0])
         setAnimationlist(res[1])
+        setMainTagList(res[2])
       }
       getData()
-      window.addEventListener('click', (e) => {
-          if (e.target.className === 'input2box'||
-              e.target.className === 'icon iconfont watchmore' ||
-              e.target.className === 'inp2span')
-          {
-            mtagref.current.style.opacity = "1"
-            mtagref.current.style.translate = "0 0"
-            watchref.current.style.rotate = '90deg'
-          } else if ((mtagref.current != null && !mtagref.current.contains(e.target)) || e.target.className === 'one-main-tag-s') {
-            mtagref.current.style.opacity = '0'
-            mtagref.current.style.translate = '100vw 0'
-            watchref.current.style.rotate = '0deg'
-          }
-      })
   },[])
 
-  const videofileref = useRef()
   const openfileselect = () => {    
-    videofileref.current.click()
+    videoFileRef.current.click()
   }
 
   // 拖拽上传
@@ -320,11 +305,6 @@ function Upcenter () {
     }
   }
 
-  const clickthistag = (e) => {
-    const text = e.target.dataset.text
-    setMaintag(text)    
-  }
-
   const tocloseupview = (e) => {
     setUpviewflag(false)
   }
@@ -358,11 +338,6 @@ function Upcenter () {
     }
     setListflag(0)
   }
-
-   // 点击容器聚焦输入框
-  const handleContainerClick = () => {
-    inputRef.current.focus();
-  };
 
   return (
     <div className="upcenter-allbox">
@@ -412,7 +387,7 @@ function Upcenter () {
               onDrop={dropfile1}
             >
               <input type="file"
-                ref={videofileref}
+                ref={videoFileRef}
                 className="upvideo-inp"
                 accept="video/*"
                 onChange={(e) => changevideoinp(null, e)}
@@ -694,32 +669,39 @@ function Upcenter () {
               </div>
               <div>
                 <div className="one-upbox" style={{marginTop: '30px'}}>
-                  <div className="left-text-span">分类
+                  <div className="left-text-span">分区
                     <span style={{color: "pink"}}>*</span>
                   </div>
-                  <div className="input-box-main-tag">
+                  <div className="input-box-main-tag"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setClassifyFlag(!classifyFlag)
+                    }}
+                  >
                     <div className="input2box">
                       <span className='inp2span'
-                        ref={spanref}
                         style={{visibility: maintag.length > 0 ? 'visible' : 'hidden'}}
                       >{maintag}</span>
-                      <div className="icon iconfont watchmore" ref={watchref}>&#xe775;</div>
+                      <div className={`iconfont watchmore ${classifyFlag ? "wspain" : ""}`}>&#xe775;</div>
                     </div>
-                      <div className="selectMaintag" ref={mtagref}>
-                        <div className="maintag-title">选择主标签</div>
-                        <div className="tag-content">
-                          <div className="innercontent-up">
-                            {
-                              maintaglist.map(item =>
-                                <div className="one-main-tag-s"
-                                data-text={item} key={item}
-                                onClick={clickthistag}
-                                >{item}</div>
-                              )
-                            }
+                      {
+                        classifyFlag &&
+                        <div className="selectMaintag">
+                          <div className="maintag-title">选择分区</div>
+                          <div className="tag-content">
+                            <div className="innercontent-up">
+                              {
+                                maintaglist.map(item =>
+                                  <div className="one-main-tag-s"
+                                    id={item.id}
+                                    onClick={() => setMaintag(item.tagName)}
+                                  >{item.tagName}</div>
+                                )
+                              }
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      }
                   </div>
                 </div>
                 <div className="one-upbox"
@@ -727,11 +709,13 @@ function Upcenter () {
                   <div className="left-text-span">tags</div>
                   <div className="input-out-box1"
                     ref={containerRef}
-                    onClick={handleContainerClick}
+                    onClick={() => inputRef.current.focus()}
                   >
                     {
                       tagList.map((item, index) =>
-                        <div className="onetags">
+                        <div className="onetags"
+                          key={index}
+                        >
                           <span>{item}</span>
                           <span className="icon iconfont"
                             onClick={() => removeTag(index)}>&#xe7b7;</span>

@@ -200,6 +200,7 @@ const Topnav = memo((props) => {
       setFavonesum(res2)
     } else if (tp === 5) {
       const res = await getHomeHistory(uid, 0, 20, 20)
+      console.log(hisList);
       setHislist(res)
     }
   }

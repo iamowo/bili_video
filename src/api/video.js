@@ -216,14 +216,6 @@ export function searchVideoByMany(sort, maintag, pass) {
   })
 }
 
-// 得到全部一级分类
-export function getAllClassify() {
-  return http ({
-    method: 'GET',
-    url: '/video/getAllClassify'
-  })
-}
-
 // 代表作
 export function getFamous(uid) {
   return http ({
@@ -270,14 +262,6 @@ export function userChnageInfo (data) {
     method: 'POST',
     url: '/video/userChnageInfo',
     data: data
-  })
-}
-
-// 获取主标签tag类
-export function getByMaintag (maintag) {
-  return http({
-    method: 'GET',
-    url: `/video/getByMaintag/${maintag}`
   })
 }
 

@@ -8,7 +8,8 @@ import { useSelector, useDispatch } from 'react-redux'   // 使用redux
 import { setuserinfo } from '../../store/modules/userStore'  // redux方法
 import Login from '../Login/login'
 import { getByUid, login } from '../../api/user'
-import { getHistory, getHomeHistory, searchKw, getHomeDynamic, getAllClassify } from '../../api/video'
+import { getHistory, getHomeHistory, searchKw, getHomeDynamic } from '../../api/video'
+import { getMainTag } from '../../api/tag'
 import { tovideo } from '../../util/fnc'
 import { getFavlist, getOneList } from '../../api/favlist'
 import { baseurl, baseurl2 } from '../../api'
@@ -86,7 +87,7 @@ const Topnav = memo((props) => {
     // 本地有数据
     const getData = async () => {      
       const res = await Promise.all([getHomeDynamic(uid, 0), getAllKeyword(uid),
-                                    getHotRanking(), getAllClassify()])
+                                    getHotRanking(), getMainTag(0, 0)])
       setDynamicList(res[0])
       setOldkeywords(res[1])
       setHotlist(res[2].slice(0, 10))
@@ -200,13 +201,13 @@ const Topnav = memo((props) => {
       setFavonesum(res2)
     } else if (tp === 5) {
       const res = await getHomeHistory(uid, 0, 20, 20)
-      console.log(hisList);
-      setHislist(res)
+      setHislist(res ? res : [])
+      // setHislist(res ? res : [])
     }
   }
 
   const leaveRightItem = () => {
-    console.log('leave');
+    // console.log('leave');
     rightTimer.current = setTimeout(() => {
       setRightAppendShow(0)
     }, 300)
@@ -747,7 +748,7 @@ const Topnav = memo((props) => {
                   </div>
                   <div className="his-top-content">
                     {
-                      hisList.map(item =>
+                      hisList?.map(item =>
                         <div className="one-top-history" 
                           key={item.vid} 
                           data-vid={item.vid}

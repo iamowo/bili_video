@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Menu, Space, Table, Input, Switch, Flex, Radio,
          Cascader, Form, Select, Button } from "antd";
-import { getAllVideo, searchVideoByMany, getAllClassify } from "../../../api/video";
+import { getAllVideo, searchVideoByMany } from "../../../api/video";
+import { getMainTag } from "../../../api/tag";
 import { render } from '@testing-library/react';
 import '../scss/index.scss'
 import '../scss/allVideo.scss'
@@ -206,7 +207,7 @@ const AllConVideos = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await Promise.all([getAllVideo(), getAllClassify()])
+      const res = await Promise.all([getAllVideo(), getMainTag(0, 0)])
       // console.log(res[1]);
       setData(res[0]) 
       let tempNum = []     

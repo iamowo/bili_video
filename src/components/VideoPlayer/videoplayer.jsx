@@ -133,7 +133,7 @@ const VideoPlayer = memo((props) => {
   const createref = useRef()  // 新建
   const [tripleSpeedShow, setTripleSpeedShow] = useState(false),
         tsTimer = useRef(null) // 持续按右键键1s，三倍速播放
-
+  const isSeeking = useRef(false) // 跳转状态变量
   const [capturedImage, setCapturedImage] = useState(null) // 当前帧数图片
   const [isLoading, setIsLoading] = useState(false)               // 加载完成
   const [isPlaying, setIsPlaying] = useState(false)               // 是否在播放
@@ -244,9 +244,32 @@ const VideoPlayer = memo((props) => {
       setDuration(video.duration);
     };
 
+    // const handleProgress = () => {
+    //   console.log('progressing...');
+
+    //   if (video.buffered.length > 0) {
+    //     const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+    //     const bufferedPercent = (bufferedEnd / video.duration) * 100;
+    //     setBuffered(bufferedPercent);
+    //   }
+    // };
+
     const handleProgress = () => {
+      const video = videoRef.current;
       if (video.buffered.length > 0) {
-        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+        let bufferedEnd = 0;
+        // 找到包含当前时间的缓冲区间
+        for (let i = 0; i < video.buffered.length; i++) {
+          if (video.currentTime >= video.buffered.start(i) && 
+              video.currentTime <= video.buffered.end(i)) {
+            bufferedEnd = video.buffered.end(i);
+            break;
+          }
+        }
+        // 如果没有找到，使用最后一个缓冲区间
+        if (bufferedEnd === 0 && video.buffered.length > 0) {
+          bufferedEnd = video.buffered.end(video.buffered.length - 1);
+        }
         const bufferedPercent = (bufferedEnd / video.duration) * 100;
         setBuffered(bufferedPercent);
       }
@@ -265,11 +288,14 @@ const VideoPlayer = memo((props) => {
     };
 
     const handleSeeking = () => {
+      console.log('seeking...');
+
       setIsLoading(true);
     };
 
     const handleSeeked = () => {
       setIsLoading(false);
+      isSeeking.current = false;
     };
 
     const handleEnded = () => {
@@ -320,6 +346,19 @@ const VideoPlayer = memo((props) => {
       video.removeEventListener("seeking", handleSeeking);
       video.removeEventListener("seeked", handleSeeked);
       video.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const handleError = () => {
+      setIsLoading(false);
+      message.error({content: '视频加载失败', flag: true});
+    };
+  
+    video.addEventListener('error', handleError);
+    return () => {
+      video.removeEventListener('error', handleError);
     };
   }, []);
 
@@ -424,8 +463,20 @@ const VideoPlayer = memo((props) => {
 
   // 时间进退
   const skipTime = (seconds) => {
+    if (isSeeking.current) return;
+    
     const video = videoRef.current;
-    video.currentTime += seconds;
+    const newTime = video.currentTime + seconds;
+    
+    // 确保时间在有效范围内
+    if (newTime < 0) {
+      video.currentTime = 0;
+    } else if (newTime > video.duration) {
+      video.currentTime = video.duration;
+    } else {
+      isSeeking.current = true;
+      video.currentTime = newTime;
+    }
   };
 
   // 音量加减
@@ -778,7 +829,7 @@ const VideoPlayer = memo((props) => {
   }
 
   // 全屏切换
-  const toggleFullscreen = () => {   
+  const toggleFullscreen = useCallback(() => {   
     if (!isFullscreen) {
       if (videoBoxRef.current.requestFullscreen) {
         videoBoxRef.current.requestFullscreen();
@@ -802,7 +853,7 @@ const VideoPlayer = memo((props) => {
       }
       setIsFullscreen(false);
     }
-  }
+  }, [isFullscreen])
   
   // 底部操作栏==========================================================
   // 鼠标在视频中移动时间
@@ -897,6 +948,7 @@ const VideoPlayer = memo((props) => {
     }
     setShowControls(true)
   }
+
   // 离开底部操作框
   const leaveBottomControl = () => {
     bottomFlag.current = false
@@ -956,13 +1008,60 @@ const VideoPlayer = memo((props) => {
     setPreviewPosition(positon);
     setShowPreview(true);
     generateImg(hoverTime)
-
     // setHoverPosition(positon)
   }, [isDragging]);
+
+  // const handleMouseMove = useCallback(debounce((e) => {
+  //   if (isDragging && !isSeeking.current) {
+  //     const progressBar = progressRef.current;
+  //     const rect = progressBar.getBoundingClientRect();
+      
+  //     let clickPositionX = e.clientX - rect.left;
+  //     clickPositionX = Math.max(0, Math.min(rect.width, clickPositionX));
+      
+  //     const percentage = (clickPositionX / rect.width) * 100;
+  //     setBuffered(Math.min(100, Math.max(0, percentage)));
+  //     setProgress(Math.min(100, Math.max(0, percentage)));
+      
+  //     // 预览图
+  //     const percent = clickPositionX / rect.width;
+  //     setHoverTime(percent * duration);
+  //     setPreviewPosition(clickPositionX);
+  //     setShowPreview(true);
+  //     generateImg(percent * duration);
+  //   }
+  //   // 预览图
+  //   const progressBar = progressRef.current;
+  //   const rect = progressBar.getBoundingClientRect();
+  //   const positon = e.clientX - rect.left;
+  //   const percent = positon / rect.width;
+  //   setHoverTime(percent * duration);
+  //   setPreviewPosition(positon);
+  //   setShowPreview(true);
+  //   generateImg(hoverTime)
+
+  // }, 100), [isDragging, duration]);
 
   // 添加全局鼠标移动和抬起事件监听
   useEffect(() => {
     // 鼠标抬起
+    // const handleMouseUp = (e) => {
+    //   if (isDragging) {
+    //     const video = videoRef.current;
+    //     const progressBar = progressRef.current;
+    //     const rect = progressBar.getBoundingClientRect();
+    //     const clickPosition = e.clientX - rect.left;
+    //     const progressBarWidth = rect.width;
+    //     const seekTime = (clickPosition / progressBarWidth) * video.duration;
+    //     video.currentTime = seekTime;
+    //     setProgress((seekTime / video.duration) * 100);
+    //     if (!isPlaying) {
+    //       togglePlay()
+    //     }
+    //     setIsDragging(false);
+    //   }
+    // };
+
     const handleMouseUp = (e) => {
       if (isDragging) {
         const video = videoRef.current;
@@ -972,6 +1071,14 @@ const VideoPlayer = memo((props) => {
         const progressBarWidth = rect.width;
         const seekTime = (clickPosition / progressBarWidth) * video.duration;
         video.currentTime = seekTime;
+        
+        // 更新缓冲状态
+        if (video.buffered.length > 0) {
+          const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+          const bufferedPercent = (bufferedEnd / video.duration) * 100;
+          setBuffered(bufferedPercent);
+        }
+        
         setProgress((seekTime / video.duration) * 100);
         if (!isPlaying) {
           togglePlay()

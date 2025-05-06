@@ -1,7 +1,8 @@
 import './HomePage.scss'
 import Topnav from '../../components/Topnav/Topnav.jsx'
 import { useRef, useState, useEffect, memo } from 'react';
-import { getSomeVideos, getRandom, getAllClassify } from '../../api/video.js';
+import { getSomeVideos, getRandom } from '../../api/video.js';
+import { getMainTag, getTags } from '../../api/tag.js';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { touserspace, tovideo } from '../../util/fnc.js';
@@ -10,12 +11,10 @@ import message from '../../components/notice/notice.jsx';
 import { throttle } from '../../util/fnc.js';
 import Banner from '../../components/Banner/Banner.jsx';
 import { getBanner } from "../../api/banner"
+import Noresult from '../../components/NoResult/Noresult.jsx';
 
-document.title = 'pilipili'
-
-const MemoNav2 = memo(
-  function Nav2 (props) {    
-    const uid = props.uid
+const MemoNav2 = memo((props) => {
+    const {uid, logined} = props
     const [classifys, setClassify] = useState([]),                  // 全部
           [mainclassify, setMainclassify] = useState([]),           // 一级
           [remaindclassify, setRecommendclassify] = useState([]),   // 剩余一级
@@ -24,28 +23,10 @@ const MemoNav2 = memo(
           timer = useRef(null)
     const [scrollflag, setScrollflag] = useState(false)
 
-    const todynamicview = () => {
-      if (uid === -1) {
-        message.open(
-          
-        )
-        return
-      }
-      window.open(`dynamicM/${uid}`, '_blank')
-    }
-  
-    const tothisone = (e) => {
-      if (e.target.className === "item") {
-        const tag = e.target.textContent
-        window.open(`/channels/${tag}`, '_blank')
-      } else if (e.target.className === "item icon iconfont") {
-        window.open('/alltag', "_blank")
-      }
-    }
-
     useEffect(() => {
       const getData = async () => {
-        const res = await getAllClassify()        
+        // 获取视频主标签
+        const res = await getMainTag(0, 0)
         setClassify(res)
         const temp = res.filter(item =>
           item.type !== 1
@@ -55,40 +36,38 @@ const MemoNav2 = memo(
         setRecommendclassify(temp2)              // 剩余的
       }
       getData()
+    }, [])
+
+    useEffect(() => {
+      const scrollFnc = () => {
+        const top = document.body.scrollTop || document.documentElement.scrollTop      
+        if (top > 236) {
+          setScrollflag(true)
+        } else {
+          setScrollflag(false)
+        }
+      }
+      
       document.addEventListener('scroll', scrollFnc)
       return () => {
         document.removeEventListener('scroll', scrollFnc)
       }
-    }, [])
+    }, [setScrollflag])
 
-    const scrollFnc = () => {
-      const top = document.body.scrollTop || document.documentElement.scrollTop      
-      if (top > 236) {
-        setScrollflag(true)
-      } else {
-        setScrollflag(false)
-      }
-    }
-
-    const enterone = (index, id) => {
+    const enterTag = async (index, id) => {
       if (timer.current != null) {
         setSecondflag(-1)
         clearTimeout(timer.current)
         timer.current = null
       }
-      const temp = []
-      for (let i = 0; i < classifys.length; i++) {       
-        if (classifys[i].type === 1 && classifys[i].topid === id) {
-          temp.push(classifys[i])
-        }
-      }
-      if (temp.length > 0) {
+      const res = await getTags(id, 0, "null", 0, 0, 0)
+      if (res != null) {
         setSecondflag(index)
-        setSecondclassify(temp)
+        setSecondclassify(res)
       }
     }
 
-    const enterone2 = () => {
+    const enterMore = () => {
       if (timer.current != null) {
         setSecondflag(-1)
         clearTimeout(timer.current)
@@ -97,14 +76,13 @@ const MemoNav2 = memo(
       setSecondflag(23)
     }
 
-    const leaveone = () => {
+    const leaveTag = () => {
       timer.current = setTimeout(() => {
         setSecondflag(-1)
       },400)
     }
 
-    const tothisitem = (value, type) => {
-      // console.log(value, type);
+    const toThisTag = (value, type) => {
       window.open(`/channels/${value}`)
     }
     return (
@@ -112,7 +90,13 @@ const MemoNav2 = memo(
         <div className="nav2">
           <div className="navleft">
               <div className="nl1"
-                onClick={todynamicview}>
+                onClick={() => {
+                  if (!logined) {
+                    message.open({type: 'info', content: '请先登录'})
+                    return
+                  }
+                  window.open(`dynamicM/${uid}`, '_blank')
+                }}>
                 <div className="topn2 icon iconfont">&#xe608;</div>
                 <span>动态</span>
               </div>
@@ -123,18 +107,17 @@ const MemoNav2 = memo(
               </div>
             </Link>
           </div>
-          <div className="navmid"
-            onClick={tothisone}>
+          <div className="navmid">
             {
               mainclassify.map((item, index) =>
                 <div
                   className="item"
                   key={item.id}
-                  onMouseEnter={() => enterone(index, item.id)}
-                  onMouseLeave={leaveone}
-                  onClick={() => tothisitem(item.value, item.type)}
+                  onMouseEnter={() => enterTag(index, item.id)}
+                  onMouseLeave={leaveTag}
+                  onClick={() => toThisTag(item.tagName, item.type)}
                 >
-                  <span>{item.value}</span>
+                  <span>{item.tagName}</span>
                   {
                     secondflag === index &&
                     <div className={index <= 11 ? "childbox" : "childbox childbox2"}>
@@ -143,14 +126,14 @@ const MemoNav2 = memo(
                           <div
                             key={item2.id}
                             className="seconditem"
-                            onMouseEnter={() => enterone(index, item.id)}
-                            onMouseLeave={leaveone}
+                            onMouseEnter={() => enterTag(index, item.id)}
+                            onMouseLeave={leaveTag}
                             onClick={(e) => {
                               e.stopPropagation()
-                              tothisitem(item2.value, item2.type)
+                              toThisTag(item2.tagName, item2.type)
                             }}
                           >
-                            {item2.value}
+                            {item2.tagName}
                           </div>
                         )
                       }
@@ -160,8 +143,8 @@ const MemoNav2 = memo(
               )
             }
             <div className="item"
-              onMouseEnter={enterone2}
-              onMouseLeave={leaveone}
+              onMouseEnter={enterMore}
+              onMouseLeave={leaveTag}
               onClick={() => window.open('/alltag')}
             >
               <span>更多</span>
@@ -174,11 +157,11 @@ const MemoNav2 = memo(
                       <div
                         key={item2.id}
                         className="seconditem"
-                        onMouseEnter={enterone2}
-                        onMouseLeave={leaveone}
+                        onMouseEnter={enterMore}
+                        onMouseLeave={leaveTag}
                         onClick={(e) => {
                           e.stopPropagation()
-                          tothisitem(item2.value, item2.type)
+                          toThisTag(item2.value, item2.type)
                         }}
                       >
                         {item2.value}
@@ -202,7 +185,13 @@ const MemoNav2 = memo(
           <div className="nav22active">
               <div className="navleft">
                 <div className="nl1"
-                  onClick={todynamicview}>
+                  onClick={() => {
+                    if (!logined) {
+                      message.open({type: 'info', content: '请先登录'})
+                      return
+                    }
+                    window.open(`dynamicM/${uid}`, '_blank')
+                  }}>
                   <div className="topn2 icon iconfont">&#xe608;</div>
                   <span>动态</span>
                 </div>
@@ -222,8 +211,8 @@ const MemoNav2 = memo(
                   <div
                     className="one-box"
                     key={item.id}
-                    onClick={() => tothisitem(item.value, item.type)}
-                  >{item.value}</div>
+                    onClick={() => toThisTag(item.value, item.type)}
+                  >{item.tagName}</div>
                 )
               }
               <div className="one-box"
@@ -242,6 +231,7 @@ const MemoNav2 = memo(
     )
   }
 )
+
 function Video (props) {  
   // 用户uid
   // const uid = props.userinfo.uid
@@ -406,8 +396,6 @@ function Video (props) {
 }
 
 function Home() {
-  document.title="啤哩啤哩 (゜-゜)つロ 干杯~-pilipili"
-
   const userinfo = JSON.parse(localStorage.getItem('userinfo')),
         uid = userinfo ? userinfo.uid : -1,
         logined = uid !== -1
@@ -419,14 +407,15 @@ function Home() {
         [videolist, setVideolist] = useState([]),
         [vids, setVids] = useState([]),
         [bannerlist, setBannerlist] = useState([])
+  const lazyLoadTimer = useRef(null) // 下拉加载
+  const changeOneBitchTimer = useRef(false), // 推荐 换一换
+        [iconflag, setIconflag] = useState(false) // 换一换动画
 
-  // 下拉获取数据
   useEffect(() => {
     const getData = async() => {      
       const result = await Promise.all([getRandom(5), getRandom(6), getBanner()])      
       setVideolist(result[0])
       for(let i = 0; i < result[0].length; i++) {
-        // console.log(result[0][i].vid)
         setVids([
           ...vids,
           result[0][i].vid
@@ -436,52 +425,53 @@ function Home() {
       setBannerlist(result[2])
     }
     getData();
+    document.title="啤哩啤哩 (゜-゜)つロ 干杯~-pilipili"
   },[])
 
   // 下拉刷新
-  const time1 = useRef(null)
   useEffect(() => {
+    // 第二个参数是空的话，形成了闭包，导致不会更新
+    const lazyloadfnc = () => {
+      var a = document.body.clientHeight || document.documentElement.clientHeight
+      var b = document.body.scrollTop || document.documentElement.scrollTop
+      var c = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+      
+      if(a <= Math.ceil(b + c) && b > 0 ) {
+          if (lazyLoadTimer.current != null) {
+            return;
+          } else {
+            lazyLoadTimer.current = setTimeout(async () => {
+              console.log(vids);
+              const res = await getSomeVideos(vids, 5);
+              const temp = [
+                ...videolist,
+                ...res
+              ]
+              console.log('old:', videolist);
+              console.log('new video:', temp);
+              setVideolist(temp)
+              if (res != null && res.length > 0) {
+                for(let i = 0; i < res[0].length; i++) {
+                  setVids([
+                    ...vids,
+                    res[0][i].vid
+                  ])
+                }
+              } else {
+                message.open({ type: 'info', content: '没有更多了', flag: true})
+              }
+              lazyLoadTimer.current = null
+            }, 1500)
+          }
+        }
+    }
     document.addEventListener("scroll", lazyloadfnc)
     return () => {
       document.removeEventListener('scroll', lazyloadfnc)
     }
   }, [videolist])
-  // 第二个参数是空的话，形成了闭包，导致不会更新
-  
-  const lazyloadfnc = () => {
-    var a = document.body.clientHeight || document.documentElement.clientHeight
-    var b = document.body.scrollTop || document.documentElement.scrollTop
-    var c = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-    
-    if(a <= Math.ceil(b + c) && b > 0 ) {
-        if (time1.current != null) {
-          return;
-        } else {
-          time1.current = setTimeout(async () => {
-            console.log(vids);
-            const res = await getSomeVideos(vids, 5);
-            const temp = [
-              ...videolist,
-              ...res
-            ]
-            console.log('old:', videolist);
-            
-            console.log('new video:', temp);
-            
-            setVideolist(temp)
-            for(let i = 0; i < res[0].length; i++) {
-              setVids([
-                ...vids,
-                res[0][i].vid
-              ])
-            }
-            time1.current = null
-          }, 1500)
-        }
-      }
-  }
 
-  const totopmove = () => {
+  const toTopMove = () => {
     setTimeout(() => {
       window.scrollTo({
         top: 0,
@@ -491,78 +481,80 @@ function Home() {
   }
 
   // 换一换
-  let temp1 = false
-  const [iconflag, setIconflag] = useState(false)
   const changapart = (e) => {
     // 节流
-    if (temp1) {
+    if (changeOneBitchTimer.current) {
       return
     }
     setIconflag(true)
-    temp1 = true
+    changeOneBitchTimer.current = true
     setTimeout(async() => {
       const res = await getRandom(6)
       setRecommend(res)
       setIconflag(false)
-      temp1 = false
+      changeOneBitchTimer.current = false
     }, 1200)
   }
+
   return (
     <div className="conbox">
       <Topnav />
-      <div className="mainbox">
-      <MemoNav2
-        uid={uid}
-      />
-        <div className="innerbox">
-          <div className="changpart"
-            onClick={changapart}
-          >
-            <div className={iconflag ? "iconani icon iconfont" : "icon iconfont"}>&#xe614;</div>
-            <span className="changspan2">换一换</span>
+      {
+        recommendlist.length > 0 && videolist.length > 0 ?
+        <div className="mainbox">
+        <MemoNav2
+          uid={uid}
+          logined={logined}
+        />
+          <div className="innerbox">
+            <div className="changpart"
+              onClick={changapart}
+            >
+              <div className={iconflag ? "iconani icon iconfont" : "icon iconfont"}>&#xe614;</div>
+              <span className="changspan2">换一换</span>
+              </div>
+            <div className="bottompart">
+              <div className="bbox1 icon iconfont b1">&#xe646;</div>
+              <div className="bbox1 icon iconfont b2">&#xe615;</div>
+              <div className="bbox1 bx2"
+                onClick={toTopMove}>
+                <div className='icon iconfont'>&#xe628;</div>
+                <div className='totoptext'>顶部</div>
+              </div>
             </div>
-          <div className="bottompart">
-            <div className="bbox1 icon iconfont b1">&#xe646;</div>
-            <div className="bbox1 icon iconfont b2">&#xe615;</div>
-            <div className="bbox1 bx2"
-              onClick={totopmove}>
-              <div className='icon iconfont'>&#xe628;</div>
-              <div className='totoptext'>顶部</div>
+            <div className="bannerpart">
+              {
+                bannerlist.length > 0 &&
+                <Banner
+                  playflag={true}
+                  bannerlist = {bannerlist}
+                  listLength = {bannerlist.length}
+                />
+              }
             </div>
-          </div>
-          <div className="bannerpart">
+            <div className="toprecbox">
             {
-              bannerlist.length > 0 &&
-              <Banner
-                playflag={true}
-                bannerlist = {bannerlist}
-                listLength = {bannerlist.length}
-              />
+              recommendlist.map((item, index) => 
+                <Video
+                  key={item.vid} 
+                  data={item}
+                  index={index}
+                />
+              )
+            }
+            </div>
+            {
+              videolist.map((item, index) => 
+                <Video
+                  key={item.vid}
+                  data={item}
+                  index={index}
+                  style1="yes"
+                />
+                // <div key={item.vid} className="onevideo">{item.vid}</div>
+              )
             }
           </div>
-          <div className="toprecbox">
-          {
-            recommendlist.map((item, index) => 
-              <Video
-                key={item.vid} 
-                data={item}
-                index={index}
-              />
-            )
-          }
-          </div>
-          {
-            videolist.map((item, index) => 
-              <Video
-                key={item.vid}
-                data={item}
-                index={index}
-                style1="yes"
-              />
-              // <div key={item.vid} className="onevideo">{item.vid}</div>
-            )
-          }
-        </div>
         {
           <div className="loadmore-line">
             <span>加载更多</span>
@@ -574,6 +566,11 @@ function Home() {
           </div>
         }
       </div>
+      :
+      <div className="noresult-b">
+        <Noresult />
+      </div>
+    }
     </div>
   )
 }

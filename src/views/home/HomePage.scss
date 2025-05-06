@@ -1,7 +1,7 @@
 
 .conbox {
   width: 2560px;
-  height: fit-content;
+  min-height: 100vh;
   position: relative;
   background-color: #fff;
 }
@@ -307,6 +307,11 @@
   position: relative;
   box-sizing: border-box;
   // padding-top: 114px;
+}
+
+.noresult-b {
+  padding: 100px 0;
+  height: 100%;
 }
 
 .innerbox {

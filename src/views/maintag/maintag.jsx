@@ -1,10 +1,10 @@
 import { useParams } from 'react-router-dom'
 import './maintag.scss'
 import { useEffect, useState } from 'react'
-import { getByMaintag } from '../../api/video'
+import { getResourceByTag } from '../../api/tag'
 import Topnav from '../../components/Topnav/Topnav'
 import { tovideo, touserspace } from '../../util/fnc'
-
+import Noresult from '../../components/NoResult/Noresult'
 
 function Maintag() {
   const params = useParams()
@@ -13,14 +13,16 @@ function Maintag() {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await getByMaintag(maintag)
+      const res = await getResourceByTag(0, maintag, 0, 0)
       console.log(res);
+      
       setVideolist(res.slice(0, 10))
     }
     getData()
-
     document.title = '标签-' + params.maintag
+
   },[])
+  
   return (
     <div className="maintag-view">
       <Topnav />
@@ -33,12 +35,14 @@ function Maintag() {
             </div>
           }
           <div className="view-container">
+            {
+              videolist.length === 0 &&
+              <div className="nores-box">
+                <Noresult />
+              </div>
+            }
             <div className="left-containers">
               <div className="spbox"># {maintag}</div>
-              {
-                videolist.length === 0 &&
-                <div className="spbox">暂时没有用户上传</div>
-              }
               {
                 videolist.map(item =>
                   <div className="one-video-box">

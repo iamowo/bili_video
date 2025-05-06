@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import './index.scss'
 import { useState, useRef, useEffect } from 'react'
-import { getOneTagType } from '../../../api/tag'
+import { getMainTag } from '../../../api/tag'
 import { uploadVideoInfos, uploadChunks, mergeChunks, getAlready } from '../../../api/video'
 import SparkMD5 from 'spark-md5' // 切片用
 import { getUserVideoList, addVideoList } from '../../../api/videolist'
@@ -34,6 +34,7 @@ function Upcenter () {
         [tags, setTags] = useState(''),                   // 字符传形式的tags
         [tagList, setTagList] = useState([]),                 // tags 的数组形式
         [maintag, setMaintag] = useState(''),             // 主tag  分类
+        [maintagId, setMainTagId] = useState(""),         // 主tagid
         [videoduration, setDuration] = useState(0),   
         [vidtype, setVidType] = useState(''),             // 上传视频文件类型
         [videosrc, setVideosrc] = useState(),             // 上传视频的链接
@@ -63,7 +64,7 @@ function Upcenter () {
 
   useEffect(() => {
       const getData = async () => {
-        const res = await Promise.all([getUserVideoList(uid), getUploadAniList(uid), getOneTagType(0)])
+        const res = await Promise.all([getUserVideoList(uid), getUploadAniList(uid), getMainTag(0, 0)])
         setVideotoselect(res[0])
         setAnimationlist(res[1])
         setMainTagList(res[2])
@@ -169,6 +170,7 @@ function Upcenter () {
         duration: videoduration,
         cover: vidcover,
         maintag: maintag,
+        maintagId, maintagId,
         othertags: tagList.join(" "),
         hashValue: HASH,
         listid: listindex !== -1 ? videolisttoselect[listindex].listid : -1,
@@ -178,9 +180,13 @@ function Upcenter () {
         chapter: chapternum,
         chaptertitle: chaptertitle
       }
-      console.log('upload data:', data);
-      thisvid = await uploadVideoInfos(data) // 返回vid
-      // 添加到视频列表
+      const res = await uploadVideoInfos(data)
+      if (res) {
+        thisvid = res // 返回vid
+      } else {
+        message.open({type: 'error', content: '上传视频信息失败', flag: true})
+        return
+      }
     }
     setProgress('uploading')  // 跳转到上传页面
     sendresource(thisvid, file, HASH, suffix, already)
@@ -234,7 +240,7 @@ function Upcenter () {
         setPersent(100)
       }
     }
-
+    
     // 上传每个切片给服务器
     chunks.forEach(async chunk => {
       // 已经上传的无需在上传
@@ -247,19 +253,26 @@ function Upcenter () {
       fm.append('uid', uid)
       fm.append('file', chunk.file)
       fm.append('filename', chunk.filename)
-      await uploadChunks(fm).then(res => {
-        if (+res === 200) {
-          // 进度
-          complate()
-          return;
-        }
-        return Promise.reject('error')
-      }).catch(() => {
+      const res = await uploadChunks(fm)
+      if (+res === 200) {
+        complate()
+      } else {
         message.open({type: 'error', content: '上传文件失败', flag: true})
-        setTimeout(() => {
-          document.location.reload()
-        }, 2000)
-      })
+        return
+      }
+      // await uploadChunks(fm).then(res => {
+      //   if (+res === 200) {
+      //     // 进度
+      //     complate()
+      //     return;
+      //   }
+      //   return Promise.reject('error')
+      // }).catch((e) => {
+      //   message.open({type: 'error', content: '上传文件失败'})
+      //   setTimeout(() => {
+      //     document.location.reload()
+      //   }, 2000)
+      // })
     })
     
   }
@@ -267,7 +280,7 @@ function Upcenter () {
   useEffect(() => {
     if (uppersent >= 100) {
       setProgress('done')
-      message.open({type: 'info', content: '上传成功', flag: true})
+      message.open({type: 'info', content: '上传成功'})
     }
   }, [uppersent])
   
@@ -693,8 +706,11 @@ function Upcenter () {
                               {
                                 maintaglist.map(item =>
                                   <div className="one-main-tag-s"
-                                    id={item.id}
-                                    onClick={() => setMaintag(item.tagName)}
+                                    key={item.id}
+                                    onClick={() => {
+                                      setMaintag(item.tagName)
+                                      setMainTagId(item.id)
+                                    }}
                                   >{item.tagName}</div>
                                 )
                               }

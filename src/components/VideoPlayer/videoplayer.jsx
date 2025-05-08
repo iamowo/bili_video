@@ -289,11 +289,11 @@ const VideoPlayer = memo((props) => {
 
     const handleSeeking = () => {
       console.log('seeking...');
-
       setIsLoading(true);
     };
 
     const handleSeeked = () => {
+      console.log('seeked...');
       setIsLoading(false);
       isSeeking.current = false;
     };
@@ -326,15 +326,24 @@ const VideoPlayer = memo((props) => {
       }
       return
     }
+
+    const handleError = () => {
+      setIsLoading(false);
+      message.error({content: '视频加载失败', flag: true});
+    };
+
     document.addEventListener("scroll", scrollFnc)
     document.addEventListener("beforeunload", updateInfo)
+    // 获取时长
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
+    // 获取资源
     video.addEventListener("progress", handleProgress);
     video.addEventListener("waiting", handleWaiting);
     video.addEventListener("playing", handlePlaying);
     video.addEventListener("seeking", handleSeeking);
     video.addEventListener("seeked", handleSeeked);
     video.addEventListener("ended", handleEnded);
+    video.addEventListener('error', handleError);
 
     return () => {
       document.removeEventListener("scroll", scrollFnc)
@@ -346,18 +355,6 @@ const VideoPlayer = memo((props) => {
       video.removeEventListener("seeking", handleSeeking);
       video.removeEventListener("seeked", handleSeeked);
       video.removeEventListener("ended", handleEnded);
-    };
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    const handleError = () => {
-      setIsLoading(false);
-      message.error({content: '视频加载失败', flag: true});
-    };
-  
-    video.addEventListener('error', handleError);
-    return () => {
       video.removeEventListener('error', handleError);
     };
   }, []);

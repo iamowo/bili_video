@@ -28,6 +28,8 @@ const MemoNav2 = memo((props) => {
         // 获取视频主标签
         const res = await getMainTag(0, 0)
         setClassify(res)
+        console.log('res is: ', res);
+        
         const temp = res.filter(item =>
           item.type !== 1
         )
@@ -54,14 +56,17 @@ const MemoNav2 = memo((props) => {
       }
     }, [setScrollflag])
 
+    // 鼠标进入 tag 标签
     const enterTag = async (index, id) => {
+      console.log('secondflah is');
+      
       if (timer.current != null) {
         setSecondflag(-1)
         clearTimeout(timer.current)
         timer.current = null
       }
       const res = await getTags(id, 0, "null", 0, 0, 0)
-      if (res != null) {
+      if (res != null && res.length > 0) {
         setSecondflag(index)
         setSecondclassify(res)
       }
@@ -120,14 +125,15 @@ const MemoNav2 = memo((props) => {
                   <span>{item.tagName}</span>
                   {
                     secondflag === index &&
-                    <div className={index <= 11 ? "childbox" : "childbox childbox2"}>
+                    <div className={index <= 11 ? "childbox" : "childbox childbox2"}
+                    onMouseEnter={() => enterTag(index, item.id)}
+                            onMouseLeave={leaveTag}
+                    >
                       {
                         secondclassify.map(item2 =>
                           <div
                             key={item2.id}
                             className="seconditem"
-                            onMouseEnter={() => enterTag(index, item.id)}
-                            onMouseLeave={leaveTag}
                             onClick={(e) => {
                               e.stopPropagation()
                               toThisTag(item2.tagName, item2.type)
@@ -151,14 +157,15 @@ const MemoNav2 = memo((props) => {
               <div className='iconfont'>&#xe624;</div>
               {
                 secondflag === 23 && remaindclassify.length > 0 &&
-                <div className="childbox childbox2">
+                <div className="childbox childbox2"
+                  onMouseEnter={enterMore}
+                  onMouseLeave={leaveTag}
+                >
                   {
                     remaindclassify.map(item2 =>
                       <div
                         key={item2.id}
                         className="seconditem"
-                        onMouseEnter={enterMore}
-                        onMouseLeave={leaveTag}
                         onClick={(e) => {
                           e.stopPropagation()
                           toThisTag(item2.value, item2.type)

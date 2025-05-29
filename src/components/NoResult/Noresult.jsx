@@ -1,4 +1,3 @@
-import { baseurl } from "../../api"
 import img from '../../static/assets/nodata02.png'
 
 function Noresult () {

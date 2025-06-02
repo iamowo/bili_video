@@ -1,4 +1,4 @@
-import './search.scss'
+import './scss/search.scss'
 import Topnav from '../../components/Topnav/Topnav'
 import { useEffect, useRef, useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'

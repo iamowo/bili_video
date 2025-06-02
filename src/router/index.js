@@ -2,57 +2,57 @@ import {
   createBrowserRouter
 } from "react-router-dom";
 
-import Home from "../views/home/HomePage"
-import Video from '../views/video/Video'
+import VideoHome from "../views/VideoViews/VideoHome";
+import VideoPage from "../views/VideoViews/VideoPage";
 
 // userspace
-import User from "../views/user/user";
-import Dynamic from "../views/user/dynamic/dynamic";
-import Videosandartical from "../views/user/video/vanda";
-import Artical from "../views/user/video/article";
-import Videos from "../views/user/video/videos";
-import Mainhome from "../views/user/main/main";
-import Search from "../views/user/search/search";
-import SearchVideo from "../views/user/search/searchvideo";
-import SearchDynamic from "../views/user/search/searchDynamic";
-import Favlist from "../views/user/favlist/favlist"
-import Anima from "../views/user/anima/anima"
-import Setting from "../views/user/setting/setting"
-import FollowAndFan from "../views/user/followandfan/followandfan";
-import Follow from "../views/user/followandfan/follow";
-import Fan from "../views/user/followandfan/fan";
-import Sum from "../views/user/sum/sum";
-import Allvideos from "../views/user/sum/allvide";
+import UserMainVideo from "../views/VideoViews/UserSpace/UserMainVideo";
+import Dynamic from "../views/VideoViews/UserSpace/dynamic";
+import Videosandartical from "../views/VideoViews/UserSpace/video/vanda";
+import Artical from "../views/VideoViews/UserSpace/video/article";
+import Videos from "../views/VideoViews/UserSpace/video/videos";
+import UserHome from "../views/VideoViews/UserSpace/UserHome"
+import Search from "../views/VideoViews/UserSpace/search/search";
+import SearchVideo from "../views/VideoViews/UserSpace/search/searchvideo";
+import SearchDynamic from "../views/VideoViews/UserSpace/search/searchDynamic";
+import Favlist from "../views/VideoViews/UserSpace/favlist"
+import UserAnimation from "../views/VideoViews/UserSpace/UserAnimation"
+import Setting from "../views/VideoViews/UserSpace/setting"
+import FollowAndFan from "../views/VideoViews/UserSpace/followandfan/followandfan";
+import Follow from "../views/VideoViews/UserSpace/followandfan/follow";
+import Fan from "../views/VideoViews/UserSpace/followandfan/fan";
+import Sum from "../views/VideoViews/UserSpace/sum/sum";
+import Allvideos from "../views/VideoViews/UserSpace/sum/allvide";
 
 // rank
-import Rank from "../views/rank/rank";
+import VideoRank from "../views/VideoViews/VideoRank";
 
 // dynamic
-import DynamicM from "../views/dynamic/dynamic";
-import Dydetail from "../views/dynamic/detail";
+import Blog from "../views/VideoViews/Blog";
+import BlogDetail from "../views/VideoViews/BlogDetail";
 
 // history
-import History from "../views/history/history";
+import VideoHistory from "../views/VideoViews/VideoHistory";
 
 // message
-import Message from "../views/message/message";
-import Whisper from "../views/message/default/whisper";
-import Replay from "../views/message/replay/replay"
-import At from "../views/message/at/at"
-import Love from "../views/message/love/love"
-import Config from "../views/message/config/config"
-import System from "../views/message/system/system"
+import Message from "../views/MessageView/message";
+import Whisper from "../views/MessageView/default/whisper";
+import Replay from "../views/MessageView/replay/replay"
+import At from "../views/MessageView/at/at"
+import Love from "../views/MessageView/love/love"
+import Config from "../views/MessageView/config/config"
+import System from "../views/MessageView/system/system"
 
 // 搜索
-import All from "../views/search/all/all";
+import All from "../views/search/all";
 import SearchM from "../views/search/search";
-import VideoSe from "../views/search/video/vidoe";
-import AnimaS from "../views/search/anima/anima";
-import LivingS from "../views/search/living/living";
-import Liveall from "../views/search/living/liveAll";
-import Liveroom from "../views/search/living/liveRoom";
-import Liveuser from "../views/search/living/liveUser";
-import UserS from "../views/search/user/user";
+import VideoSe from "../views/search/vidoe";
+import AnimaS from "../views/search/anima";
+import LivingS from "../views/search/living";
+import Liveall from "../views/search/liveAll";
+import Liveroom from "../views/search/liveRoom";
+import Liveuser from "../views/search/liveUser";
+import UserS from "../views/search/user";
 
 // 上传
 import Upload from "../views/upload/upload";
@@ -66,39 +66,39 @@ import Mgcontrol from "../views/upload/upcontroller/mgcontrol";
 
 // control
 import Control from "../views/control/control";
-import AllConVideos from "../views/control/videos/allVideo";
+import AllConVideos from "../views/control/allVideo";
 import ControlHome from "../views/control/home";
-import AllDynamic from "../views/control/dynamic/AllDynamic";
-import Bannercon from "../views/control/system/BannerCon";
-import AllUser from "../views/control/user/AllUser";
+import AllDynamic from "../views/control/AllDynamic";
+import Bannercon from "../views/control/BannerCon";
+import AllUser from "../views/control/AllUser";
 
 // live
 import Livinghoom from "../views/living/livinghome/livinghoow";
 import Livingroom from "../views/living/livingroom/livingroow";
 
 // account
-import Account from "../views/account/index"
-import AccountHome from "../views/account/others/home";
-import AccountAvatar from "../views/account/others/myavatar";
-import AccountInfo from "../views/account/others/myinfo";
-import Upavatar from "../views/account/others/upavatar"
-import LiveRoom from "../views/search/living/liveRoom";
+import Account from "../views/Account/Account"
+import AccountHome from "../views/Account/home";
+import AccountAvatar from "../views/Account/myavatar";
+import AccountInfo from "../views/Account/myinfo";
+import Upavatar from "../views/Account/upavatar"
+import LiveRoom from "../views/search/liveRoom";
 
 // adudit
-import Audit from "../views/audit/audit";
+import Audit from "../views/Audit/audit";
 
 // maintag
-import Maintag from "../views/maintag/maintag";
-import AllMaintag from "../views/maintag/moreview";
+import Maintag from "../views/VideoViews/maintag";
+import AllMaintag from "../views/VideoViews/moreview";
 
 // topical
-import Topical from "../views/toplical/topical";
+import Topical from "../views/VideoViews/topical";
 
 // error
 import Error from "../views/404/error"
 
 // animation
-import AnimationPage from "../views/animation/animationPage";
+import AnimationPage from "../views/VideoViews/animationPage";
 
 // mg
 import Mghome from "../views/mg/Home/Home"
@@ -129,21 +129,21 @@ import ImgBorder from "../views/ImgSpace/ImgBorder";
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Home />
+    element: <VideoHome />
   },
   {
     // :uid?, 表示uid可选择 :vid必选
     path: '/video/:vid/:uid?',
-    element: <Video />
+    element: <VideoPage />
   },
   {
     path: '/:uid/',
-    element: <User />,
+    element: <UserMainVideo />,
     children: [
       {
         // 默认二级路由
         index: true,
-        element: <Mainhome />
+        element: <UserHome />
       },
       {
         path: 'dynamic',
@@ -186,7 +186,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'anima',
-        element: <Anima />
+        element: <UserAnimation />
       },
       {
         path: 'setting',
@@ -256,19 +256,19 @@ const router = createBrowserRouter([
   },
   {
     path: '/rank/:type?',
-    element: <Rank />
+    element: <VideoRank />
   },
   {
     path: '/dynamicM/:uid',
-    element: <DynamicM />
+    element: <Blog />
   },
   {
     path: '/dydetail/:did/:uid?',
-    element: <Dydetail />
+    element: <BlogDetail />
   },
   {
     path: '/watched/:uid',
-    element: <History />
+    element: <VideoHistory />
   },
   {
     path: '/:uid',
